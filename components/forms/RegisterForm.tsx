@@ -74,6 +74,7 @@ const RegisterForm = ({ user }: { user: User }) => {
       formData.clinicInformation = await extractTextFromFiles(
         values.clinicInformation,
       );
+      console.log(await formData.clinicInformation);
     }
     try {
       console.log(formData);
