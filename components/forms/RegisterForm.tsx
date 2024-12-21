@@ -134,7 +134,7 @@ const RegisterForm = ({ user }: { user: User }) => {
           <CustomFormField
             fieldType={FormFieldType.TEXTAREA}
             control={form.control}
-            name="Address"
+            name="address"
             label="Address"
             placeholder="14 Street Melbourne"
           />
@@ -164,7 +164,7 @@ const RegisterForm = ({ user }: { user: User }) => {
         <CustomFormField
           fieldType={FormFieldType.SKELETON}
           control={form.control}
-          name="Clinic Information"
+          name="clinicInformation"
           label="Clinic Information"
           renderSkeleton={(field) => (
             <FormControl>
@@ -188,42 +188,42 @@ const RegisterForm = ({ user }: { user: User }) => {
           <CustomFormField
             fieldType={FormFieldType.CHECKBOX}
             control={form.control}
-            name="Tuesday"
+            name="tuesday"
             label="Tuesday"
           />
 
           <CustomFormField
             fieldType={FormFieldType.CHECKBOX}
             control={form.control}
-            name="Wednesday"
+            name="wednesday"
             label="Wednesday"
           />
 
           <CustomFormField
             fieldType={FormFieldType.CHECKBOX}
             control={form.control}
-            name="Thursday"
+            name="thursday"
             label="Thursday"
           />
 
           <CustomFormField
             fieldType={FormFieldType.CHECKBOX}
             control={form.control}
-            name="Friday"
+            name="friday"
             label="Friday"
           />
 
           <CustomFormField
             fieldType={FormFieldType.CHECKBOX}
             control={form.control}
-            name="Saturday"
+            name="saturday"
             label="Saturday"
           />
 
           <CustomFormField
             fieldType={FormFieldType.CHECKBOX}
             control={form.control}
-            name="Sunday"
+            name="sunday"
             label="Sunday"
           />
         </section>
