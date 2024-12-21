@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model alembic_version {
+  version_num String @id(map: "alembic_version_pkc") @db.VarChar(32)
+}
+
+model clinics {
+  id                        BigInt                      @id @default(autoincrement())
+  name                      String
+  address                   String?
+  phone                     String                      @db.VarChar
+  url                       String?
+  description               String?
+  clinic_context            String?
+  opening_time              DateTime?                   @db.Time(6)
+  closing_time              DateTime?                   @db.Time(6)
+  clinic_type               clinictype[]
+  days_opened               dayofweek[]
+  created_at                DateTime?                   @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?                   @default(now()) @db.Timestamptz(6)
+  patient_appointments      patient_appointments[]
+  patients                  patients[]
+  practitioner_availability practitioner_availability[]
+  practitioners             practitioners[]
+  sessions                  sessions[]
+}
+
+model patient_appointments {
+  id                         BigInt            @id @default(autoincrement())
+  patient_id                 BigInt
+  clinic_id                  BigInt
+  practitioner_id            BigInt?
+  appointment_start_datetime DateTime          @db.Timestamptz(6)
+  duration                   Int
+  status                     appointmentstatus
+  appointment_context        String?
+  created_at                 DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime          @default(now()) @db.Timestamptz(6)
+  clinics                    clinics           @relation(fields: [clinic_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  patients                   patients          @relation(fields: [patient_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  practitioners              practitioners?    @relation(fields: [practitioner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model patients {
+  id                   BigInt                 @id @default(autoincrement())
+  clinic_id            BigInt
+  first_name           String
+  last_name            String
+  patient_type         patienttype
+  medicare_number      String?                @unique @db.VarChar
+  medicare_expiry      DateTime?              @db.Date
+  email                String                 @unique
+  phone                String?                @db.VarChar
+  patient_context      String?
+  created_at           DateTime?              @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime?              @default(now()) @db.Timestamptz(6)
+  patient_appointments patient_appointments[]
+  clinics              clinics                @relation(fields: [clinic_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model practitioner_availability {
+  id              BigInt        @id @default(autoincrement())
+  practitioner_id BigInt
+  clinic_id       BigInt
+  day_of_week     dayofweek?
+  date            DateTime?     @db.Date
+  start_time      DateTime      @db.Time(6)
+  end_time        DateTime      @db.Time(6)
+  is_available    Boolean
+  created_at      DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime      @default(now()) @db.Timestamptz(6)
+  clinics         clinics       @relation(fields: [clinic_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  practitioners   practitioners @relation(fields: [practitioner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model practitioners {
+  id                        BigInt                      @id @default(autoincrement())
+  name                      String                      @db.VarChar
+  email                     String                      @db.VarChar
+  phone                     String                      @db.VarChar
+  clinic_id                 BigInt
+  practitioner_type         practitionertype
+  bio                       String?
+  practitioner_image_url    String?                     @db.VarChar
+  created_at                DateTime                    @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime                    @default(now()) @db.Timestamptz(6)
+  specialization            specialization[]
+  patient_appointments      patient_appointments[]
+  practitioner_availability practitioner_availability[]
+  clinics                   clinics                     @relation(fields: [clinic_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model sessions {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  clinic_id     BigInt
+  session_token String    @unique @db.VarChar
+  expires       DateTime  @db.Timestamptz(6)
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  clinics       clinics   @relation(fields: [clinic_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  id         Int        @id @default(autoincrement())
+  email      String     @unique @db.VarChar
+  name       String     @db.VarChar
+  phone      String?    @db.VarChar
+  password   String     @db.VarChar
+  created_at DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?  @default(now()) @db.Timestamptz(6)
+  sessions   sessions[]
+}
+
+enum appointmentstatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+enum clinictype {
+  GENERAL_PRACTICE
+  DENTAL_CLINIC
+  PEDIATRIC_CLINIC
+  ORTHOPEDIC_CLINIC
+  MENTAL_HEALTH_CLINIC
+  CARDIOLOGY_CLINIC
+  DERMATOLOGY_CLINIC
+  SPECIALIST_CLINIC
+}
+
+enum dayofweek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum patienttype {
+  EXISTING
+  NEW
+}
+
+enum practitionertype {
+  GENERAL_PRACTITIONER
+  SPECIALIST
+  PHYSICIAN
+  SURGEON
+  DENTIST
+}
+
+enum specialization {
+  CARDIOLOGIST
+  DERMATOLOGIST
+  NEUROLOGIST
+  ORTHOPEDIC_SURGEON
+  PEDIATRICIAN
+  GENERAL_PRACTITIONER
+  GYNECOLOGIST
+  RADIOLOGIST
+  PSYCHIATRIST
+  ENDOCRINOLOGIST
+  RHEUMATOLOGIST
+  ONCOLOGIST
+  NEPHROLOGIST
+  DIETITIAN
+  DIABETES_EDUCATOR
+  PODIATRIST
+  PHYSIOTHERAPIST
+  OCCUPATIONAL_THERAPIST
+  PSYCHOLOGIST
+  EXERCISE_PHYSIOLOGIST
+  NCS_EMG_SPECIALIST
+}
