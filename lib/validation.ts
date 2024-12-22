@@ -32,7 +32,7 @@ export const RegisterFormValidation = z
     clinicType: z
       .enum(clinicType.map((type) => type.value) as [string, ...string[]])
       .default(clinicType[0].value), // This ensures it defaults to "GENERAL_PRACTICE"
-    clinicInformation: z.custom<File[]>().optional(),
+    clinicInformation: z.string(),
     // Individual day fields
     monday: z.boolean().default(false),
     tuesday: z.boolean().default(false),

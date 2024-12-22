@@ -75,33 +75,7 @@ const RegisterForm = ({ user }: { user: User }) => {
     setIsLoading(true);
 
     let formData = {
-      name: values.name,
-      phone: values.phone,
-      address: values.address,
-      clinicWebsite: values.clinicWebsite,
-      clinicType: values.clinicType,
-      clinicInformation: extractedText,
-      monday: values.monday,
-      tuesday: values.tuesday,
-      wednesday: values.wednesday,
-      thursday: values.thursday,
-      friday: values.friday,
-      saturday: values.saturday,
-      sunday: values.sunday,
-      mondayOpenTime: values.mondayOpenTime,
-      mondayCloseTime: values.mondayCloseTime,
-      tuesdayOpenTime: values.tuesdayOpenTime,
-      tuesdayCloseTime: values.tuesdayCloseTime,
-      wednesdayOpenTime: values.wednesdayOpenTime,
-      wednesdayCloseTime: values.wednesdayCloseTime,
-      thursdayOpenTime: values.thursdayOpenTime,
-      thursdayCloseTime: values.thursdayCloseTime,
-      fridayOpenTime: values.fridayOpenTime,
-      fridayCloseTime: values.fridayCloseTime,
-      saturdayOpenTime: values.saturdayOpenTime,
-      saturdayCloseTime: values.saturdayCloseTime,
-      sundayOpenTime: values.sundayOpenTime,
-      sundayCloseTime: values.sundayCloseTime,
+      ...values,
     };
 
     try {
@@ -197,7 +171,11 @@ const RegisterForm = ({ user }: { user: User }) => {
           label="Clinic Information"
           renderSkeleton={(field) => (
             <FormControl>
-              <FileUploader files={field.value} onChange={field.onChange} />
+              <FileUploader
+                files={field.value}
+                onChange={field.onChange}
+                onProcessingComplete={handleProcessingComplete}
+              />
             </FormControl>
           )}
         />

@@ -15,21 +15,15 @@ type ProcessingStage =
   | "idle"
   | "uploading"
   | "analyzing"
-  | "performing-ocr"
   | "processing-text"
   | "complete";
 
 type FileUploaderProps = {
-  files: File[] | undefined;
-  onChange: (files: File[]) => void;
-  onProcessingComplete?: (text: string) => void;
+  files: File[] | null | undefined;
+  onChange: (value: string) => void;
 };
 
-const FileUploader = ({
-  files,
-  onChange,
-  onProcessingComplete,
-}: FileUploaderProps) => {
+const FileUploader = ({ files, onChange }: FileUploaderProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingStage, setProcessingStage] =
@@ -40,13 +34,10 @@ const FileUploader = ({
     setProcessingStage(stage);
     switch (stage) {
       case "uploading":
-        setProgress(25);
+        setProgress(33);
         break;
       case "analyzing":
-        setProgress(50);
-        break;
-      case "performing-ocr":
-        setProgress(75);
+        setProgress(66);
         break;
       case "processing-text":
         setProgress(90);
@@ -65,10 +56,8 @@ const FileUploader = ({
         return "Uploading files...";
       case "analyzing":
         return "Analyzing document structure...";
-      case "performing-ocr":
-        return "Performing OCR on scanned content...";
       case "processing-text":
-        return "Processing extracted text...";
+        return "Processing text...";
       case "complete":
         return "Processing complete!";
       default:
@@ -82,9 +71,7 @@ const FileUploader = ({
         const validFiles = acceptedFiles.filter(isValidFile);
 
         if (validFiles.length === 0) {
-          setError(
-            "Please upload valid files only (PDF, DOCX, or TXT, max 5MB)",
-          );
+          setError("Please upload valid files only (TXT or DOCX, max 5MB)");
           return;
         }
 
@@ -92,36 +79,19 @@ const FileUploader = ({
         setError(null);
         updateProgress("uploading");
 
-        // Simulate file analysis delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 500));
         updateProgress("analyzing");
 
-        // Start processing files
-        const promises = validFiles.map(async (file) => {
-          if (file.type === "application/pdf") {
-            updateProgress("performing-ocr");
-            // Add delay to show OCR progress
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-          }
-        });
-
-        await Promise.all(promises);
+        await new Promise((resolve) => setTimeout(resolve, 500));
         updateProgress("processing-text");
 
-        // Process files through the parser with OCR
         const extractedText = await extractTextFromFiles(validFiles);
+        console.log("Extracted text:", extractedText);
 
-        // Update form with processed files
-        onChange(validFiles);
-
-        // Pass extracted text back to parent component if callback exists
-        if (onProcessingComplete) {
-          onProcessingComplete(extractedText);
-        }
+        onChange(extractedText);
 
         updateProgress("complete");
 
-        // Reset progress after completion
         setTimeout(() => {
           setProcessingStage("idle");
           setProgress(0);
@@ -134,14 +104,13 @@ const FileUploader = ({
         setIsProcessing(false);
       }
     },
-    [onChange, onProcessingComplete],
+    [onChange],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       "text/plain": [".txt"],
-      "application/pdf": [".pdf"],
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
         [".docx"],
     },
@@ -165,11 +134,6 @@ const FileUploader = ({
               <p className="text-base font-medium text-gray-900">
                 {getProcessingMessage(processingStage)}
               </p>
-              {processingStage === "performing-ocr" && (
-                <p className="text-sm text-gray-500">
-                  This might take a moment for complex documents
-                </p>
-              )}
               <div className="w-full max-w-xs mx-auto">
                 <Progress value={progress} className="h-2" />
               </div>
@@ -182,17 +146,18 @@ const FileUploader = ({
               <p className="text-base font-medium text-green-500">
                 Files uploaded successfully!
               </p>
-              {files.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-2 text-sm text-gray-500"
-                >
-                  <File className="h-4 w-4" />
-                  <span>
-                    {file.name} ({(file.size / 1024).toFixed(1)} KB)
-                  </span>
-                </div>
-              ))}
+              {Array.isArray(files) &&
+                files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center space-x-2 text-sm text-gray-500"
+                  >
+                    <File className="h-4 w-4" />
+                    <span>
+                      {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                    </span>
+                  </div>
+                ))}
             </div>
           </div>
         ) : (
@@ -205,9 +170,8 @@ const FileUploader = ({
                 </span>
                 {" or drag and drop"}
               </p>
-              <p className="text-sm text-gray-500">TXT files (max 5MB)</p>
               <p className="text-sm text-gray-500">
-                OCR available for scanned documents
+                TXT or DOCX files (max 5MB)
               </p>
             </div>
           </div>
