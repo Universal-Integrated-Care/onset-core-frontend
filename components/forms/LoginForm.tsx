@@ -59,7 +59,7 @@ const LoginForm = () => {
         // If registration is complete, store session and redirect to dashboard
         if (result.session) {
           localStorage.setItem("session_token", result.session.session_token);
-          router.push("/dashboard");
+          router.push(`/clinics/${result.user.id}/dashboard`);
         }
       }
     } catch (e) {
