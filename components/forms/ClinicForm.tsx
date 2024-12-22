@@ -25,6 +25,8 @@ export enum FormFieldType {
 const ClinicForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const form = useForm<z.infer<typeof ClinicFormValidation>>({
     resolver: zodResolver(ClinicFormValidation),
     defaultValues: {
@@ -32,13 +34,14 @@ const ClinicForm = () => {
       email: "",
       phone: "",
       password: "",
-      confirmPassword: "", // Add this
+      confirmPassword: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof ClinicFormValidation>) {
-    console.log(values);
     setIsLoading(true);
+    setError("");
+
     try {
       const userData = {
         name: values.name,
@@ -46,15 +49,21 @@ const ClinicForm = () => {
         phone: values.phone,
         password: values.password,
       };
-      console.log(userData);
-      const user = await createUser(userData);
-      console.log(user);
 
-      if (user) {
-        router.push(`/clinics/${user.id}/register`);
+      const result = await createUser(userData);
+
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      if (result.user) {
+        localStorage.setItem("registration_user_id", result.user.id.toString());
+        router.push(`/clinics/${result.user.id}/register`);
       }
     } catch (e) {
       console.error(e);
+      setError("An error occurred during registration");
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +80,8 @@ const ClinicForm = () => {
             <h1 className="header">Hi there 👋</h1>
             <p className="text-dark-700">Get started with Onset.</p>
           </section>
+
+          {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
           <CustomFormField
             fieldType={FormFieldType.INPUT}
@@ -128,7 +139,6 @@ const ClinicForm = () => {
         className="shad-button_outline w-full mt-4"
         onClick={(e) => {
           e.preventDefault();
-          console.log("Regular button clicked");
           router.push("/login");
         }}
       >

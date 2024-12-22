@@ -20,9 +20,6 @@ export default function Home() {
             <p className="justify-items-end text-dark-600 xl:text-left">
               © 2024 Onset
             </p>
-            <Link href="/?admin=True" className="text-green-500">
-              Admin
-            </Link>
           </div>
         </div>
       </section>

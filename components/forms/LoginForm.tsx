@@ -7,8 +7,8 @@ import { Form } from "@/components/ui/form";
 import CustomFormField from "../CustomFormField";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { verifyUserCredentials } from "@/lib/actions/user.action";
 
-// Create login validation schema
 const LoginFormValidation = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -22,6 +22,8 @@ export enum FormFieldType {
 const LoginForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const form = useForm<z.infer<typeof LoginFormValidation>>({
     resolver: zodResolver(LoginFormValidation),
     defaultValues: {
@@ -31,16 +33,38 @@ const LoginForm = () => {
   });
 
   async function onSubmit(values: z.infer<typeof LoginFormValidation>) {
-    console.log(values);
     setIsLoading(true);
+    setError("");
+
     try {
-      // Add your login logic here
-      // const user = await loginUser(values);
-      // if (user) {
-      //   router.push('/dashboard'); // or wherever you want to redirect after login
-      // }
+      const result = await verifyUserCredentials(values);
+
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      if (result.user) {
+        // Check if user has completed registration
+        if (!result.user.hasClinic) {
+          // Store user ID for registration completion
+          localStorage.setItem(
+            "registration_user_id",
+            result.user.id.toString(),
+          );
+          router.push(`/clinics/${result.user.id}/register`);
+          return;
+        }
+
+        // If registration is complete, store session and redirect to dashboard
+        if (result.session) {
+          localStorage.setItem("session_token", result.session.session_token);
+          router.push("/dashboard");
+        }
+      }
     } catch (e) {
       console.error(e);
+      setError("An error occurred during login");
     } finally {
       setIsLoading(false);
     }
@@ -57,6 +81,8 @@ const LoginForm = () => {
             <h1 className="header">Welcome Back 🤗</h1>
             <p className="text-dark-700">Log in to your Onset account.</p>
           </section>
+
+          {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
           <CustomFormField
             fieldType={FormFieldType.INPUT}
@@ -99,8 +125,7 @@ const LoginForm = () => {
         className="shad-button_outline w-full mt-4"
         onClick={(e) => {
           e.preventDefault();
-          console.log("Sign up button clicked");
-          router.push("/"); // Assuming "/" is your signup page
+          router.push("/");
         }}
       >
         Don't have an account? Sign up here
