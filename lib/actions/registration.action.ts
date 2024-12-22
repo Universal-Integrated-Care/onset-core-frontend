@@ -67,6 +67,7 @@ export const createClinic = async ({
           phone: formData.phone,
           address: formData.address,
           url: formData.clinicWebsite,
+          clinic_context: formData.clinicInformation,
           clinic_type: [formData.clinicType],
           days_opened: daysOpened,
           opening_time: openingTime,
