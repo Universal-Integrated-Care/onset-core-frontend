@@ -4,20 +4,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl } from "@/components/ui/form";
-
 import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "../submitButton";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RegisterFormValidation } from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import { clinicType } from "@/constants";
 import { SelectItem } from "@radix-ui/react-select";
 import FileUploader from "../FileUploader";
-import { useEffect } from "react"; // Add useEffect here
+import { createClinic } from "@/lib/actions/registration.action";
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+}
 
 const RegisterForm = ({ user }: { user: User }) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [extractedText, setExtractedText] = useState<string>("");
 
   const form = useForm<z.infer<typeof RegisterFormValidation>>({
@@ -27,8 +33,8 @@ const RegisterForm = ({ user }: { user: User }) => {
       phone: "",
       address: "",
       clinicWebsite: "",
-      clinicType: "GENERAL_PRACTICE" as const, // Force it to be type-safe
-      clinicInformation: [],
+      clinicType: "GENERAL_PRACTICE" as const,
+      clinicInformation: "",
       daysOpened: [],
       monday: false,
       tuesday: false,
@@ -54,9 +60,8 @@ const RegisterForm = ({ user }: { user: User }) => {
     },
     mode: "onChange",
   });
-  // Add these debug logs
-  console.log("Initial form values:", form.getValues());
 
+  // Debug form values
   useEffect(() => {
     const subscription = form.watch((value) => {
       console.log("Form values changed:", value);
@@ -71,22 +76,54 @@ const RegisterForm = ({ user }: { user: User }) => {
   };
 
   async function onSubmit(values: z.infer<typeof RegisterFormValidation>) {
-    console.log(values);
+    console.log("Form values submitted:", values);
     setIsLoading(true);
-
-    let formData = {
-      ...values,
-    };
+    setError("");
 
     try {
-      console.log(formData, "form data");
-      if (user) {
-        // router.push(`/dashboard/${user.$id}/register`);
+      // Get the userId from localStorage (set during initial registration)
+      const userId = parseInt(
+        localStorage.getItem("registration_user_id") || "",
+      );
+
+      if (!userId) {
+        setError("User session not found. Please login again.");
+        return;
+      }
+
+      const result = await createClinic({
+        userId,
+        formData: values,
+      });
+
+      if (result.error) {
+        console.error("Error from createClinic:", result.error);
+        setError(result.error);
+        return;
+      }
+
+      if (result.clinic && result.session) {
+        console.log("Clinic created successfully:", result.clinic);
+        console.log("Session created:", result.session);
+
+        // Store the session token and clinic ID
+        localStorage.setItem("session_token", result.session.session_token);
+        localStorage.setItem("clinic_id", result.clinic.id.toString());
+
+        // Clear the registration user ID as it's no longer needed
+        localStorage.removeItem("registration_user_id");
+
+        // Redirect to dashboard
+        router.push(`/clinics/${userId}/dashboard`);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Error during clinic registration:", e);
+      setError("An unexpected error occurred during registration");
+    } finally {
+      setIsLoading(false);
     }
   }
+
   return (
     <Form {...form}>
       <form
@@ -97,6 +134,15 @@ const RegisterForm = ({ user }: { user: User }) => {
           <h1 className="header">Welcome 👋</h1>
           <p className="text-dark-700">Let us know about your Clinic</p>
         </section>
+
+        {error && (
+          <div
+            className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative"
+            role="alert"
+          >
+            <p>{error}</p>
+          </div>
+        )}
 
         <section className="mb-12 space-y-6">
           <div className="mb-9 space-y-1">
@@ -143,11 +189,6 @@ const RegisterForm = ({ user }: { user: User }) => {
           />
         </div>
 
-        {/* <section className="mb-12 space-y-6">
-          <div className="mb-9 space-y-1">
-            <h2 className="sub-header">Clinic Information</h2>
-          </div>
-        </section> */}
         <CustomFormField
           fieldType={FormFieldType.SELECT}
           control={form.control}
@@ -212,6 +253,9 @@ const RegisterForm = ({ user }: { user: User }) => {
               </div>
             )}
           </div>
+
+          {/* Repeat for other days */}
+          {/* Tuesday */}
           <div className="flex items-center gap-4">
             <div className="w-32">
               <CustomFormField
@@ -240,6 +284,8 @@ const RegisterForm = ({ user }: { user: User }) => {
               </div>
             )}
           </div>
+
+          {/* Wednesday */}
           <div className="flex items-center gap-4">
             <div className="w-32">
               <CustomFormField
@@ -268,6 +314,8 @@ const RegisterForm = ({ user }: { user: User }) => {
               </div>
             )}
           </div>
+
+          {/* Thursday */}
           <div className="flex items-center gap-4">
             <div className="w-32">
               <CustomFormField
@@ -296,6 +344,8 @@ const RegisterForm = ({ user }: { user: User }) => {
               </div>
             )}
           </div>
+
+          {/* Friday */}
           <div className="flex items-center gap-4">
             <div className="w-32">
               <CustomFormField
@@ -324,6 +374,8 @@ const RegisterForm = ({ user }: { user: User }) => {
               </div>
             )}
           </div>
+
+          {/* Saturday */}
           <div className="flex items-center gap-4">
             <div className="w-32">
               <CustomFormField
@@ -352,6 +404,8 @@ const RegisterForm = ({ user }: { user: User }) => {
               </div>
             )}
           </div>
+
+          {/* Sunday */}
           <div className="flex items-center gap-4">
             <div className="w-32">
               <CustomFormField
@@ -381,10 +435,6 @@ const RegisterForm = ({ user }: { user: User }) => {
             )}
           </div>
         </section>
-
-        <div className="flex flex-col gap-6 xl:flex-row"></div>
-        <div className="flex flex-col gap-6 xl:flex-row"></div>
-        <div className="flex flex-col gap-6 xl:flex-row"></div>
 
         <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>
       </form>
