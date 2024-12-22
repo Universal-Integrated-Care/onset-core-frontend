@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   FormControl,
   FormField,
@@ -18,15 +18,16 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Select, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 import { Checkbox } from "./ui/checkbox";
-import { clinicType } from "@/constants";
+import { Eye, EyeOff } from "lucide-react";
 
 export enum FormFieldType {
   INPUT = "input",
+  PASSWORD = "password",
   CHECKBOX = "checkbox",
   TEXTAREA = "textarea",
   PHONE_INPUT = "phoneInput",
   DATE_PICKER = "datePicker",
-  TIME_PICKER = "timePicker", // Add this new type
+  TIME_PICKER = "timePicker",
   SELECT = "select",
   SKELETON = "skeleton",
 }
@@ -47,6 +48,8 @@ interface CustomProps {
 }
 
 const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
   switch (props.fieldType) {
     case FormFieldType.INPUT:
       return (
@@ -66,6 +69,42 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
               {...field}
               className="shad-input border-0"
             />
+          </FormControl>
+        </div>
+      );
+
+    case FormFieldType.PASSWORD:
+      return (
+        <div className="flex rounded-md border border-dark-500 bg-dark-400">
+          {props.iconSrc && (
+            <Image
+              src={props.iconSrc}
+              height={24}
+              width={24}
+              alt={props.iconAlt || "icon"}
+              className="ml-2"
+            />
+          )}
+          <FormControl>
+            <div className="relative w-full">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder={props.placeholder}
+                {...field}
+                className="shad-input border-0 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </FormControl>
         </div>
       );
@@ -107,6 +146,7 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
           </FormControl>
         </div>
       );
+
     case FormFieldType.TIME_PICKER:
       return (
         <div className="flex rounded-md border-dark-500 bg-dark-400">
@@ -128,12 +168,12 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
               dateFormat="h:mm aa"
               timeFormat="h:mm aa"
               placeholderText={props.placeholder}
-              wrapperClassName="date-picker" // Changed to match DATE_PICKER
-              // Removed className since DATE_PICKER doesn't use it
+              wrapperClassName="date-picker"
             />
           </FormControl>
         </div>
       );
+
     case FormFieldType.SELECT:
       return (
         <FormControl>
@@ -165,6 +205,7 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
           </Select>
         </FormControl>
       );
+
     case FormFieldType.TEXTAREA:
       return (
         <FormControl>
@@ -176,6 +217,7 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
           />
         </FormControl>
       );
+
     case FormFieldType.CHECKBOX:
       return (
         <FormControl>
@@ -191,6 +233,7 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
           </div>
         </FormControl>
       );
+
     case FormFieldType.SKELETON:
       return props.renderSkeleton ? props.renderSkeleton(field) : null;
 
@@ -198,6 +241,7 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
       break;
   }
 };
+
 const CustomFormField = (props: CustomProps) => {
   const { control, fieldType, name, label } = props;
   return (

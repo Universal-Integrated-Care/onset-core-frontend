@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form } from "@/components/ui/form";
-
 import CustomFormField from "../CustomFormField";
 import SubmitButton from "../submitButton";
 import { useState } from "react";
@@ -14,6 +13,7 @@ import { useRouter } from "next/navigation";
 
 export enum FormFieldType {
   INPUT = "input",
+  PASSWORD = "password",
   CHECKBOX = "checkbox",
   TEXTAREA = "textarea",
   PHONE_INPUT = "phoneInput",
@@ -31,6 +31,8 @@ const ClinicForm = () => {
       name: "",
       email: "",
       phone: "",
+      password: "",
+      confirmPassword: "", // Add this
     },
   });
 
@@ -42,7 +44,7 @@ const ClinicForm = () => {
         name: values.name,
         email: values.email,
         phone: values.phone,
-        password: "",
+        password: values.password,
       };
       console.log(userData);
       const user = await createUser(userData);
@@ -53,8 +55,11 @@ const ClinicForm = () => {
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setIsLoading(false);
     }
   }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-6">
@@ -82,12 +87,33 @@ const ClinicForm = () => {
           iconSrc="/assets/icons/email.svg"
           iconAlt="email"
         />
+
         <CustomFormField
           fieldType={FormFieldType.PHONE_INPUT}
           control={form.control}
           name="phone"
           label="Mobile number"
           placeholder="(555) 123-4567"
+        />
+
+        <CustomFormField
+          fieldType={FormFieldType.PASSWORD}
+          control={form.control}
+          name="password"
+          label="Password"
+          placeholder="Enter your password"
+          iconSrc="/assets/icons/lock.svg"
+          iconAlt="password"
+        />
+
+        <CustomFormField
+          fieldType={FormFieldType.PASSWORD}
+          control={form.control}
+          name="confirmPassword"
+          label="Confirm Password"
+          placeholder="Re-enter your password"
+          iconSrc="/assets/icons/lock.svg"
+          iconAlt="password"
         />
 
         <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>
