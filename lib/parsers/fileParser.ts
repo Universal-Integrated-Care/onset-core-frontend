@@ -1,71 +1,68 @@
 "use client";
 
+import mammoth from "mammoth";
+
+interface FileContent {
+  text: string;
+}
+
 /**
- * Extracts text from a PDF or TXT file.
- * @param file File object to extract text from.
- * @returns Extracted text as a string.
+ * Processes a Word document
+ */
+async function processWord(file: File): Promise<FileContent> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.convertToHtml({ arrayBuffer });
+    const text = result.value
+      .replace(/<p>/g, "\n")
+      .replace(/<\/p>/g, "")
+      .replace(/<br\s*\/?>/g, "\n")
+      .replace(/<[^>]*>/g, "")
+      .trim();
+
+    return { text };
+  } catch (error) {
+    console.error("Word document processing error:", error);
+    throw new Error(`Failed to process Word document: ${error.message}`);
+  }
+}
+
+/**
+ * Main function to extract text from files
  */
 export async function extractTextFromFile(file: File): Promise<string> {
   if (typeof window === "undefined") {
     throw new Error("File parsing must run on the client side.");
   }
 
-  const fileType = file.type;
+  try {
+    console.log(`Starting to process file: ${file.name}`);
+    let result: FileContent;
 
-  if (fileType === "application/pdf") {
-    try {
-      // Import PDF.js library
-      const pdfjsLib = await import("pdfjs-dist/build/pdf");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    switch (file.type) {
+      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        result = await processWord(file);
+        break;
 
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const textContent: string[] = [];
+      case "text/plain":
+        result = {
+          text: await file.text(),
+        };
+        break;
 
-      // Extract text from each page
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-
-        // Process each text item on the page
-        const pageText = content.items.reduce((text: string, item: any) => {
-          // Handle different types of text items
-          if (item.str) {
-            // Add space if it doesn't end with one and next item doesn't start with one
-            const needsSpace = !text.endsWith(" ") && !item.str.startsWith(" ");
-            return text + (needsSpace ? " " : "") + item.str;
-          }
-          return text;
-        }, "");
-
-        textContent.push(pageText);
-      }
-
-      return textContent.join("\n").trim();
-    } catch (error) {
-      console.error("Error extracting text from PDF:", error);
-      throw new Error(`Failed to extract text from PDF: ${error.message}`);
+      default:
+        throw new Error(`Unsupported file type: ${file.type}`);
     }
-  }
 
-  if (fileType === "text/plain") {
-    try {
-      // For text files, read directly
-      const text = await file.text();
-      return text.trim();
-    } catch (error) {
-      console.error("Error extracting text from TXT:", error);
-      throw new Error(`Failed to extract text from TXT: ${error.message}`);
-    }
+    return `[File processed successfully]\n\n${result.text}`.trim();
+  } catch (error) {
+    console.error("Error processing file:", error);
+    throw new Error(`Failed to process ${file.name}: ${error.message}`);
   }
-
-  throw new Error(`Unsupported file type: ${fileType}`);
 }
 
 /**
- * Extracts text from multiple files and combines them into a single string.
- * @param files Array of File objects.
- * @returns Combined text from all files with metadata.
+ * Processes multiple files
  */
 export async function extractTextFromFiles(files: File[]): Promise<string> {
   if (typeof window === "undefined") {
@@ -76,18 +73,18 @@ export async function extractTextFromFiles(files: File[]): Promise<string> {
 
   for (const file of files) {
     try {
+      console.log(`Processing file: ${file.name}`);
       // Add file metadata
       textParts.push(`File: ${file.name}`);
-      textParts.push(`Type: ${file.type}`);
+      textParts.push(`Type: ${getFileTypeDescription(file.type)}`);
       textParts.push(`Size: ${(file.size / 1024).toFixed(2)} KB`);
       textParts.push("Content:");
 
-      // Extract and add file content
-      const fileText = await extractTextFromFile(file);
-      textParts.push(fileText);
-      textParts.push("\n---\n"); // Separator between files
+      const fileContent = await extractTextFromFile(file);
+      textParts.push(fileContent);
+      textParts.push("\n---\n");
     } catch (err) {
-      console.error(`Failed to extract text from ${file.name}:`, err);
+      console.error(`Failed to process ${file.name}:`, err);
       textParts.push(`Error processing file: ${err.message}`);
       textParts.push("\n---\n");
     }
@@ -97,12 +94,13 @@ export async function extractTextFromFiles(files: File[]): Promise<string> {
 }
 
 /**
- * Validates file before processing
- * @param file File to validate
- * @returns Boolean indicating if file is valid
+ * Validates files before processing
  */
 export function isValidFile(file: File): boolean {
-  const validTypes = ["application/pdf", "text/plain"];
+  const validTypes = [
+    "text/plain",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
   const maxSize = 5 * 1024 * 1024; // 5MB
 
   if (!validTypes.includes(file.type)) {
@@ -116,4 +114,16 @@ export function isValidFile(file: File): boolean {
   }
 
   return true;
+}
+
+/**
+ * Gets a human-readable file type description
+ */
+export function getFileTypeDescription(fileType: string): string {
+  const typeMap: { [key: string]: string } = {
+    "text/plain": "Text File",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      "Word Document",
+  };
+  return typeMap[fileType] || "Unknown File Type";
 }

@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import RegisterForm from "@/components/forms/RegisterForm";
-import { getUser } from "@/lib/actions/clinic.action";
+import { getUser } from "@/lib/actions/user.action";
 
 interface SearchParamProps {
   params: { userId: string };

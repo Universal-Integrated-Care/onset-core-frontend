@@ -26,6 +26,7 @@ export enum FormFieldType {
   TEXTAREA = "textarea",
   PHONE_INPUT = "phoneInput",
   DATE_PICKER = "datePicker",
+  TIME_PICKER = "timePicker", // Add this new type
   SELECT = "select",
   SKELETON = "skeleton",
 }
@@ -102,6 +103,33 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
               showTimeSelect={props.showTimeSelect ?? false}
               timeInputLabel="Time:"
               wrapperClassName="date-picker"
+            />
+          </FormControl>
+        </div>
+      );
+    case FormFieldType.TIME_PICKER:
+      return (
+        <div className="flex rounded-md border-dark-500 bg-dark-400">
+          <Image
+            src="/assets/icons/clock.svg"
+            height={24}
+            width={24}
+            alt="clock"
+            className="ml-2"
+          />
+          <FormControl>
+            <DatePicker
+              selected={field.value}
+              onChange={(date) => field.onChange(date)}
+              showTimeSelect
+              showTimeSelectOnly
+              timeIntervals={30}
+              timeCaption=""
+              dateFormat="h:mm aa"
+              timeFormat="h:mm aa"
+              placeholderText={props.placeholder}
+              wrapperClassName="date-picker" // Changed to match DATE_PICKER
+              // Removed className since DATE_PICKER doesn't use it
             />
           </FormControl>
         </div>

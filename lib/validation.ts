@@ -25,7 +25,10 @@ export const RegisterFormValidation = z
       .string()
       .min(5, "Address must be at least 5 characters")
       .max(500, "Address must be at most 500 characters"),
-    clinicWebsite: z.string().url("Invalid website URL").optional(),
+    clinicWebsite: z
+      .string()
+      .min(5, "Must be at least 5 characters")
+      .optional(),
     clinicType: z
       .enum(clinicType.map((type) => type.value) as [string, ...string[]])
       .default(clinicType[0].value), // This ensures it defaults to "GENERAL_PRACTICE"
@@ -38,6 +41,20 @@ export const RegisterFormValidation = z
     friday: z.boolean().default(false),
     saturday: z.boolean().default(false),
     sunday: z.boolean().default(false),
+    mondayOpenTime: z.date().nullable(),
+    mondayCloseTime: z.date().nullable(),
+    tuesdayOpenTime: z.date().nullable(),
+    tuesdayCloseTime: z.date().nullable(),
+    wednesdayOpenTime: z.date().nullable(),
+    wednesdayCloseTime: z.date().nullable(),
+    thursdayOpenTime: z.date().nullable(),
+    thursdayCloseTime: z.date().nullable(),
+    fridayOpenTime: z.date().nullable(),
+    fridayCloseTime: z.date().nullable(),
+    saturdayOpenTime: z.date().nullable(),
+    saturdayCloseTime: z.date().nullable(),
+    sundayOpenTime: z.date().nullable(),
+    sundayCloseTime: z.date().nullable(),
     // Keep daysOpened for final form submission
     daysOpened: z
       .array(z.enum([...dayOfWeek] as [string, ...string[]]))
