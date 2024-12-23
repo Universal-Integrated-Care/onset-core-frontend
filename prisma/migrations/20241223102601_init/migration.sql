@@ -113,7 +113,6 @@ CREATE TABLE "practitioners" (
 CREATE TABLE "sessions" (
     "id" SERIAL NOT NULL,
     "user_id" INTEGER NOT NULL,
-    "clinic_id" BIGINT NOT NULL,
     "session_token" VARCHAR NOT NULL,
     "expires" TIMESTAMPTZ(6) NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
@@ -130,6 +129,8 @@ CREATE TABLE "users" (
     "password" VARCHAR NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
+    "hasClinic" BOOLEAN NOT NULL DEFAULT false,
+    "clinic_id" BIGINT,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -168,7 +169,7 @@ ALTER TABLE "practitioner_availability" ADD CONSTRAINT "practitioner_availabilit
 ALTER TABLE "practitioners" ADD CONSTRAINT "practitioners_clinic_id_fkey" FOREIGN KEY ("clinic_id") REFERENCES "clinics"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_clinic_id_fkey" FOREIGN KEY ("clinic_id") REFERENCES "clinics"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "users" ADD CONSTRAINT "users_clinic_id_fkey" FOREIGN KEY ("clinic_id") REFERENCES "clinics"("id") ON DELETE CASCADE ON UPDATE NO ACTION;

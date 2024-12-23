@@ -15,7 +15,7 @@ import FileUploader from "../FileUploader";
 import { createClinic } from "@/lib/actions/registration.action";
 
 interface User {
-  id: string;
+  id: number;
   email: string;
   name: string;
 }
@@ -35,7 +35,6 @@ const RegisterForm = ({ user }: { user: User }) => {
       clinicWebsite: "",
       clinicType: "GENERAL_PRACTICE" as const,
       clinicInformation: "",
-      daysOpened: [],
       monday: false,
       tuesday: false,
       wednesday: false,
@@ -61,11 +60,9 @@ const RegisterForm = ({ user }: { user: User }) => {
     mode: "onChange",
   });
 
-  // Debug form values
   useEffect(() => {
     const subscription = form.watch((value) => {
       console.log("Form values changed:", value);
-      console.log("Current clinic type:", value.clinicType);
     });
     return () => subscription.unsubscribe();
   }, [form.watch]);
@@ -76,23 +73,12 @@ const RegisterForm = ({ user }: { user: User }) => {
   };
 
   async function onSubmit(values: z.infer<typeof RegisterFormValidation>) {
-    console.log("Form values submitted:", values);
     setIsLoading(true);
     setError("");
 
     try {
-      // Get the userId from localStorage (set during initial registration)
-      const userId = parseInt(
-        localStorage.getItem("registration_user_id") || "",
-      );
-
-      if (!userId) {
-        setError("User session not found. Please login again.");
-        return;
-      }
-
       const result = await createClinic({
-        userId,
+        userId: user.id,
         formData: values,
       });
 
@@ -102,19 +88,13 @@ const RegisterForm = ({ user }: { user: User }) => {
         return;
       }
 
-      if (result.clinic && result.session) {
+      if (result.clinic) {
         console.log("Clinic created successfully:", result.clinic);
-        console.log("Session created:", result.session);
 
-        // Store the session token and clinic ID
-        localStorage.setItem("session_token", result.session.session_token);
-        localStorage.setItem("clinic_id", result.clinic.id.toString());
-
-        // Clear the registration user ID as it's no longer needed
-        localStorage.removeItem("registration_user_id");
-
-        // Redirect to dashboard
-        router.push(`/clinics/${userId}/dashboard`);
+        // Redirect to the clinic dashboard
+        router.push(`/clinics/${result.clinic.id}/dashboard`);
+      } else {
+        setError("Failed to retrieve clinic ID after creation.");
       }
     } catch (e) {
       console.error("Error during clinic registration:", e);
@@ -143,12 +123,6 @@ const RegisterForm = ({ user }: { user: User }) => {
             <p>{error}</p>
           </div>
         )}
-
-        <section className="mb-12 space-y-6">
-          <div className="mb-9 space-y-1">
-            <h2 className="sub-header">Clinic Information</h2>
-          </div>
-        </section>
 
         <CustomFormField
           fieldType={FormFieldType.INPUT}
@@ -179,15 +153,13 @@ const RegisterForm = ({ user }: { user: User }) => {
           />
         </div>
 
-        <div className="flex flex-col gap-6 xl:flex-row">
-          <CustomFormField
-            fieldType={FormFieldType.TEXTAREA}
-            control={form.control}
-            name="address"
-            label="Address"
-            placeholder="14 Street Melbourne"
-          />
-        </div>
+        <CustomFormField
+          fieldType={FormFieldType.TEXTAREA}
+          control={form.control}
+          name="address"
+          label="Address"
+          placeholder="14 Street Melbourne"
+        />
 
         <CustomFormField
           fieldType={FormFieldType.SELECT}
@@ -221,222 +193,44 @@ const RegisterForm = ({ user }: { user: User }) => {
           )}
         />
 
-        <section className="space-y-6">
-          <div className="mb-9 space-y-1">
-            <h2 className="sub-header">Days Opened</h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="w-32">
-              <CustomFormField
-                fieldType={FormFieldType.CHECKBOX}
-                control={form.control}
-                name="monday"
-                label="Monday"
-              />
-            </div>
-
-            {form.watch("monday") && (
+        {/* Days Opened */}
+        {[
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday",
+        ].map((day) => (
+          <div key={day} className="flex items-center gap-4">
+            <CustomFormField
+              fieldType={FormFieldType.CHECKBOX}
+              control={form.control}
+              name={day}
+              label={day.charAt(0).toUpperCase() + day.slice(1)}
+            />
+            {form.watch(day) && (
               <div className="flex items-center gap-4 flex-1">
                 <CustomFormField
                   fieldType={FormFieldType.TIME_PICKER}
                   control={form.control}
-                  name="mondayOpenTime"
+                  name={`${day}OpenTime`}
                   placeholder="Opening Time"
                 />
                 <span className="text-dark-700">to</span>
                 <CustomFormField
                   fieldType={FormFieldType.TIME_PICKER}
                   control={form.control}
-                  name="mondayCloseTime"
+                  name={`${day}CloseTime`}
                   placeholder="Closing Time"
                 />
               </div>
             )}
           </div>
+        ))}
 
-          {/* Repeat for other days */}
-          {/* Tuesday */}
-          <div className="flex items-center gap-4">
-            <div className="w-32">
-              <CustomFormField
-                fieldType={FormFieldType.CHECKBOX}
-                control={form.control}
-                name="tuesday"
-                label="Tuesday"
-              />
-            </div>
-
-            {form.watch("tuesday") && (
-              <div className="flex items-center gap-4 flex-1">
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="tuesdayOpenTime"
-                  placeholder="Opening Time"
-                />
-                <span className="text-dark-700">to</span>
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="tuesdayCloseTime"
-                  placeholder="Closing Time"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Wednesday */}
-          <div className="flex items-center gap-4">
-            <div className="w-32">
-              <CustomFormField
-                fieldType={FormFieldType.CHECKBOX}
-                control={form.control}
-                name="wednesday"
-                label="Wednesday"
-              />
-            </div>
-
-            {form.watch("wednesday") && (
-              <div className="flex items-center gap-4 flex-1">
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="wednesdayOpenTime"
-                  placeholder="Opening Time"
-                />
-                <span className="text-dark-700">to</span>
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="wednesdayCloseTime"
-                  placeholder="Closing Time"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Thursday */}
-          <div className="flex items-center gap-4">
-            <div className="w-32">
-              <CustomFormField
-                fieldType={FormFieldType.CHECKBOX}
-                control={form.control}
-                name="thursday"
-                label="Thursday"
-              />
-            </div>
-
-            {form.watch("thursday") && (
-              <div className="flex items-center gap-4 flex-1">
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="thursdayOpenTime"
-                  placeholder="Opening Time"
-                />
-                <span className="text-dark-700">to</span>
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="thursdayCloseTime"
-                  placeholder="Closing Time"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Friday */}
-          <div className="flex items-center gap-4">
-            <div className="w-32">
-              <CustomFormField
-                fieldType={FormFieldType.CHECKBOX}
-                control={form.control}
-                name="friday"
-                label="Friday"
-              />
-            </div>
-
-            {form.watch("friday") && (
-              <div className="flex items-center gap-4 flex-1">
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="fridayOpenTime"
-                  placeholder="Opening Time"
-                />
-                <span className="text-dark-700">to</span>
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="fridayCloseTime"
-                  placeholder="Closing Time"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Saturday */}
-          <div className="flex items-center gap-4">
-            <div className="w-32">
-              <CustomFormField
-                fieldType={FormFieldType.CHECKBOX}
-                control={form.control}
-                name="saturday"
-                label="Saturday"
-              />
-            </div>
-
-            {form.watch("saturday") && (
-              <div className="flex items-center gap-4 flex-1">
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="saturdayOpenTime"
-                  placeholder="Opening Time"
-                />
-                <span className="text-dark-700">to</span>
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="saturdayCloseTime"
-                  placeholder="Closing Time"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Sunday */}
-          <div className="flex items-center gap-4">
-            <div className="w-32">
-              <CustomFormField
-                fieldType={FormFieldType.CHECKBOX}
-                control={form.control}
-                name="sunday"
-                label="Sunday"
-              />
-            </div>
-
-            {form.watch("sunday") && (
-              <div className="flex items-center gap-4 flex-1">
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="sundayOpenTime"
-                  placeholder="Opening Time"
-                />
-                <span className="text-dark-700">to</span>
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name="sundayCloseTime"
-                  placeholder="Closing Time"
-                />
-              </div>
-            )}
-          </div>
-        </section>
-
-        <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>
+        <SubmitButton isLoading={isLoading}>Register Clinic</SubmitButton>
       </form>
     </Form>
   );

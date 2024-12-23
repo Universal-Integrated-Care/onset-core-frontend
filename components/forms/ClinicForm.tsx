@@ -58,7 +58,6 @@ const ClinicForm = () => {
       }
 
       if (result.user) {
-        localStorage.setItem("registration_user_id", result.user.id.toString());
         router.push(`/clinics/${result.user.id}/register`);
       }
     } catch (e) {

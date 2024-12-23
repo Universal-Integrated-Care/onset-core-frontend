@@ -9,11 +9,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { verifyUserCredentials } from "@/lib/actions/user.action";
 
+// Validation Schema
 const LoginFormValidation = z.object({
-  email: z.string().email(),
+  email: z.string().email("Invalid email format"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
+// Enum for Field Types
 export enum FormFieldType {
   INPUT = "input",
   PASSWORD = "password",
@@ -32,6 +34,7 @@ const LoginForm = () => {
     },
   });
 
+  // Handle Form Submission
   async function onSubmit(values: z.infer<typeof LoginFormValidation>) {
     setIsLoading(true);
     setError("");
@@ -45,26 +48,23 @@ const LoginForm = () => {
       }
 
       if (result.user) {
-        // Check if user has completed registration
+        // Save session token in cookies
+        document.cookie = `session_token=${result.session.session_token}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=604800`;
+
         if (!result.user.hasClinic) {
-          // Store user ID for registration completion
-          localStorage.setItem(
-            "registration_user_id",
-            result.user.id.toString(),
-          );
+          // Redirect to clinic registration if no clinic is associated
           router.push(`/clinics/${result.user.id}/register`);
           return;
         }
 
-        // If registration is complete, store session and redirect to dashboard
-        if (result.session) {
-          localStorage.setItem("session_token", result.session.session_token);
-          router.push(`/clinics/${result.user.id}/dashboard`);
-        }
+        // Redirect to the clinic dashboard
+        router.push(`/clinics/${result.user.clinicId}/dashboard`);
+      } else {
+        setError("Failed to authenticate. Please try again.");
       }
     } catch (e) {
-      console.error(e);
-      setError("An error occurred during login");
+      console.error("Login Error:", e);
+      setError("An unexpected error occurred during login.");
     } finally {
       setIsLoading(false);
     }
@@ -72,18 +72,22 @@ const LoginForm = () => {
 
   return (
     <div className="flex flex-col">
+      {/* Form Wrapper */}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex-1 space-y-6"
         >
+          {/* Header Section */}
           <section className="mb-12 space-y-4">
             <h1 className="header">Welcome Back 🤗</h1>
             <p className="text-dark-700">Log in to your Onset account.</p>
           </section>
 
+          {/* Error Message */}
           {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
+          {/* Email Field */}
           <CustomFormField
             fieldType={FormFieldType.INPUT}
             control={form.control}
@@ -94,6 +98,7 @@ const LoginForm = () => {
             iconAlt="email"
           />
 
+          {/* Password Field */}
           <CustomFormField
             fieldType={FormFieldType.PASSWORD}
             control={form.control}
@@ -104,6 +109,7 @@ const LoginForm = () => {
             iconAlt="password"
           />
 
+          {/* Submit Button */}
           <button
             type="submit"
             className="shad-button_primary w-full"
@@ -120,13 +126,11 @@ const LoginForm = () => {
         </form>
       </Form>
 
+      {/* Signup Redirect Button */}
       <button
         type="button"
         className="shad-button_outline w-full mt-4"
-        onClick={(e) => {
-          e.preventDefault();
-          router.push("/");
-        }}
+        onClick={() => router.push("/signup")}
       >
         Don't have an account? Sign up here
       </button>
