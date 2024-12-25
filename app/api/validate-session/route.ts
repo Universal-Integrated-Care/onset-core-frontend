@@ -27,16 +27,22 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // ✅ Store user data in a variable before returning
+    const userData = {
+      id: session.users.id,
+      email: session.users.email,
+      name: session.users.name,
+      clinic_id: session.users.clinic_id
+        ? Number(session.users.clinic_id) // Explicitly convert BigInt to Number
+        : null,
+    };
+
+    console.log("✅ User Data to Return:", userData);
+
+    // ✅ Return the structured response
     return NextResponse.json({
       valid: true,
-      user: {
-        id: session.users.id,
-        email: session.users.email,
-        name: session.users.name,
-        clinic_id: session.users.clinic_id
-          ? Number(session.users.clinic_id) // Convert BigInt to Number
-          : null,
-      },
+      user: userData,
     });
   } catch (error) {
     console.error("❌ Error validating session:", error);

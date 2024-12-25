@@ -125,7 +125,7 @@ model users {
 enum appointmentstatus {
   SCHEDULED
   CANCELLED
-  COMPLETED
+  PENDING
 }
 
 enum clinictype {

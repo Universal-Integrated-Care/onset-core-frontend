@@ -2,7 +2,7 @@
 export const GenderOptions = ["MALE", "FEMALE", "OTHER"];
 
 // Appointment statuses
-export const appointmentStatus = ["SCHEDULED", "CANCELLED", "COMPLETED"];
+export const appointmentStatus = ["SCHEDULED", "CANCELLED", "PENDING"];
 
 // Clinic types
 export const clinicType = [
@@ -75,3 +75,9 @@ export const ClinicFormDefaultValues = {
 // Example usage in an application (you can remove this comment in your file)
 // console.log("Appointment Statuses:", appointmentStatus);
 // console.log("Clinic Types:", clinicType);
+
+export const StatusIcon = {
+  SCHEDULED: "/assets/icons/check.svg",
+  PENDING: "/assets/icons/pending.svg",
+  CANCELLED: "/assets/icons/cancelled.svg",
+};

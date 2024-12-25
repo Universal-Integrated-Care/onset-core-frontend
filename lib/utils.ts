@@ -41,23 +41,23 @@ export const formatDateTime = (dateString: Date | string) => {
   };
 
   const formattedDateTime: string = new Date(dateString).toLocaleString(
-    "en-US",
-    dateTimeOptions
+    "en-AU",
+    dateTimeOptions,
   );
 
   const formattedDateDay: string = new Date(dateString).toLocaleString(
-    "en-US",
-    dateDayOptions
+    "en-AU",
+    dateDayOptions,
   );
 
   const formattedDate: string = new Date(dateString).toLocaleString(
-    "en-US",
-    dateOptions
+    "en-AU",
+    dateOptions,
   );
 
   const formattedTime: string = new Date(dateString).toLocaleString(
-    "en-US",
-    timeOptions
+    "en-AU",
+    timeOptions,
   );
 
   return {
