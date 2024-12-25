@@ -100,7 +100,7 @@ const RegisterForm = ({ user }: { user: User }) => {
       console.error("Error during clinic registration:", e);
       setError("An unexpected error occurred during registration");
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   }
 

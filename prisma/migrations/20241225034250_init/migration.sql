@@ -100,11 +100,11 @@ CREATE TABLE "practitioners" (
     "phone" VARCHAR NOT NULL,
     "clinic_id" BIGINT NOT NULL,
     "practitioner_type" "practitionertype" NOT NULL,
+    "specialization" "specialization"[],
     "bio" TEXT,
     "practitioner_image_url" VARCHAR,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "specialization" "specialization"[],
 
     CONSTRAINT "practitioners_pkey" PRIMARY KEY ("id")
 );
@@ -113,7 +113,7 @@ CREATE TABLE "practitioners" (
 CREATE TABLE "sessions" (
     "id" SERIAL NOT NULL,
     "user_id" INTEGER NOT NULL,
-    "session_token" VARCHAR NOT NULL,
+    "session_token" VARCHAR(255) NOT NULL,
     "expires" TIMESTAMPTZ(6) NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
@@ -123,14 +123,14 @@ CREATE TABLE "sessions" (
 -- CreateTable
 CREATE TABLE "users" (
     "id" SERIAL NOT NULL,
-    "email" VARCHAR NOT NULL,
-    "name" VARCHAR NOT NULL,
-    "phone" VARCHAR,
-    "password" VARCHAR NOT NULL,
+    "email" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "phone" VARCHAR(255),
+    "password" VARCHAR(255) NOT NULL,
+    "hasClinic" BOOLEAN NOT NULL,
+    "clinic_id" BIGINT,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
-    "hasClinic" BOOLEAN NOT NULL DEFAULT false,
-    "clinic_id" BIGINT,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );

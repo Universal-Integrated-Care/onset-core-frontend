@@ -64,7 +64,7 @@ const ClinicForm = () => {
       console.error(e);
       setError("An error occurred during registration");
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   }
 

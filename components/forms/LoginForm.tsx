@@ -80,8 +80,8 @@ const LoginForm = () => {
         >
           {/* Header Section */}
           <section className="mb-12 space-y-4">
-            <h1 className="header">Welcome Back 🤗</h1>
-            <p className="text-dark-700">Log in to your Onset account.</p>
+            <h1 className="header">Welcome 🤗</h1>
+            <p className="text-dark-700">Please try Log in to your Onset account.</p>
           </section>
 
           {/* Error Message */}
