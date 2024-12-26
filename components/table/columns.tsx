@@ -40,7 +40,7 @@ export const columns: ColumnDef<Appointment>[] = [
   },
   {
     accessorKey: "appointment_start_datetime",
-    header: "Appointment",
+    header: "Appointment Time",
     cell: ({ row }) => (
       <p className="text-14-regular min-w-[100px]">
         {formatDateTime(row.original.appointment_start_datetime).dateTime}
@@ -69,6 +69,10 @@ export const columns: ColumnDef<Appointment>[] = [
     id: "actions",
     header: () => <div className="pl-4">Actions</div>,
     cell: ({ row, handleRowUpdate }) => {
+      const handleUpdate = (updatedData: Partial<Appointment>) => {
+        handleRowUpdate(updatedData, row.original.id);
+      };
+
       return (
         <div className="flex gap-1">
           {/* Schedule Appointment */}
@@ -77,9 +81,7 @@ export const columns: ColumnDef<Appointment>[] = [
             patientId={row.original.patient_id}
             appointmentId={row.original.id}
             clinicId={row.original.clinic_id}
-            onUpdate={(updatedData) =>
-              handleRowUpdate(updatedData, row.original.id)
-            }
+            onUpdate={(updatedData) => handleUpdate(updatedData)}
           />
 
           {/* Cancel Appointment */}
@@ -88,9 +90,7 @@ export const columns: ColumnDef<Appointment>[] = [
             patientId={row.original.patient_id}
             appointmentId={row.original.id}
             clinicId={row.original.clinic_id}
-            onUpdate={(updatedData) =>
-              handleRowUpdate(updatedData, row.original.id)
-            }
+            onUpdate={(updatedData) => handleUpdate(updatedData)}
           />
         </div>
       );

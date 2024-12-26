@@ -30,7 +30,12 @@ interface AppointmentFormProps {
   type: "schedule" | "cancel";
   clinicId: string;
   appointmentId?: string;
-  onClose: (updatedData: Partial<{ status: string }>) => void; // Pass updated data back
+  onClose: (
+    updatedData: Partial<{
+      status: string;
+      appointment_start_datetime: string;
+    }>,
+  ) => void; // Pass updated data back
 }
 
 // ✅ Main Component
@@ -129,7 +134,8 @@ const AppointmentForm = ({
 
       const payload: any = {
         practitioner_id: Number(values.practitioner_id),
-        appointment_start_datetime: values.appointment_start_datetime,
+        appointment_start_datetime:
+          values.appointment_start_datetime.toISOString(),
         appointment_context: values.appointment_context,
         status: type === "cancel" ? "CANCELLED" : "SCHEDULED",
       };
@@ -140,8 +146,11 @@ const AppointmentForm = ({
         `✅ Appointment ${type === "cancel" ? "Cancelled" : "Scheduled"} successfully`,
       );
 
-      // ✅ Close modal and pass updated status back
-      onClose({ status: payload.status });
+      // ✅ Close modal and pass updated data back
+      onClose({
+        status: payload.status,
+        appointment_start_datetime: payload.appointment_start_datetime,
+      });
     } catch (err: any) {
       console.error("❌ Error submitting form:", err.message);
       setError(err.message || `Failed to ${type} appointment`);
@@ -237,7 +246,9 @@ const AppointmentForm = ({
         {/* ✅ Submit Button */}
         <SubmitButton
           isLoading={isLoading}
-          className={`${type === "cancel" ? "shad-danger-btn" : "shad-primary-btn"} w-full`}
+          className={`${
+            type === "cancel" ? "shad-danger-btn" : "shad-primary-btn"
+          } w-full`}
         >
           {buttonLabel}
         </SubmitButton>

@@ -17,7 +17,12 @@ interface AppointmentModalProps {
   patientId: string;
   appointmentId?: string; // Optional for scheduling
   clinicId: string; // Required for API context
-  onUpdate?: (updatedData: Partial<{ status: string }>) => void; // Callback for updating row state
+  onUpdate?: (
+    updatedData: Partial<{
+      status: string;
+      appointment_start_datetime: string;
+    }>,
+  ) => void; // Callback for updating row state
 }
 
 const AppointmentModal = ({
@@ -65,7 +70,12 @@ const AppointmentModal = ({
   /**
    * ✅ Handle Modal Close with State Update
    */
-  const handleCloseModal = (updatedData?: Partial<{ status: string }>) => {
+  const handleCloseModal = (
+    updatedData?: Partial<{
+      status: string;
+      appointment_start_datetime: string;
+    }>,
+  ) => {
     setOpen(false);
     if (onUpdate && updatedData) {
       onUpdate(updatedData); // Update row in the parent component
@@ -139,10 +149,7 @@ const AppointmentModal = ({
           clinicId={clinicId}
           appointmentId={appointmentId || ""}
           onClose={(updatedData) => {
-            setOpen(false);
-            if (onUpdate) {
-              onUpdate(updatedData);
-            }
+            handleCloseModal(updatedData);
           }}
         />
       </DialogContent>
