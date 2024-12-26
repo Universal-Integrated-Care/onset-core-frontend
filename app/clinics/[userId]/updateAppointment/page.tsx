@@ -1,41 +1,111 @@
 import React from "react";
 import Image from "next/image";
-import { getUser } from "@/lib/actions/user.action";
-import { patient } from "@/lib/actions/Appointment.action";
-
 import AppointmentForm from "@/components/forms/AppointmentForm";
 
 interface SearchParamProps {
-  params: { userId: string };
+  params: { clinicId: string; appointmentId: string };
 }
-const updateAppointment = async ({ params }: SearchParamProps) => {
-  const { userId } = await params;
-  const user = await getUser(userId);
 
-  return (
-    <div className="flex h-screen max-h-screen">
-      <section className="remove-scrollbar container ">
-        <div className="sub-container max-w-[860px] flex-1 justify-between">
-          <Image
-            src="/assets/icons/logo-full.svg"
-            height={1000}
-            width={1000}
-            alt="Clinic"
-            className="mb-12 h-10 w-fit"
-          />
-          <AppointmentForm type="update" user={user} patient={patient} />
-          <p className="copyright py-12">© 2024 Onset</p>
-        </div>
-      </section>
-      <Image
-        src="/assets/images/appointment-img.png"
-        alt="appointment"
-        height={1000}
-        width={1000}
-        className="side-img max-w-[390px] bg-bottom"
-      ></Image>
-    </div>
+// ✅ Fetch Clinic Details from Server
+const fetchClinicById = async (clinicId: string) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/clinics/${clinicId}`,
+    { cache: "no-store" },
   );
+  if (!response.ok) throw new Error("Failed to fetch clinic details");
+  return response.json();
 };
 
-export default updateAppointment;
+// ✅ Fetch Appointment Details from Server
+const fetchAppointmentById = async (appointmentId: string) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/appointments/${appointmentId}`,
+    { cache: "no-store" },
+  );
+  if (!response.ok) throw new Error("Failed to fetch appointment details");
+  return response.json();
+};
+
+// ✅ Main Component
+const UpdateAppointmentPage = async ({ params }: SearchParamProps) => {
+  const { clinicId, appointmentId } = params;
+
+  try {
+    if (!clinicId || !appointmentId) {
+      throw new Error("Missing clinicId or appointmentId");
+    }
+
+    // ✅ Fetch data from APIs
+    const { clinic } = await fetchClinicById(clinicId);
+    const { appointment } = await fetchAppointmentById(appointmentId);
+
+    if (!clinic) {
+      return (
+        <div className="flex items-center justify-center h-screen text-red-500">
+          ❌ Clinic not found.
+        </div>
+      );
+    }
+
+    if (!appointment) {
+      return (
+        <div className="flex items-center justify-center h-screen text-red-500">
+          ❌ Appointment not found.
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex h-screen max-h-screen">
+        {/* Main Section */}
+        <section className="remove-scrollbar container">
+          <div className="sub-container max-w-[860px] flex-1 justify-between">
+            {/* Header Image */}
+            <Image
+              src="/assets/icons/logo-full.svg"
+              height={1000}
+              width={1000}
+              alt="Clinic"
+              className="mb-12 h-10 w-fit"
+            />
+
+            {/* Appointment Form */}
+            <AppointmentForm
+              type="edit"
+              clinicId={clinic.id}
+              appointmentId={appointment.id}
+              appointment={{
+                ...appointment,
+                patient: appointment.patient,
+                practitioner: appointment.practitioner,
+              }}
+            />
+
+            {/* Footer */}
+            <p className="copyright py-12">© 2024 Onset</p>
+          </div>
+        </section>
+
+        {/* Side Image */}
+        <Image
+          src="/assets/images/appointment-img.png"
+          alt="appointment"
+          height={1000}
+          width={1000}
+          className="side-img max-w-[390px] bg-bottom"
+        />
+      </div>
+    );
+  } catch (error: any) {
+    console.error("❌ Error loading appointment page:", error.message || error);
+    return (
+      <div className="flex items-center justify-center h-screen text-red-500">
+        ❌{" "}
+        {error.message ||
+          "An unexpected error occurred while loading the appointment page."}
+      </div>
+    );
+  }
+};
+
+export default UpdateAppointmentPage;

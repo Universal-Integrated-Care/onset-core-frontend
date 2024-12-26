@@ -81,15 +81,20 @@ export const columns: ColumnDef<Payment>[] = [
     cell: ({ row }) => {
       return (
         <div className="flex gap-1">
+          {/* Schedule Appointment */}
           <AppointmentModal
-            patient={row.original.patient}
-            type={"schedule"}
-            appointementId={row.original.id}
+            type="schedule"
+            patientId={row.original.patient_id} // Ensure this key exists
+            appointmentId={row.original.id} // Pass appointment ID for cancellation
+            clinicId={row.original.clinic_id} // Ensure this key exists
           />
+
+          {/* Cancel Appointment */}
           <AppointmentModal
-            patient={row.original.patient}
-            type={"cancel"}
-            appointementId={row.original.id}
+            type="cancel"
+            patientId={row.original.patient_id} // Ensure this key exists
+            appointmentId={row.original.id} // Pass appointment ID for cancellation
+            clinicId={row.original.clinic_id} // Ensure this key exists
           />
         </div>
       );

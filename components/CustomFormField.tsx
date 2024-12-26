@@ -126,7 +126,7 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
 
     case FormFieldType.DATE_PICKER:
       return (
-        <div className="flex rounded-md border-dark-500 bg-dark-400">
+        <div className="flex rounded-md border border-dark-500 bg-dark-400">
           <Image
             src="/assets/icons/calendar.svg"
             height={24}
@@ -136,11 +136,18 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
           />
           <FormControl>
             <DatePicker
-              selected={field.value}
+              selected={
+                field.value instanceof Date
+                  ? field.value
+                  : new Date(field.value)
+              }
               onChange={(date) => field.onChange(date)}
-              dateFormat={props.dateFormat ?? "dd/MM/yyyy"}
+              dateFormat={props.dateformat ?? "yyyy-MM-dd HH:mm"}
               showTimeSelect={props.showTimeSelect ?? false}
-              timeInputLabel="Time:"
+              timeIntervals={15}
+              timeFormat="HH:mm"
+              timeCaption="Time"
+              placeholderText={props.placeholder}
               wrapperClassName="date-picker"
             />
           </FormControl>
