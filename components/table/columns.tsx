@@ -2,31 +2,24 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "../ui/button";
-import { MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import AppointmentModal from "../AppointmentModal";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import StatusBadge from "../StatusBadge";
 import { formatDateTime } from "@/lib/utils";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-export type Payment = {
+// ✅ Define Appointment Type
+export type Appointment = {
   id: string;
-  amount: number;
-  status: "pending" | "processing" | "success" | "failed";
-  email: string;
+  patient: string;
+  status: "scheduled" | "cancelled";
+  appointment_start_datetime: string;
+  practitioner: string;
+  clinic_id: string;
+  patient_id: string;
 };
 
-export const columns: ColumnDef<Payment>[] = [
+// ✅ Define Columns
+export const columns: ColumnDef<Appointment>[] = [
   {
     header: "ID",
     cell: ({ row }) => <p className="text-14-medium">{row.index + 1}</p>,
@@ -57,44 +50,47 @@ export const columns: ColumnDef<Payment>[] = [
   {
     accessorKey: "practitioner",
     header: "Doctor",
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center gap-3">
-          {/* Optional Image for Practitioner */}
-          <Image
-            src={"/assets/images/dr-remirez.png"}
-            alt={row.original.practitioner || "Unknown Practitioner"}
-            width={40}
-            height={40}
-            className="rounded-full"
-          />
-          <p className="whitespace-nowrap text-14-medium">
-            {row.original.practitioner || "Unknown Practitioner"}
-          </p>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex items-center gap-3">
+        <Image
+          src={"/assets/images/dr-remirez.png"}
+          alt={row.original.practitioner || "Unknown Practitioner"}
+          width={40}
+          height={40}
+          className="rounded-full border border-gray-300"
+        />
+        <p className="whitespace-nowrap text-14-medium">
+          {row.original.practitioner || "Unknown Practitioner"}
+        </p>
+      </div>
+    ),
   },
   {
     id: "actions",
     header: () => <div className="pl-4">Actions</div>,
-    cell: ({ row }) => {
+    cell: ({ row, handleRowUpdate }) => {
       return (
         <div className="flex gap-1">
           {/* Schedule Appointment */}
           <AppointmentModal
             type="schedule"
-            patientId={row.original.patient_id} // Ensure this key exists
-            appointmentId={row.original.id} // Pass appointment ID for cancellation
-            clinicId={row.original.clinic_id} // Ensure this key exists
+            patientId={row.original.patient_id}
+            appointmentId={row.original.id}
+            clinicId={row.original.clinic_id}
+            onUpdate={(updatedData) =>
+              handleRowUpdate(updatedData, row.original.id)
+            }
           />
 
           {/* Cancel Appointment */}
           <AppointmentModal
             type="cancel"
-            patientId={row.original.patient_id} // Ensure this key exists
-            appointmentId={row.original.id} // Pass appointment ID for cancellation
-            clinicId={row.original.clinic_id} // Ensure this key exists
+            patientId={row.original.patient_id}
+            appointmentId={row.original.id}
+            clinicId={row.original.clinic_id}
+            onUpdate={(updatedData) =>
+              handleRowUpdate(updatedData, row.original.id)
+            }
           />
         </div>
       );

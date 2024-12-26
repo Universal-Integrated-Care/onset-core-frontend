@@ -9,6 +9,7 @@ import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "../submitButton";
 import { SelectItem } from "../ui/select";
 import Image from "next/image";
+import { updateAppointment } from "@/lib/actions/appointment.action";
 
 // ✅ Define Zod Schema for Validation
 const AppointmentFormSchema = z.object({
@@ -26,9 +27,10 @@ const AppointmentFormSchema = z.object({
 
 // ✅ Define Props
 interface AppointmentFormProps {
-  type: "edit" | "schedule" | "create" | "cancel";
+  type: "schedule" | "cancel";
   clinicId: string;
   appointmentId?: string;
+  onClose: (updatedData: Partial<{ status: string }>) => void; // Pass updated data back
 }
 
 // ✅ Main Component
@@ -36,6 +38,7 @@ const AppointmentForm = ({
   type,
   clinicId,
   appointmentId,
+  onClose,
 }: AppointmentFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [practitioners, setPractitioners] = useState<
@@ -68,7 +71,7 @@ const AppointmentForm = ({
   };
 
   /**
-   * ✅ Fetch Appointment Details
+   * ✅ Fetch Appointment Details for Prefill
    */
   const fetchAppointment = async () => {
     if (!appointmentId) return;
@@ -92,7 +95,7 @@ const AppointmentForm = ({
   };
 
   /**
-   * ✅ Combined Data Fetching Logic
+   * ✅ Initial Data Fetching
    */
   useEffect(() => {
     const fetchData = async () => {
@@ -120,32 +123,28 @@ const AppointmentForm = ({
     setError(null);
 
     try {
-      const endpoint =
-        type === "edit"
-          ? `/api/appointments/${appointmentId}`
-          : `/api/appointments`;
+      if (!appointmentId) {
+        throw new Error("Appointment ID is required for updates.");
+      }
 
-      const method = type === "edit" ? "PUT" : "POST";
-
-      const payload = {
-        ...values,
-        clinic_id: clinicId,
-        appointment_start_datetime:
-          values.appointment_start_datetime.toISOString(),
+      const payload: any = {
+        practitioner_id: Number(values.practitioner_id),
+        appointment_start_datetime: values.appointment_start_datetime,
+        appointment_context: values.appointment_context,
+        status: type === "cancel" ? "CANCELLED" : "SCHEDULED",
       };
 
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      await updateAppointment(Number(appointmentId), payload);
 
-      if (!response.ok) {
-        throw new Error(`Failed to ${type} appointment`);
-      }
+      console.log(
+        `✅ Appointment ${type === "cancel" ? "Cancelled" : "Scheduled"} successfully`,
+      );
+
+      // ✅ Close modal and pass updated status back
+      onClose({ status: payload.status });
     } catch (err: any) {
       console.error("❌ Error submitting form:", err.message);
-      setError(err.message || "Failed to submit the appointment");
+      setError(err.message || `Failed to ${type} appointment`);
     } finally {
       setIsLoading(false);
     }
@@ -157,8 +156,6 @@ const AppointmentForm = ({
   const buttonLabel = {
     cancel: "Cancel Appointment",
     schedule: "Schedule Appointment",
-    create: "Create Appointment",
-    edit: "Submit Appointment",
   }[type];
 
   /**
@@ -183,68 +180,59 @@ const AppointmentForm = ({
     );
   }
 
+  /**
+   * ✅ Render Form
+   */
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-6">
-        {/* ✅ Header Section */}
-        {type === "create" && (
-          <section className="mb-12 space-y-4">
-            <h1 className="text-2xl font-semibold">New Appointment</h1>
-            <p className="text-gray-500">
-              Request a new appointment in 10 seconds.
-            </p>
-          </section>
+        {/* ✅ Practitioner Dropdown */}
+        {type === "schedule" && (
+          <CustomFormField
+            fieldType={FormFieldType.SELECT}
+            control={form.control}
+            name="practitioner_id"
+            label="Doctor"
+            placeholder="Select a doctor"
+          >
+            {practitioners.map((practitioner) => (
+              <SelectItem
+                key={practitioner.id}
+                value={practitioner.id.toString()}
+              >
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/assets/images/dr-powell.png"
+                    width={32}
+                    height={32}
+                    alt="doctor"
+                    className="rounded-full border border-gray-300"
+                  />
+                  <p>{practitioner.name}</p>
+                </div>
+              </SelectItem>
+            ))}
+          </CustomFormField>
         )}
 
-        {type !== "cancel" && (
-          <>
-            {/* ✅ Practitioner Dropdown */}
-            <CustomFormField
-              fieldType={FormFieldType.SELECT}
-              control={form.control}
-              name="practitioner_id"
-              label="Doctor"
-              placeholder="Select a doctor"
-            >
-              {practitioners.map((practitioner) => (
-                <SelectItem
-                  key={practitioner.id}
-                  value={practitioner.id.toString()}
-                >
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src="/assets/images/dr-powell.png"
-                      width={32}
-                      height={32}
-                      alt="doctor"
-                      className="rounded-full border border-gray-300"
-                    />
-                    <p>{practitioner.name}</p>
-                  </div>
-                </SelectItem>
-              ))}
-            </CustomFormField>
+        {/* ✅ Date Picker */}
+        <CustomFormField
+          fieldType={FormFieldType.DATE_PICKER}
+          control={form.control}
+          name="appointment_start_datetime"
+          label="Expected appointment date"
+          showTimeSelect
+          dateFormat="MM/dd/yyyy - h:mm aa"
+        />
 
-            {/* ✅ Date Picker */}
-            <CustomFormField
-              fieldType={FormFieldType.DATE_PICKER}
-              control={form.control}
-              name="appointment_start_datetime"
-              label="Expected appointment date"
-              showTimeSelect
-              dateFormat="MM/dd/yyyy - h:mm aa"
-            />
-
-            {/* ✅ Appointment Context */}
-            <CustomFormField
-              fieldType={FormFieldType.TEXTAREA}
-              control={form.control}
-              name="appointment_context"
-              label="Appointment Context"
-              placeholder="Add appointment notes"
-            />
-          </>
-        )}
+        {/* ✅ Appointment Context */}
+        <CustomFormField
+          fieldType={FormFieldType.TEXTAREA}
+          control={form.control}
+          name="appointment_context"
+          label="Appointment Context"
+          placeholder="Add appointment notes"
+        />
 
         {/* ✅ Submit Button */}
         <SubmitButton

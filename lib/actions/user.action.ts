@@ -63,12 +63,14 @@ export const createUser = async (
         name: user.name,
         phone: user.phone,
         password: hashedPassword,
+        hasClinic: false, // Default value for new users
       },
       select: {
         id: true,
         email: true,
         name: true,
         phone: true,
+        hasClinic: true,
       },
     });
 
@@ -78,7 +80,6 @@ export const createUser = async (
     return { user: null, error: "An error occurred during registration" };
   }
 };
-
 /* ------------------------------
     ✅ Get User
 ------------------------------- */

@@ -17,6 +17,7 @@ interface AppointmentModalProps {
   patientId: string;
   appointmentId?: string; // Optional for scheduling
   clinicId: string; // Required for API context
+  onUpdate?: (updatedData: Partial<{ status: string }>) => void; // Callback for updating row state
 }
 
 const AppointmentModal = ({
@@ -24,6 +25,7 @@ const AppointmentModal = ({
   patientId,
   appointmentId,
   clinicId,
+  onUpdate,
 }: AppointmentModalProps) => {
   const [open, setOpen] = useState(false);
   const [appointmentData, setAppointmentData] = useState<any>(null);
@@ -31,11 +33,11 @@ const AppointmentModal = ({
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * ✅ Fetch Appointment Data when Modal is Opened for Editing
+   * ✅ Fetch Appointment Data for Editing
    */
   useEffect(() => {
     const fetchAppointmentData = async () => {
-      if (type === "schedule" || !appointmentId) return; // No need to fetch for scheduling
+      if (type === "schedule" || !appointmentId) return; // Skip fetch for scheduling
 
       setIsLoading(true);
       setError(null);
@@ -59,6 +61,16 @@ const AppointmentModal = ({
       fetchAppointmentData();
     }
   }, [open, appointmentId, type]);
+
+  /**
+   * ✅ Handle Modal Close with State Update
+   */
+  const handleCloseModal = (updatedData?: Partial<{ status: string }>) => {
+    setOpen(false);
+    if (onUpdate && updatedData) {
+      onUpdate(updatedData); // Update row in the parent component
+    }
+  };
 
   /**
    * ✅ Render Loading State
@@ -97,14 +109,16 @@ const AppointmentModal = ({
   }
 
   /**
-   * ✅ Main Modal Content
+   * ✅ Render Main Modal Content
    */
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          className={`capitalize ${type === "schedule" && "text-green-500"}`}
+          className={`capitalize ${
+            type === "schedule" ? "text-green-500" : "text-red-500"
+          }`}
         >
           {type}
         </Button>
@@ -113,20 +127,23 @@ const AppointmentModal = ({
         <DialogHeader className="mb-4 space-y-3">
           <DialogTitle className="capitalize">{type} Appointment</DialogTitle>
           <DialogDescription>
-            {type === "cancel" &&
-              "Are you sure you want to cancel this appointment?"}
-            {type === "schedule" &&
-              "Please review and confirm the appointment details."}
+            {type === "cancel"
+              ? "Are you sure you want to cancel this appointment?"
+              : "Please review and confirm the appointment details."}
           </DialogDescription>
         </DialogHeader>
 
-        {/* ✅ Pass `appointmentData` Down to the Form */}
+        {/* ✅ Pass Callbacks to AppointmentForm */}
         <AppointmentForm
           type={type}
           clinicId={clinicId}
-          patientId={patientId}
           appointmentId={appointmentId || ""}
-          appointmentData={appointmentData}
+          onClose={(updatedData) => {
+            setOpen(false);
+            if (onUpdate) {
+              onUpdate(updatedData);
+            }
+          }}
         />
       </DialogContent>
     </Dialog>

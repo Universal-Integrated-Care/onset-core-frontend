@@ -72,6 +72,9 @@ const RegisterForm = ({ user }: { user: User }) => {
     console.log("Extracted text from files:", text);
   };
 
+  /**
+   * ✅ Handle Form Submission
+   */
   async function onSubmit(values: z.infer<typeof RegisterFormValidation>) {
     setIsLoading(true);
     setError("");
@@ -91,8 +94,12 @@ const RegisterForm = ({ user }: { user: User }) => {
       if (result.clinic) {
         console.log("Clinic created successfully:", result.clinic);
 
-        // Redirect to the clinic dashboard
-        router.push(`/clinics/${result.clinic.id}/dashboard`);
+        // ✅ Redirect based on first-time registration flag
+        if (result.isFirstTimeRegistration) {
+          router.push("/login");
+        } else {
+          router.push(`/clinics/${result.clinic.id}/dashboard`);
+        }
       } else {
         setError("Failed to retrieve clinic ID after creation.");
       }
@@ -100,7 +107,7 @@ const RegisterForm = ({ user }: { user: User }) => {
       console.error("Error during clinic registration:", e);
       setError("An unexpected error occurred during registration");
     } finally {
-      // setIsLoading(false);
+      setIsLoading(false);
     }
   }
 

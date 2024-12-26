@@ -2,6 +2,9 @@
 
 import prisma from "@/lib/prisma";
 
+/* ------------------------------
+    ✅ Appointment Interface
+------------------------------- */
 interface Appointment {
   id: number;
   patient_id: number;
@@ -16,7 +19,8 @@ interface Appointment {
 }
 
 interface AppointmentResponse {
-  appointments: Appointment[] | null;
+  appointment?: Appointment | null;
+  appointments?: Appointment[] | null;
   error?: string;
 }
 
@@ -31,7 +35,6 @@ export const getAppointmentsByClinicId = async (
       throw new Error("Clinic ID is required.");
     }
 
-    // Explicitly convert clinicId to number if it's bigint
     const numericClinicId =
       typeof clinicId === "bigint" ? Number(clinicId) : clinicId;
 
@@ -59,7 +62,7 @@ export const getAppointmentsByClinicId = async (
         },
       },
       orderBy: {
-        appointment_start_datetime: "desc", // Sort by latest first
+        appointment_start_datetime: "desc",
       },
     });
 
@@ -69,6 +72,43 @@ export const getAppointmentsByClinicId = async (
     return {
       appointments: null,
       error: "An error occurred while fetching appointments.",
+    };
+  }
+};
+
+/* ------------------------------
+    ✅ Update Appointment (Handles Schedule, Cancel, Edit)
+------------------------------- */
+export const updateAppointment = async (
+  appointmentId: number,
+  updates: {
+    practitioner_id?: number;
+    appointment_start_datetime?: Date;
+    appointment_context?: string | null;
+    status?: "SCHEDULED" | "CANCELLED" | "PENDING";
+  },
+): Promise<AppointmentResponse> => {
+  try {
+    if (!appointmentId) {
+      throw new Error("Appointment ID is required for updates.");
+    }
+
+    const appointment = await prisma.patient_appointments.update({
+      where: {
+        id: appointmentId,
+      },
+      data: {
+        ...updates,
+        updated_at: new Date(),
+      },
+    });
+
+    return { appointment };
+  } catch (error) {
+    console.error("❌ Error updating appointment:", error);
+    return {
+      appointment: null,
+      error: "An error occurred while updating the appointment.",
     };
   }
 };

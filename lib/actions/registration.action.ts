@@ -12,6 +12,7 @@ interface CreateClinicParams {
 
 interface ClinicResponse {
   clinic?: any;
+  isFirstTimeRegistration?: boolean;
   error?: string;
 }
 
@@ -22,7 +23,15 @@ export const createClinic = async ({
 }: CreateClinicParams): Promise<ClinicResponse> => {
   try {
     return await prisma.$transaction(async (tx) => {
-      // Step 1: Process the days
+      // Step 1: Check if the user already has a clinic
+      const user = await tx.users.findUnique({
+        where: { id: userId },
+        select: { hasClinic: true },
+      });
+
+      const isFirstTimeRegistration = !user?.hasClinic;
+
+      // Step 2: Process the days
       const daysOpened: string[] = [];
       if (formData.monday) daysOpened.push("MONDAY");
       if (formData.tuesday) daysOpened.push("TUESDAY");
@@ -32,7 +41,7 @@ export const createClinic = async ({
       if (formData.saturday) daysOpened.push("SATURDAY");
       if (formData.sunday) daysOpened.push("SUNDAY");
 
-      // Step 2: Handle opening and closing times
+      // Step 3: Handle opening and closing times
       let openingTime = null;
       let closingTime = null;
 
@@ -53,7 +62,7 @@ export const createClinic = async ({
         }
       }
 
-      // Step 3: Create the clinic
+      // Step 4: Create the clinic
       const clinic = await tx.clinics.create({
         data: {
           name: formData.name,
@@ -68,7 +77,7 @@ export const createClinic = async ({
         },
       });
 
-      // Step 4: Update the user to associate with the clinic
+      // Step 5: Update the user to associate with the clinic
       await tx.users.update({
         where: { id: userId },
         data: {
@@ -77,7 +86,7 @@ export const createClinic = async ({
         },
       });
 
-      return { clinic };
+      return { clinic, isFirstTimeRegistration };
     });
   } catch (error) {
     console.error("Error creating clinic:", error);
