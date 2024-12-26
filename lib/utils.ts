@@ -75,3 +75,22 @@ export function encryptKey(passkey: string) {
 export function decryptKey(passkey: string) {
   return atob(passkey);
 }
+
+/**
+ * ✅ Helper Function to Serialize BigInt
+ * Converts BigInt values to String to prevent JSON serialization errors.
+ */
+export function serializeBigInt(obj: any): any {
+  if (typeof obj === "bigint") {
+    return obj.toString(); // Convert BigInt to String
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(serializeBigInt);
+  }
+  if (typeof obj === "object" && obj !== null) {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [key, serializeBigInt(value)]),
+    );
+  }
+  return obj;
+}
