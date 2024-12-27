@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import {cn}  from '@/lib/utils';
+import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
-
+import { Toaster } from "@/components/ui/toaster"; // Import Toaster
 
 const fontSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ['300','400', '500', '600', '700'],
+  weight: ["300", "400", "500", "600", "700"],
 });
-
 
 export const metadata: Metadata = {
   title: "Onset",
@@ -23,16 +22,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en"  className="dark" >
-      <body  className={cn('min-h-screen bg-dark-300 font-sans antialiased',fontSans.variable)}>
-      <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            >
-              
-          </ThemeProvider>
+    <html lang="en" className="dark">
+      <body
+        className={cn(
+          "min-h-screen bg-dark-300 font-sans antialiased",
+          fontSans.variable,
+        )}
+      >
+        <ThemeProvider attribute="class" defaultTheme="dark">
           {children}
-        </body>
+          <Toaster /> {/* Add Toaster component here */}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

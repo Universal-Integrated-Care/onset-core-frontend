@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import StatCard from "@/components/StatCard";
-import { columns, Payment } from "@/components/table/columns";
+import { columns } from "@/components/table/columns";
 import { DataTable } from "@/components/table/Datatable";
+import PractitionerForm from "@/components/forms/PractitionerForm";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface Appointment {
   id: number;
@@ -47,11 +50,20 @@ const Dashboard = () => {
   const [isValidSession, setIsValidSession] = useState<boolean | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [clinicId, setClinicId] = useState<number | null>(null);
+  const [showForm, setShowForm] = useState(false); // Toggle Practitioner Form
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Toggle Sidebar
+  const [metadata, setMetadata] = useState<{
+    practitionerTypes: string[];
+    specializations: string[];
+  }>({ practitionerTypes: [], specializations: [] });
 
+  /**
+   * ✅ Validate session and fetch appointments
+   */
   useEffect(() => {
     const validateAndFetchData = async () => {
       try {
-        // ✅ Session Validation
         const res = await fetch("/api/validate-session", {
           credentials: "include",
         });
@@ -63,7 +75,6 @@ const Dashboard = () => {
         }
 
         const data = await res.json();
-        console.log("🔄 Session Validation Result:", data);
 
         if (!data.valid || !data.user) {
           console.error("❌ Invalid session data, redirecting to /login");
@@ -71,7 +82,6 @@ const Dashboard = () => {
           return;
         }
 
-        // ✅ Extract and Parse `clinic_id`
         const clinicId = Number(data.user.clinic_id);
         if (isNaN(clinicId) || clinicId <= 0) {
           console.error("❌ Invalid clinic_id, redirecting to /login");
@@ -79,14 +89,22 @@ const Dashboard = () => {
           return;
         }
 
-        console.log("🏥 Parsed Clinic ID:", clinicId);
-
+        setClinicId(clinicId);
         setIsValidSession(true);
 
-        // ✅ Fetch Appointments for the Clinic
         const appointmentsData = await fetchAppointmentsByClinicId(clinicId);
-        console.log("📅 Fetched Appointments:", appointmentsData);
         setAppointments(appointmentsData);
+
+        // Fetch Metadata
+        const metadataResponse = await fetch("/api/practitioners/meta");
+        if (!metadataResponse.ok) throw new Error("Failed to fetch metadata");
+        const metaData = await metadataResponse.json();
+        setMetadata({
+          practitionerTypes: metaData.practitionerTypes || [],
+          specializations: metaData.specializations || [],
+        });
+
+        console.log("✅ Metadata Fetched:", metaData);
       } catch (error) {
         console.error("❌ Error during initialization:", error);
         router.push("/login");
@@ -98,6 +116,9 @@ const Dashboard = () => {
     validateAndFetchData();
   }, [router]);
 
+  /**
+   * ✅ Render Loading State
+   */
   if (isLoading) {
     return <p>🔄 Loading dashboard, please wait...</p>;
   }
@@ -107,29 +128,63 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col space-y-14">
-      {/* Header */}
-      <header className="admin-header">
-        <Link href="/" className="cursor-pointer">
-          <Image
-            src="/assets/icons/logo-full.svg"
-            alt="Logo"
-            height={32}
-            width={162}
-            className="h-8 w-fit"
-          />
-        </Link>
-        <p className="text-16-semibold">Admin Dashboard</p>
-      </header>
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "transition-all duration-300 bg-dark-200 shadow-lg p-4 space-y-4 h-full overflow-y-auto",
+          isSidebarCollapsed ? "w-20" : "w-1/4",
+        )}
+      >
+        {/* Toggle Sidebar Button */}
+        <Button
+          variant="ghost"
+          className="w-full flex justify-start"
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        >
+          {isSidebarCollapsed ? "▶️" : "◀️"}
+        </Button>
 
-      {/* Main Content */}
-      <main className="admin-main">
-        <section className="w-full space-y-4">
-          <h1 className="header">Welcome 👋</h1>
-          <p className="text-dark-700">
-            Start the day by managing new appointments
-          </p>
-        </section>
+        {/* Add Practitioner Toggle */}
+        {!isSidebarCollapsed && (
+          <>
+            <h2 className="text-xl font-semibold mb-4">Sidebar</h2>
+            <Button
+              variant="default"
+              className="w-full"
+              onClick={() => setShowForm(!showForm)}
+            >
+              {showForm ? "Close Practitioner Form" : "Add Practitioner"}
+            </Button>
+            {showForm && clinicId && (
+              <div className="mt-4">
+                <PractitionerForm
+                  clinicId={clinicId}
+                  practitionerTypes={metadata.practitionerTypes}
+                  specializations={metadata.specializations}
+                  onClose={() => setShowForm(false)}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </aside>
+
+      {/* Main Dashboard Section */}
+      <main className="flex-1 space-y-6 overflow-auto p-6">
+        {/* Header */}
+        <header className="admin-header">
+          <Link href="/" className="cursor-pointer">
+            <Image
+              src="/assets/icons/logo-full.svg"
+              alt="Logo"
+              height={32}
+              width={162}
+              className="h-8 w-fit"
+            />
+          </Link>
+          <p className="text-16-semibold">Admin Dashboard</p>
+        </header>
 
         {/* Stats Section */}
         <section className="admin-stat">
@@ -153,7 +208,7 @@ const Dashboard = () => {
           />
         </section>
 
-        {/* Data Table Section */}
+        {/* Appointments Table */}
         <section>
           <h2 className="text-2xl font-bold mb-4">Recent Appointments</h2>
           <DataTable columns={columns} data={appointments} />

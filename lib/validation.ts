@@ -131,3 +131,13 @@ export function getAppointmentSchema(type: string) {
       return ScheduleAppointmentSchema;
   }
 }
+
+export const PractitionerFormValidation = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Invalid phone number"),
+  practitioner_type: z.string().nonempty("Practitioner type is required"),
+  specialization: z.string().nonempty("Specialization is required"),
+  bio: z.string().optional(),
+  practitioner_image_url: z.string().url("Invalid URL").optional(),
+});
