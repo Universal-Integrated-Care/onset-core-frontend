@@ -54,7 +54,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [clinicId, setClinicId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false); // Toggle Practitioner Form
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Toggle Sidebar
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // Toggle Sidebar
   const [metadata, setMetadata] = useState<{
     practitionerTypes: string[];
     specializations: string[];
