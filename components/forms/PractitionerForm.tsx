@@ -81,9 +81,11 @@ const PractitionerForm = ({
       console.log("✅ API Response Data:", responseData);
 
       toast({
-        title: "Practitioner Added",
+        title: "🎉 Practitioner Added",
         description: "The practitioner has been added successfully!",
         variant: "default",
+        className:
+          "bg-gray-900 text-gray-200 p-4 rounded-lg shadow-md border border-gray-700",
       });
 
       form.reset(); // Reset form fields
@@ -91,10 +93,12 @@ const PractitionerForm = ({
     } catch (err: any) {
       console.error("❌ Error adding practitioner:", err.message);
       toast({
-        title: "Error",
+        title: "❌ Error",
         description:
           err.message || "Failed to add practitioner. Please try again.",
         variant: "destructive",
+        className:
+          "bg-gray-900 text-gray-300 p-4 rounded-lg shadow-md border border-gray-700",
       });
     } finally {
       setIsLoading(false); // ✅ Set Loading State to False

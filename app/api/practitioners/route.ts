@@ -14,6 +14,7 @@ export async function GET() {
         email: true,
         phone: true,
         specialization: true,
+        practitioner_type: true,
       },
     });
 

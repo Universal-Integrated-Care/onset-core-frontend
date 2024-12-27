@@ -8,9 +8,17 @@ import StatCard from "@/components/StatCard";
 import { columns } from "@/components/table/columns";
 import { DataTable } from "@/components/table/Datatable";
 import PractitionerForm from "@/components/forms/PractitionerForm";
+import PractitionerTable from "@/components/table/PractitionerTable";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, UserPlus } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  UserPlus,
+  Calendar,
+  Users,
+  Stethoscope,
+} from "lucide-react";
 import DashboardLoader from "@/components/DashboardLoader";
 
 interface Appointment {
@@ -54,6 +62,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [clinicId, setClinicId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false); // Toggle Practitioner Form
+  const [showPractitioners, setShowPractitioners] = useState(false); // Toggle Practitioners Table
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // Toggle Sidebar
   const [metadata, setMetadata] = useState<{
     practitionerTypes: string[];
@@ -151,29 +160,60 @@ const Dashboard = () => {
           )}
         </Button>
 
+        {/* Appointments Toggle */}
+        <Button
+          variant="default"
+          className="w-full flex items-center gap-2"
+          onClick={() => {
+            setShowPractitioners(false);
+            setShowForm(false);
+          }}
+        >
+          <Calendar className="h-5 w-5" />
+          {!isSidebarCollapsed && <span>Appointments</span>}
+        </Button>
+
+        {/* Practitioners Toggle */}
+        <Button
+          variant="default"
+          className="w-full flex items-center gap-2"
+          onClick={() => {
+            setShowPractitioners(true);
+            setShowForm(false);
+          }}
+        >
+          <Stethoscope className="h-5 w-5" />
+          {!isSidebarCollapsed && <span>Practitioners</span>}
+        </Button>
+
         {/* Add Practitioner Toggle */}
-        {!isSidebarCollapsed && (
-          <>
-            <h2 className="text-xl font-semibold mb-4">Sidebar</h2>
-            <Button
-              variant="default"
-              className="w-full flex items-center gap-2"
-              onClick={() => setShowForm(!showForm)}
-            >
-              <UserPlus className="h-5 w-5" />
-              {showForm ? "Close Practitioner Form" : "Add Practitioner"}
-            </Button>
-            {showForm && clinicId && (
-              <div className="mt-4">
-                <PractitionerForm
-                  clinicId={clinicId}
-                  practitionerTypes={metadata.practitionerTypes}
-                  specializations={metadata.specializations}
-                  onClose={() => setShowForm(false)}
-                />
-              </div>
+        {showPractitioners && (
+          <Button
+            variant="default"
+            className="w-full flex items-center gap-2 mt-2"
+            onClick={() => {
+              setShowForm(!showForm);
+              setIsSidebarCollapsed(false); // Ensure sidebar is expanded
+            }}
+          >
+            <UserPlus className="h-5 w-5" />
+            {!isSidebarCollapsed && (
+              <span>
+                {showForm ? "Close Practitioner Form" : "Add Practitioner"}
+              </span>
             )}
-          </>
+          </Button>
+        )}
+
+        {showForm && clinicId && (
+          <div className="mt-4">
+            <PractitionerForm
+              clinicId={clinicId}
+              practitionerTypes={metadata.practitionerTypes}
+              specializations={metadata.specializations}
+              onClose={() => setShowForm(false)}
+            />
+          </div>
         )}
       </aside>
 
@@ -193,33 +233,50 @@ const Dashboard = () => {
           <p className="text-16-semibold">Admin Dashboard</p>
         </header>
 
-        {/* Stats Section */}
-        <section className="admin-stat">
-          <StatCard
-            type="appointments"
-            count={appointments.length}
-            label="Total Appointments"
-            icon="/assets/icons/appointments.svg"
-          />
-          <StatCard
-            type="pending"
-            count={appointments.filter((a) => a.status === "SCHEDULED").length}
-            label="Scheduled Appointments"
-            icon="/assets/icons/pending.svg"
-          />
-          <StatCard
-            type="cancelled"
-            count={appointments.filter((a) => a.status === "CANCELLED").length}
-            label="Cancelled Appointments"
-            icon="/assets/icons/cancelled.svg"
-          />
-        </section>
+        {!showPractitioners ? (
+          <>
+            <section className="w-full space-y-4">
+              <h1 className="header">Welcome 👋</h1>
+              <p className="text-dark-700">
+                Start the day with managing new appointments
+              </p>
+            </section>
+            {/* Stats Section */}
+            <section className="admin-stat">
+              <StatCard
+                type="appointments"
+                count={appointments.length}
+                label="Total Appointments"
+                icon="/assets/icons/appointments.svg"
+              />
+              <StatCard
+                type="pending"
+                count={
+                  appointments.filter((a) => a.status === "SCHEDULED").length
+                }
+                label="Scheduled Appointments"
+                icon="/assets/icons/pending.svg"
+              />
+              <StatCard
+                type="cancelled"
+                count={
+                  appointments.filter((a) => a.status === "CANCELLED").length
+                }
+                label="Cancelled Appointments"
+                icon="/assets/icons/cancelled.svg"
+              />
+            </section>
 
-        {/* Appointments Table */}
-        <section>
-          <h2 className="text-2xl font-bold mb-4">Recent Appointments</h2>
-          <DataTable columns={columns} data={appointments} />
-        </section>
+            {/* Appointments Table */}
+            <section>
+              <DataTable columns={columns} data={appointments} />
+            </section>
+          </>
+        ) : (
+          <section>
+            <PractitionerTable />
+          </section>
+        )}
       </main>
     </div>
   );
