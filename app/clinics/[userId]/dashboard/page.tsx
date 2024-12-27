@@ -10,6 +10,8 @@ import { DataTable } from "@/components/table/Datatable";
 import PractitionerForm from "@/components/forms/PractitionerForm";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, UserPlus } from "lucide-react";
+import DashboardLoader from "@/components/DashboardLoader";
 
 interface Appointment {
   id: number;
@@ -120,11 +122,11 @@ const Dashboard = () => {
    * ✅ Render Loading State
    */
   if (isLoading) {
-    return <p>🔄 Loading dashboard, please wait...</p>;
+    return <DashboardLoader text="Loading Dashboard, please wait..." />;
   }
 
   if (isValidSession === null) {
-    return <p>🔄 Validating session, please wait...</p>;
+    return <DashboardLoader text="Validating session, please wait..." />;
   }
 
   return (
@@ -139,10 +141,14 @@ const Dashboard = () => {
         {/* Toggle Sidebar Button */}
         <Button
           variant="ghost"
-          className="w-full flex justify-start"
+          className="w-full flex items-center justify-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         >
-          {isSidebarCollapsed ? "▶️" : "◀️"}
+          {isSidebarCollapsed ? (
+            <ChevronRight className="h-6 w-6" />
+          ) : (
+            <ChevronLeft className="h-6 w-6" />
+          )}
         </Button>
 
         {/* Add Practitioner Toggle */}
@@ -151,9 +157,10 @@ const Dashboard = () => {
             <h2 className="text-xl font-semibold mb-4">Sidebar</h2>
             <Button
               variant="default"
-              className="w-full"
+              className="w-full flex items-center gap-2"
               onClick={() => setShowForm(!showForm)}
             >
+              <UserPlus className="h-5 w-5" />
               {showForm ? "Close Practitioner Form" : "Add Practitioner"}
             </Button>
             {showForm && clinicId && (

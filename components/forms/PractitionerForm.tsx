@@ -6,9 +6,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import CustomFormField, { FormFieldType } from "../CustomFormField";
-import SubmitButton from "../submitButton";
 import { SelectItem } from "../ui/select";
 import { useToast } from "@/hooks/use-toast"; // Toast Hook
+import AddPractitionerButton from "@/components/AddPractitionerButton";
 
 // ✅ Validation Schema
 const PractitionerFormSchema = z.object({
@@ -174,9 +174,9 @@ const PractitionerForm = ({
         />
 
         {/* Submit Button with Loading State */}
-        <SubmitButton isLoading={isLoading} className="shad-primary-btn w-full">
+        <AddPractitionerButton isLoading={isLoading} className="w-full">
           Add Practitioner
-        </SubmitButton>
+        </AddPractitionerButton>
       </form>
     </Form>
   );
