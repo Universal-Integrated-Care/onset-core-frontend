@@ -65,7 +65,7 @@ const AppointmentForm = ({
    */
   const fetchPractitioners = async () => {
     try {
-      const response = await fetch(`/api/practitioners/${clinicId}`);
+      const response = await fetch(`/api/practitioners/clinics/${clinicId}`);
       if (!response.ok) throw new Error("Failed to fetch practitioners list");
       const data = await response.json();
       setPractitioners(data.practitioners || []);
