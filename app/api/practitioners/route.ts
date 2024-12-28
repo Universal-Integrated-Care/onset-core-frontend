@@ -159,3 +159,66 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  try {
+    const { id } = await params;
+
+    // ✅ Validate ID
+    if (!id) {
+      console.error("❌ Missing Practitioner ID");
+      return NextResponse.json(
+        { error: "Practitioner ID is required for deletion." },
+        { status: 400 },
+      );
+    }
+
+    console.log(`🛠️ Deleting Practitioner with ID: ${id}`);
+
+    // ✅ Check if practitioner exists
+    const existingPractitioner = await prisma.practitioners.findUnique({
+      where: { id: BigInt(id) },
+    });
+
+    if (!existingPractitioner) {
+      console.error("❌ Practitioner Not Found");
+      return NextResponse.json(
+        { error: "Practitioner not found." },
+        { status: 404 },
+      );
+    }
+
+    // ✅ Delete the practitioner
+    await prisma.practitioners.delete({
+      where: { id: BigInt(id) },
+    });
+
+    console.log(`✅ Practitioner with ID ${id} deleted successfully`);
+
+    return NextResponse.json(
+      { message: `Practitioner with ID ${id} deleted successfully.` },
+      { status: 200 },
+    );
+  } catch (error: any) {
+    console.error("❌ Error Deleting Practitioner:", error);
+
+    // Prisma-specific error handling
+    if (error.code === "P2025") {
+      return NextResponse.json(
+        { error: "Practitioner not found or already deleted." },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error: error.message || "Failed to delete practitioner.",
+        details: error,
+      },
+      { status: 500 },
+    );
+  }
+}
