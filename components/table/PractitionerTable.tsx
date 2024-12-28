@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/Datatable";
-import { practitionerColumns, Practitioner } from "./practitionerColumns";
+import { getPractitionerColumns, Practitioner } from "./practitionerColumns";
 import DashboardLoader from "@/components/DashboardLoader";
 
 interface PractitionerTableProps {
@@ -54,9 +54,28 @@ const PractitionerTable = ({ newPractitioner }: PractitionerTableProps) => {
   }, [newPractitioner]);
 
   /**
-   * ✅ Debug State
+   * ✅ Handle Delete Practitioner
    */
-  console.log("✅ Current Practitioners State:", practitioners);
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/practitioners/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete practitioner.");
+      }
+
+      console.log(`✅ Practitioner with ID ${id} deleted successfully`);
+
+      // Remove deleted practitioner from the state
+      setPractitioners((prev) => prev.filter((p) => p.id !== id));
+    } catch (error: any) {
+      console.error("❌ Error Deleting Practitioner:", error.message);
+      alert(`Error: ${error.message}`);
+    }
+  };
 
   /**
    * ✅ Render Loading State
@@ -71,10 +90,10 @@ const PractitionerTable = ({ newPractitioner }: PractitionerTableProps) => {
   return (
     <section>
       <h2 className="text-2xl font-bold mb-4">Practitioners</h2>
-      {/* ✅ Force re-render the DataTable */}
+      {/* ✅ Pass `handleDelete` to columns */}
       <DataTable
         key={practitioners.length}
-        columns={practitionerColumns}
+        columns={getPractitionerColumns(handleDelete)}
         data={practitioners}
       />
     </section>
