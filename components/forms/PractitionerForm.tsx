@@ -9,6 +9,7 @@ import CustomFormField, { FormFieldType } from "../CustomFormField";
 import { SelectItem } from "../ui/select";
 import { useToast } from "@/hooks/use-toast"; // Toast Hook
 import AddPractitionerButton from "@/components/AddPractitionerButton";
+import { Practitioner } from "../table/practitionerColumns";
 
 // ✅ Validation Schema
 const PractitionerFormSchema = z.object({
@@ -25,6 +26,7 @@ interface PractitionerFormProps {
   practitionerTypes: string[];
   specializations: string[];
   onClose: () => void;
+  onAdd: (newPractitioner: Practitioner) => void; // Add this prop
 }
 
 const PractitionerForm = ({
@@ -32,6 +34,7 @@ const PractitionerForm = ({
   practitionerTypes,
   specializations,
   onClose,
+  onAdd,
 }: PractitionerFormProps) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false); // ✅ Add Loading State
@@ -79,6 +82,7 @@ const PractitionerForm = ({
 
       const responseData = await response.json();
       console.log("✅ API Response Data:", responseData);
+      onAdd(responseData.practitioner);
 
       toast({
         title: "🎉 Practitioner Added",

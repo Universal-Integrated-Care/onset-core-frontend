@@ -20,6 +20,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import DashboardLoader from "@/components/DashboardLoader";
+import { Practitioner } from "@/components/table/practitionerColumns";
 
 interface Appointment {
   id: number;
@@ -68,6 +69,13 @@ const Dashboard = () => {
     practitionerTypes: string[];
     specializations: string[];
   }>({ practitionerTypes: [], specializations: [] });
+  const [newPractitioner, setNewPractitioner] = useState<
+    Practitioner | undefined
+  >(undefined);
+  const handleAddPractitioner = (practitioner: Practitioner) => {
+    setNewPractitioner(practitioner);
+    setShowForm(false); // Close the form after adding
+  };
 
   /**
    * ✅ Validate session and fetch appointments
@@ -137,6 +145,7 @@ const Dashboard = () => {
   if (isValidSession === null) {
     return <DashboardLoader text="Validating session, please wait..." />;
   }
+  console.log("✅ New Practitioner State in Dashboard:", newPractitioner);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -212,6 +221,7 @@ const Dashboard = () => {
               practitionerTypes={metadata.practitionerTypes}
               specializations={metadata.specializations}
               onClose={() => setShowForm(false)}
+              onAdd={handleAddPractitioner}
             />
           </div>
         )}
@@ -274,7 +284,7 @@ const Dashboard = () => {
           </>
         ) : (
           <section>
-            <PractitionerTable />
+            <PractitionerTable newPractitioner={newPractitioner} />
           </section>
         )}
       </main>
