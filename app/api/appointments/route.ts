@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
       updated_at: appointment.updated_at.toISOString(), // Ensure datetime is serialized
     }));
 
-    // ✅ Serialize BigInt fields
+    // ✅ Serialize serializeBigInt fields
     const serializedAppointments = serializeBigInt(mappedAppointments);
     console.log(
       "📊 Serialized Appointments with Names:",
@@ -89,10 +89,9 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/**
- * Create an Appointment
- */
 export async function POST(req: NextRequest) {
+  const db = prisma;
+
   try {
     // ✅ Parse the incoming JSON body
     const body = await req.json();
@@ -112,7 +111,10 @@ export async function POST(req: NextRequest) {
     // ✅ Validate Required Fields
     if (!patient_id || !clinic_id || !appointment_start_datetime || !duration) {
       return NextResponse.json(
-        { error: "Required fields are missing." },
+        {
+          error:
+            "Please ensure all required fields are provided: patient, clinic, appointment date & time, and duration.",
+        },
         { status: 400 },
       );
     }
@@ -120,17 +122,103 @@ export async function POST(req: NextRequest) {
     // ✅ Validate Appointment Status Enum
     if (!["SCHEDULED", "CANCELLED", "PENDING"].includes(status)) {
       return NextResponse.json(
-        { error: "Invalid status value." },
+        {
+          error:
+            "Invalid appointment status. Please choose between 'SCHEDULED', 'CANCELLED', or 'PENDING'.",
+        },
         { status: 400 },
       );
     }
 
+    // ✅ Batch Validation: Check if Patient, Clinic, and Practitioner exist
+    console.log("🔍 Validating patient, clinic, and practitioner IDs...");
+
+    const [patient, clinic, practitioner] = await Promise.all([
+      db.patients.findUnique({ where: { id: serializeBigInt(patient_id) } }),
+      db.clinics.findUnique({ where: { id: serializeBigInt(clinic_id) } }),
+      practitioner_id
+        ? db.practitioners.findUnique({
+            where: { id: serializeBigInt(practitioner_id) },
+          })
+        : Promise.resolve(null),
+    ]);
+    const isPatientRegistered = await db.patients.findFirst({
+      where: {
+        id: serializeBigInt(patient_id),
+        clinic_id: serializeBigInt(clinic_id),
+      },
+    });
+
+    if (!isPatientRegistered) {
+      return NextResponse.json(
+        {
+          error: `The selected patient (ID: ${patient_id}) is not registered with the specified clinic (ID: ${clinic_id}). Please register the patient first.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    console.log("✅ Patient is registered with the clinic.");
+
+    if (!patient) {
+      return NextResponse.json(
+        {
+          error: `The patient ID ${patient_id} does not exist. Please provide a valid patient ID.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    if (!clinic) {
+      return NextResponse.json(
+        {
+          error: `The clinic ID ${clinic_id} is not valid. Please check and try again.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    if (practitioner_id && !practitioner) {
+      return NextResponse.json(
+        {
+          error: `The practitioner ID ${practitioner_id} does not match any record. Please verify the ID.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    console.log("✅ Validation successful: IDs are valid.");
+
+    // ✅ Check for Duplicate Appointment
+    console.log("🔍 Checking for duplicate appointments...");
+    const existingAppointment = await db.patient_appointments.findFirst({
+      where: {
+        patient_id: serializeBigInt(patient_id),
+        clinic_id: serializeBigInt(clinic_id),
+        appointment_start_datetime: new Date(appointment_start_datetime),
+      },
+    });
+
+    if (existingAppointment) {
+      return NextResponse.json(
+        {
+          error: `An appointment already exists for the selected patient at this clinic on ${appointment_start_datetime}. Please choose a different time slot.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    console.log("✅ No duplicate appointment found. Proceeding with creation.");
+
     // ✅ Create Appointment
-    const appointment = await prisma.patient_appointments.create({
+    console.log("🛠️ Creating appointment...");
+    const appointment = await db.patient_appointments.create({
       data: {
-        patient_id: BigInt(patient_id),
-        clinic_id: BigInt(clinic_id),
-        practitioner_id: practitioner_id ? BigInt(practitioner_id) : null,
+        patient_id: serializeBigInt(patient_id),
+        clinic_id: serializeBigInt(clinic_id),
+        practitioner_id: practitioner_id
+          ? serializeBigInt(practitioner_id)
+          : null,
         appointment_start_datetime: new Date(appointment_start_datetime),
         duration: Number(duration),
         status,
@@ -141,7 +229,8 @@ export async function POST(req: NextRequest) {
     console.log("✅ Appointment Created:", appointment);
 
     // ✅ Fetch Detailed Appointment with Relational Data
-    const detailedAppointment = await prisma.patient_appointments.findUnique({
+    console.log("🔍 Fetching detailed appointment information...");
+    const detailedAppointment = await db.patient_appointments.findUnique({
       where: { id: appointment.id },
       include: {
         patients: {
@@ -161,7 +250,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!detailedAppointment) {
-      throw new Error("Failed to fetch detailed appointment data.");
+      throw new Error("Failed to retrieve appointment details after creation.");
     }
 
     // ✅ Map and serialize the detailed appointment data
@@ -185,7 +274,7 @@ export async function POST(req: NextRequest) {
       updated_at: detailedAppointment.updated_at.toISOString(),
     };
 
-    // ✅ Serialize BigInt fields
+    // ✅ Serialize serializeBigInt fields
     const serializedAppointment = serializeBigInt(mappedAppointment);
     console.log("🔄 Serialized Appointment Data:", serializedAppointment);
 
@@ -194,23 +283,29 @@ export async function POST(req: NextRequest) {
       (global as any).io.emit("new_appointment", serializedAppointment);
       console.log("📢 Emitted 'new_appointment' event via Socket.IO");
     } else {
-      console.warn("⚠️ Socket.IO not available in global scope.");
+      console.warn(
+        "⚠️ Real-time updates are unavailable. Socket.IO is not configured properly.",
+      );
     }
 
     return NextResponse.json(
       {
-        message: "Appointment created successfully.",
+        message: "Your appointment has been successfully created!",
         appointment: serializedAppointment,
       },
       { status: 201 },
     );
   } catch (error) {
     console.error("❌ Error creating appointment:", error);
+    await db.$disconnect();
     return NextResponse.json(
-      { error: "Internal server error while creating appointment." },
+      {
+        error:
+          "Something went wrong while creating your appointment. Please try again later.",
+      },
       { status: 500 },
     );
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }
