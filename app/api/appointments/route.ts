@@ -103,20 +103,14 @@ export async function POST(req: NextRequest) {
       practitioner_id,
       appointment_start_datetime,
       duration,
-      status,
       appointment_context,
+      status = "PENDING", // Default status
     } = body;
 
     console.log("📥 Received Data:", body);
 
     // ✅ Validate Required Fields
-    if (
-      !patient_id ||
-      !clinic_id ||
-      !appointment_start_datetime ||
-      !duration ||
-      !status
-    ) {
+    if (!patient_id || !clinic_id || !appointment_start_datetime || !duration) {
       return NextResponse.json(
         { error: "Required fields are missing." },
         { status: 400 },
@@ -146,9 +140,62 @@ export async function POST(req: NextRequest) {
 
     console.log("✅ Appointment Created:", appointment);
 
+    // ✅ Fetch Detailed Appointment with Relational Data
+    const detailedAppointment = await prisma.patient_appointments.findUnique({
+      where: { id: appointment.id },
+      include: {
+        patients: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+          },
+        },
+        practitioners: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!detailedAppointment) {
+      throw new Error("Failed to fetch detailed appointment data.");
+    }
+
+    // ✅ Map and serialize the detailed appointment data
+    const mappedAppointment = {
+      id: detailedAppointment.id,
+      patient_id: detailedAppointment.patients?.id || null,
+      patient: detailedAppointment.patients
+        ? `${detailedAppointment.patients.first_name} ${detailedAppointment.patients.last_name}`
+        : "Unknown Patient",
+      practitioner: detailedAppointment.practitioners
+        ? detailedAppointment.practitioners.name
+        : "Unknown Practitioner",
+      clinic_id: detailedAppointment.clinic_id,
+      appointment_start_datetime: detailedAppointment.appointment_start_datetime
+        ? detailedAppointment.appointment_start_datetime.toISOString()
+        : null,
+      duration: detailedAppointment.duration,
+      status: detailedAppointment.status,
+      appointment_context: detailedAppointment.appointment_context,
+      created_at: detailedAppointment.created_at.toISOString(),
+      updated_at: detailedAppointment.updated_at.toISOString(),
+    };
+
     // ✅ Serialize BigInt fields
-    const serializedAppointment = serializeBigInt(appointment);
+    const serializedAppointment = serializeBigInt(mappedAppointment);
     console.log("🔄 Serialized Appointment Data:", serializedAppointment);
+
+    // ✅ Emit event via Socket.IO
+    if ((global as any).io) {
+      (global as any).io.emit("new_appointment", serializedAppointment);
+      console.log("📢 Emitted 'new_appointment' event via Socket.IO");
+    } else {
+      console.warn("⚠️ Socket.IO not available in global scope.");
+    }
 
     return NextResponse.json(
       {

@@ -80,17 +80,21 @@ export function decryptKey(passkey: string) {
  * ✅ Helper Function to Serialize BigInt
  * Converts BigInt values to String to prevent JSON serialization errors.
  */
-export function serializeBigInt(obj: any): any {
-  if (typeof obj === "bigint") {
-    return obj.toString(); // Convert BigInt to String
-  }
+export function serializeBigInt(obj: any) {
   if (Array.isArray(obj)) {
     return obj.map(serializeBigInt);
-  }
-  if (typeof obj === "object" && obj !== null) {
-    return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [key, serializeBigInt(value)]),
-    );
+  } else if (obj !== null && typeof obj === "object") {
+    const serializedObj: any = {};
+    for (const key in obj) {
+      if (typeof obj[key] === "bigint") {
+        serializedObj[key] = obj[key].toString();
+      } else if (obj[key] instanceof Date) {
+        serializedObj[key] = obj[key].toISOString();
+      } else {
+        serializedObj[key] = serializeBigInt(obj[key]);
+      }
+    }
+    return serializedObj;
   }
   return obj;
 }

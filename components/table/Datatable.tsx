@@ -17,8 +17,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { getSocket } from "@/lib/socket"; // Ensure getSocket is correctly set up
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -39,6 +40,25 @@ export function DataTable<TData, TValue>({
       ),
     );
   };
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    // Listen for new appointments
+    socket.on("new_appointment", (newAppointment: TData) => {
+      console.log("🔄 New Appointment Received in DataTable:", newAppointment);
+      setData((prevData) => {
+        const exists = prevData.some(
+          (appointment: any) => appointment.id === (newAppointment as any).id,
+        );
+        return exists ? prevData : [newAppointment, ...prevData];
+      });
+    });
+
+    return () => {
+      socket.off("new_appointment");
+    };
+  }, [setData]);
 
   const table = useReactTable({
     data,
