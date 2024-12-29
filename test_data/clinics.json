@@ -1,0 +1,40 @@
+{
+  "clinics": [
+    {
+      "name": "Healthy Life Clinic",
+      "address": "123 Wellness Street",
+      "phone": "+1234567890",
+      "url": "https://healthylifeclinic.com",
+      "description": "A clinic specializing in holistic wellness.",
+      "clinic_type": ["GENERAL_PRACTICE"],
+      "clinic_context": "This clinic focuses on family healthcare.",
+      "opening_time": "09:00:00",
+      "closing_time": "17:00:00",
+      "days_opened": ["MONDAY", "TUESDAY", "FRIDAY"]
+    },
+    {
+      "name": "Epping Specialist Group",
+      "address": "42 Houston Street, Epping VIC 3076",
+      "phone": "+61391210550",
+      "url": "mailto:info@eppingspecialistgroup.com.au",
+      "description": "Located near The Northern Hospital and Epping Metro Station with free onsite parking.",
+      "clinic_type": ["SPECIALIST_CLINIC"],
+      "clinic_context": "Focused on specialized care and treatments for various health conditions.",
+      "opening_time": "09:00:00",
+      "closing_time": "17:00:00",
+      "days_opened": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]
+    },
+    {
+      "name": "Epping Medical & Wellness Hub",
+      "address": "Shop 10, 2 Lyndarum Drive, Epping Victoria 3076, Australia",
+      "phone": "+61394015118",
+      "url": "mailto:eppingmedicalandwellnesshub@gmail.com",
+      "description": "Located inside Epping North Shopping Centre. Free onsite parking available.",
+      "clinic_type": ["GENERAL_PRACTICE"],
+      "clinic_context": "This clinic focuses on family wellness and general practice.",
+      "opening_time": "09:00:00",
+      "closing_time": "17:00:00",
+      "days_opened": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]
+    }
+  ]
+}

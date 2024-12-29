@@ -41,3 +41,4 @@ npx prisma migrate dev --name init
 npx prisma generate
 npx prisma db push---> to push
 fly proxy 15432:5432 -a onsetcoredb
+npx tsx scripts/populateDatabase.ts

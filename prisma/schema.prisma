@@ -80,6 +80,8 @@ model practitioner_availability {
   updated_at      DateTime      @default(now()) @db.Timestamptz(6)
   clinics         clinics       @relation(fields: [clinic_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   practitioners   practitioners @relation(fields: [practitioner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  @@unique([practitioner_id, day_of_week], name: "practitioner_id_day_of_week" )
+@@unique([practitioner_id, date], name: "practitioner_id_date")
 }
 
 model practitioners {

@@ -1,0 +1,94 @@
+{
+  "practitioners": [
+    {
+      "name": "Dr. Wei Zhang",
+      "email": "weizhang@clinic1.com",
+      "phone": "+61411111111",
+      "practitioner_type": "GENERAL_PRACTITIONER",
+      "clinic_id": 1,
+      "bio": "A skilled general practitioner from China with expertise in family health.",
+      "practitioner_image_url": "https://example.com/images/wei_zhang.jpg",
+      "specialization": ["GENERAL_PRACTITIONER"]
+    },
+    {
+      "name": "Dr. Kavya Nair",
+      "email": "kavya.nair@clinic1.com",
+      "phone": "+61411111112",
+      "practitioner_type": "PHYSICIAN",
+      "clinic_id": 1,
+      "bio": "An Indian dermatologist specializing in skin care treatments.",
+      "practitioner_image_url": "https://example.com/images/kavya_nair.jpg",
+      "specialization": ["DERMATOLOGIST"]
+    },
+    {
+      "name": "Dr. Emily Carter",
+      "email": "emily.carter@clinic1.com",
+      "phone": "+61411111113",
+      "practitioner_type": "GENERAL_PRACTITIONER",
+      "clinic_id": 1,
+      "bio": "An Australian family doctor with a focus on preventive care.",
+      "practitioner_image_url": "https://example.com/images/emily_carter.jpg",
+      "specialization": ["GENERAL_PRACTITIONER"]
+    },
+    {
+      "name": "Dr. Ming Yu",
+      "email": "ming.yu@clinic2.com",
+      "phone": "+61422222221",
+      "practitioner_type": "SPECIALIST",
+      "clinic_id": 2,
+      "bio": "A Chinese cardiologist with extensive experience in heart health.",
+      "practitioner_image_url": "https://example.com/images/ming_yu.jpg",
+      "specialization": ["CARDIOLOGIST"]
+    },
+    {
+      "name": "Dr. Arjun Mehta",
+      "email": "arjun.mehta@clinic2.com",
+      "phone": "+61422222222",
+      "practitioner_type": "SPECIALIST",
+      "clinic_id": 2,
+      "bio": "An Indian neurologist specializing in brain disorders.",
+      "practitioner_image_url": "https://example.com/images/arjun_mehta.jpg",
+      "specialization": ["NEUROLOGIST"]
+    },
+    {
+      "name": "Dr. Hui Chen",
+      "email": "hui.chen@clinic2.com",
+      "phone": "+61422222223",
+      "practitioner_type": "GENERAL_PRACTITIONER",
+      "clinic_id": 2,
+      "bio": "A Chinese gynecologist with a focus on women's health.",
+      "practitioner_image_url": "https://example.com/images/hui_chen.jpg",
+      "specialization": ["GYNECOLOGIST"]
+    },
+    {
+      "name": "Dr. Li Wei",
+      "email": "li.wei@clinic3.com",
+      "phone": "+61433333331",
+      "practitioner_type": "SPECIALIST",
+      "clinic_id": 3,
+      "bio": "A Chinese endocrinologist with expertise in diabetes management.",
+      "practitioner_image_url": "https://example.com/images/li_wei.jpg",
+      "specialization": ["ENDOCRINOLOGIST"]
+    },
+    {
+      "name": "Dr. Priya Rao",
+      "email": "priya.rao@clinic3.com",
+      "phone": "+61433333332",
+      "practitioner_type": "SPECIALIST",
+      "clinic_id": 3,
+      "bio": "An Indian psychiatrist specializing in mental health awareness.",
+      "practitioner_image_url": "https://example.com/images/priya_rao.jpg",
+      "specialization": ["PSYCHIATRIST"]
+    },
+    {
+      "name": "Dr. Xiao Peng",
+      "email": "xiao.peng@clinic3.com",
+      "phone": "+61433333333",
+      "practitioner_type": "GENERAL_PRACTITIONER",
+      "clinic_id": 3,
+      "bio": "A Chinese specialist in dietary and nutritional counseling.",
+      "practitioner_image_url": "https://example.com/images/xiao_peng.jpg",
+      "specialization": ["DIETITIAN"]
+    }
+  ]
+}
