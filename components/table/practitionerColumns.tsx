@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "../ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import PractitionerAvailabilityModal from "@/components/PractitionerAvailabilityModal";
 
 // ✅ Define Practitioner Type
 export type Practitioner = {
@@ -13,6 +14,7 @@ export type Practitioner = {
   phone: string;
   practitioner_type: string;
   specialization: string;
+  clinic_id?: string; // Ensure we have clinic_id if needed
 };
 
 // ✅ Define Columns with `handleDelete`
@@ -60,9 +62,9 @@ export const getPractitionerColumns = (
         const { toast } = useToast();
         const [isDeleting, setIsDeleting] = useState(false);
 
+        // 🗑️ Handle Delete
         const handleDeleteClick = async () => {
           setIsDeleting(true);
-
           try {
             await handleDelete(row.original.id);
 
@@ -87,17 +89,53 @@ export const getPractitionerColumns = (
           }
         };
 
+        // Determine if you have clinic_id in row.original
+        const clinicId = (row.original as any).clinic_id || "";
+
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {/* 🗑️ Delete Button */}
             <Button
               variant="destructive"
               size="sm"
               onClick={handleDeleteClick}
               disabled={isDeleting}
-              className={"text-red-500"}
+              className="text-red-500"
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </Button>
+
+            {/* 📅 Recurring Availability */}
+            <PractitionerAvailabilityModal
+              type="recurring"
+              practitionerId={row.original.id}
+              clinicId={clinicId}
+              onUpdate={() => {
+                toast({
+                  title: "✅ Recurring Updated",
+                  description: `"${row.original.name}" recurring schedule updated successfully.`,
+                  variant: "default",
+                  className:
+                    "bg-blue-600 text-white p-4 rounded-lg shadow-md border border-blue-500",
+                });
+              }}
+            />
+
+            {/* 📅 Override Availability */}
+            <PractitionerAvailabilityModal
+              type="override"
+              practitionerId={row.original.id}
+              clinicId={clinicId}
+              onUpdate={() => {
+                toast({
+                  title: "✅ Override Updated",
+                  description: `"${row.original.name}" override availability updated successfully.`,
+                  variant: "default",
+                  className:
+                    "bg-blue-600 text-white p-4 rounded-lg shadow-md border border-blue-500",
+                });
+              }}
+            />
           </div>
         );
       },

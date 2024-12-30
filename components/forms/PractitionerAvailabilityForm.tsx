@@ -1,190 +1,217 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Calendar, Clock, CheckCircle, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import DashboardLoader from "@/components/DashboardLoader";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form } from "@/components/ui/form";
+import CustomFormField, { FormFieldType } from "../CustomFormField";
+import SubmitButton from "../submitButton";
+import { SelectItem } from "../ui/select";
+import { formatDateTimeToMelbourne } from "@/lib/utils";
 
-interface Slot {
-  id: string;
-  date: string;
-  start_time: string;
-  end_time: string;
-}
+/**
+ * ✅ Zod Validation Schema
+ * Ensures that time fields are non-empty strings and day_of_week or date is provided accordingly.
+ */
+const PractitionerAvailabilityFormSchema = z.object({
+  day_of_week: z.string().optional(), // Only for recurring
+  date: z.string().optional(), // Only for override
+  start_time: z.string().min(1, "Start time is required"),
+  end_time: z.string().min(1, "End time is required"),
+  is_available: z.boolean(),
+  is_blocked: z.boolean(),
+});
 
+/**
+ * ✅ Props
+ */
 interface PractitionerAvailabilityFormProps {
+  type: "recurring" | "override";
   practitionerId: string;
+  clinicId: string;
+  onClose: (updatedData?: any) => void;
 }
 
+/**
+ * ✅ PractitionerAvailabilityForm
+ */
 const PractitionerAvailabilityForm = ({
+  type,
   practitionerId,
+  clinicId,
+  onClose,
 }: PractitionerAvailabilityFormProps) => {
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    date: "",
-    start_time: "",
-    end_time: "",
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // ✅ React Hook Form with default values
+  const form = useForm<z.infer<typeof PractitionerAvailabilityFormSchema>>({
+    resolver: zodResolver(PractitionerAvailabilityFormSchema),
+    defaultValues: {
+      day_of_week: type === "recurring" ? "MONDAY" : undefined,
+      date: type === "override" ? new Date().toISOString() : undefined,
+      start_time: new Date().toISOString(), // Default start time
+      end_time: new Date().toISOString(), // Default end time
+      is_available: true,
+      is_blocked: false,
+    },
   });
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
 
-  // Fetch Slots
-  useEffect(() => {
-    const fetchSlots = async () => {
-      try {
-        const res = await fetch(
-          `/api/practitioners/${practitionerId}/availability`,
-        );
-        if (!res.ok) throw new Error("Failed to fetch slots");
-        const data = await res.json();
-        setSlots(data.slots || []);
-      } catch (error) {
-        setMessage({ type: "error", text: "Failed to load slots." });
-      } finally {
-        setIsLoading(false);
+  /**
+   * ✅ Submit Handler
+   */
+  const onSubmit = async (
+    values: z.infer<typeof PractitionerAvailabilityFormSchema>,
+  ) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Construct the payload
+      const payload: any = {
+        practitioner_id: Number(practitionerId),
+        start_time: formatDateTimeToMelbourne(
+          type === "override"
+            ? values.date!
+            : new Date().toISOString().split("T")[0],
+          values.start_time,
+        ),
+        end_time: formatDateTimeToMelbourne(
+          type === "override"
+            ? values.date!
+            : new Date().toISOString().split("T")[0],
+          values.end_time,
+        ),
+        is_available: values.is_available,
+        is_blocked: values.is_blocked,
+      };
+
+      if (type === "recurring") {
+        payload.day_of_week = values.day_of_week; // e.g., "MONDAY"
+      } else {
+        payload.date = values.date; // e.g., "2024-12-29"
       }
-    };
 
-    fetchSlots();
-  }, [practitionerId]);
+      console.log("📤 Payload to API:", payload);
 
-  // Add Slot
-  const handleAddSlot = async () => {
-    setMessage(null);
-    try {
-      const res = await fetch(
-        `/api/practitioners/${practitionerId}/availability`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        },
-      );
+      // ✅ Make POST Request to /api/practitioner/availability
+      const response = await fetch("/api/practitioner/availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-      if (!res.ok) throw new Error("Failed to add slot");
+      // Handle any error response
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Failed to update availability");
+      }
 
-      const newSlot = await res.json();
-      setSlots((prev) => [...prev, newSlot.slot]);
-      setMessage({ type: "success", text: "Slot added successfully." });
-      setFormData({ date: "", start_time: "", end_time: "" });
-    } catch (error) {
-      setMessage({ type: "error", text: "Failed to add slot." });
+      // Success feedback
+      const responseData = await response.json();
+      console.log("✅ Availability updated successfully:", responseData);
+
+      // If success, notify parent via onClose callback
+      onClose(responseData.availability);
+    } catch (err: any) {
+      console.error("❌ Error updating availability:", err.message);
+      setError(err.message || "Failed to update availability");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Remove Slot
-  const handleRemoveSlot = async (slotId: string) => {
-    setMessage(null);
-    try {
-      const res = await fetch(
-        `/api/practitioners/${practitionerId}/availability/${slotId}`,
-        {
-          method: "DELETE",
-        },
-      );
+  /**
+   * ✅ Render Loading & Error States
+   */
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        Updating availability...
+      </div>
+    );
+  }
+  if (error) {
+    return <div className="text-red-500 text-center">❌ {error}</div>;
+  }
 
-      if (!res.ok) throw new Error("Failed to remove slot");
-
-      setSlots((prev) => prev.filter((slot) => slot.id !== slotId));
-      setMessage({ type: "success", text: "Slot removed successfully." });
-    } catch (error) {
-      setMessage({ type: "error", text: "Failed to remove slot." });
-    }
-  };
-
+  /**
+   * ✅ Main Render
+   */
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Practitioner Availability</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <DashboardLoader text="Loading Availability Slots..." />
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Toggle fields for recurring vs override */}
+        {type === "recurring" ? (
+          <CustomFormField
+            fieldType={FormFieldType.SELECT}
+            control={form.control}
+            name="day_of_week"
+            label="Day of Week"
+          >
+            {[
+              "MONDAY",
+              "TUESDAY",
+              "WEDNESDAY",
+              "THURSDAY",
+              "FRIDAY",
+              "SATURDAY",
+              "SUNDAY",
+            ].map((day) => (
+              <SelectItem key={day} value={day}>
+                {day}
+              </SelectItem>
+            ))}
+          </CustomFormField>
         ) : (
-          <>
-            {/* Message Display */}
-            {message && (
-              <div
-                className={`p-2 mb-4 text-sm rounded-md ${
-                  message.type === "success"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {message.text}
-              </div>
-            )}
-
-            {/* Add Availability Form */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Add Availability</h2>
-              <div className="grid grid-cols-3 gap-4">
-                <Input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, date: e.target.value })
-                  }
-                  placeholder="Date"
-                />
-                <Input
-                  type="time"
-                  value={formData.start_time}
-                  onChange={(e) =>
-                    setFormData({ ...formData, start_time: e.target.value })
-                  }
-                  placeholder="Start Time"
-                />
-                <Input
-                  type="time"
-                  value={formData.end_time}
-                  onChange={(e) =>
-                    setFormData({ ...formData, end_time: e.target.value })
-                  }
-                  placeholder="End Time"
-                />
-              </div>
-              <Button onClick={handleAddSlot} className="mt-2">
-                Add Slot
-              </Button>
-            </div>
-
-            {/* Display Slots */}
-            <h2 className="text-lg font-semibold mt-6">Available Slots</h2>
-            {slots.length === 0 ? (
-              <p className="text-gray-500">No slots available.</p>
-            ) : (
-              <ul className="space-y-2 mt-4">
-                {slots.map((slot) => (
-                  <li
-                    key={slot.id}
-                    className="flex items-center justify-between p-2 border rounded-md"
-                  >
-                    <div>
-                      <p>
-                        📅 {slot.date} | ⏰ {slot.start_time} - {slot.end_time}
-                      </p>
-                    </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleRemoveSlot(slot.id)}
-                    >
-                      Remove
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
+          <CustomFormField
+            fieldType={FormFieldType.DATE_PICKER}
+            control={form.control}
+            name="date"
+            label="Override Date"
+            placeholder="Select a specific date"
+          />
         )}
-      </CardContent>
-    </Card>
+
+        {/* Start Time */}
+        <CustomFormField
+          fieldType={FormFieldType.TIME_PICKER}
+          control={form.control}
+          name="start_time"
+          label="Start Time"
+        />
+
+        {/* End Time */}
+        <CustomFormField
+          fieldType={FormFieldType.TIME_PICKER}
+          control={form.control}
+          name="end_time"
+          label="End Time"
+        />
+
+        {/* Available */}
+        <CustomFormField
+          fieldType={FormFieldType.CHECKBOX}
+          control={form.control}
+          name="is_available"
+          label="Available"
+        />
+
+        {/* Blocked */}
+        <CustomFormField
+          fieldType={FormFieldType.CHECKBOX}
+          control={form.control}
+          name="is_blocked"
+          label="Blocked"
+        />
+
+        {/* Submit */}
+        <SubmitButton isLoading={isLoading} className="w-full">
+          Save
+        </SubmitButton>
+      </form>
+    </Form>
   );
 };
 

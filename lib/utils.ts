@@ -172,7 +172,7 @@ export function extractDateFromMelbourneTime(datetime: string): string {
  * @param {string} datetime - The ISO datetime string.
  * @returns {string} - The day of the week in uppercase ENUM format.
  */
-export function getDayOfWeekEnum(datetime: string): string {
+export async function getDayOfWeekEnum(datetime: string): string {
   const melbourneTime = moment.tz(datetime, "Australia/Melbourne");
 
   if (!melbourneTime.isValid()) {
@@ -181,4 +181,17 @@ export function getDayOfWeekEnum(datetime: string): string {
 
   // Extract the day of the week and return in ENUM format
   return melbourneTime.format("dddd").toUpperCase();
+}
+
+/**
+ * ✅ Format Time to ISO with Melbourne Timezone
+ */
+export async function formatDateTimeToMelbourne(
+  date: string,
+  time: string,
+): string {
+  if (!date || !time) {
+    throw new Error("Both date and time must be provided.");
+  }
+  return convertToMelbourneTime(`${date}T${time}:00`);
 }
