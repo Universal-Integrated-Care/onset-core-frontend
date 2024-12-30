@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
     );
 
     // ✅ Step 7: Validate Day of Week Enum
-    const dayOfWeekEnum = getDayOfWeekEnum(appointment_start_datetime);
+    const dayOfWeekEnum = await getDayOfWeekEnum(appointment_start_datetime);
 
     console.log("📅 Appointment Date:", appointment_date);
     console.log("🕒 Appointment Start Time:", appointment_start_datetime);
