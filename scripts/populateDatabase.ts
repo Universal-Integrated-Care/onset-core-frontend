@@ -12,11 +12,7 @@ import {
   practitionertype,
   specialization,
 } from "@prisma/client";
-
-// Utility to convert string time to Date
-const parseTime = (time: string | null): Date | null => {
-  return time ? new Date(`1970-01-01T${time}Z`) : null;
-};
+import { convertToMelbourneTime } from "../lib/utils";
 
 // Enum validation
 const validateEnum = (value, enumObj) => {
@@ -39,8 +35,8 @@ async function populateDatabase() {
           url: clinic.url,
           description: clinic.description,
           clinic_context: clinic.clinic_context,
-          opening_time: parseTime(clinic.opening_time),
-          closing_time: parseTime(clinic.closing_time),
+          opening_time: convertToMelbourneTime(clinic.opening_time),
+          closing_time: convertToMelbourneTime(clinic.closing_time),
           clinic_type: clinic.clinic_type.map((type) =>
             validateEnum(type, clinictype),
           ),
@@ -101,8 +97,8 @@ async function populateDatabase() {
             ? validateEnum(slot.day_of_week, dayofweek)
             : null,
           date: slot.date ? new Date(slot.date) : null,
-          start_time: parseTime(slot.start_time),
-          end_time: parseTime(slot.end_time),
+          start_time: convertToMelbourneTime(slot.start_time),
+          end_time: convertToMelbourneTime(slot.end_time),
           is_available: slot.is_available,
         },
       });

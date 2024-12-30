@@ -8,8 +8,8 @@
       "description": "A clinic specializing in holistic wellness.",
       "clinic_type": ["GENERAL_PRACTICE"],
       "clinic_context": "This clinic focuses on family healthcare.",
-      "opening_time": "09:00:00",
-      "closing_time": "17:00:00",
+      "opening_time": "1900-01-01T09:00:00",
+      "closing_time": "1900-01-01T17:00:00",
       "days_opened": ["MONDAY", "TUESDAY", "FRIDAY"]
     },
     {
@@ -20,8 +20,8 @@
       "description": "Located near The Northern Hospital and Epping Metro Station with free onsite parking.",
       "clinic_type": ["SPECIALIST_CLINIC"],
       "clinic_context": "Focused on specialized care and treatments for various health conditions.",
-      "opening_time": "09:00:00",
-      "closing_time": "17:00:00",
+      "opening_time": "1900-01-01T09:00:00",
+      "closing_time": "1900-01-01T17:00:00",
       "days_opened": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]
     },
     {
@@ -32,8 +32,8 @@
       "description": "Located inside Epping North Shopping Centre. Free onsite parking available.",
       "clinic_type": ["GENERAL_PRACTICE"],
       "clinic_context": "This clinic focuses on family wellness and general practice.",
-      "opening_time": "09:00:00",
-      "closing_time": "17:00:00",
+      "opening_time": "1900-01-01T09:00:00",
+      "closing_time": "1900-01-01T17:00:00",
       "days_opened": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]
     }
   ]

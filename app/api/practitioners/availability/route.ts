@@ -1,10 +1,104 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
+import { convertToMelbourneTime } from "@/lib/utils";
+/**
+ * 📚 **Practitioner Availability API - POST**
+ *
+ * **Purpose:**
+ * Update a practitioner's availability for either a **specific date** (override) or a **recurring weekly schedule**.
+ *
+ * ---
+ *
+ * **Key Behavior:**
+ * 1️⃣ **One-Time Availability (Override):**
+ *    - Applies to a specific date (`date`) with `start_time` and `end_time`.
+ *    - Overrides recurring availability for that date.
+ *
+ * 2️⃣ **Recurring Availability:**
+ *    - Applies to a recurring day of the week (`day_of_week`).
+ *    - Used when no specific date is provided.
+ *
+ * ---
+ *
+ * **Required Fields:**
+ * - `practitioner_id`: Practitioner’s unique identifier.
+ * - `start_time`: Start time in `HH:MM:SS`.
+ * - `end_time`: End time in `HH:MM:SS`.
+ * - `is_available`: Boolean indicating availability.
+ * - `is_blocked`: Boolean indicating if the slot is blocked.
+ *
+ * **Optional (Choose One):**
+ * - `date`: For date-specific availability.
+ * - `day_of_week`: For recurring availability.
+ *
+ * ---
+ *
+ * **Example Payloads:**
+ * - **One-Time Availability:**
+ * ```json
+ * {
+ *   "practitioner_id": 1,
+ *   "date": "2024-12-29",
+ *   "start_time": "09:00:00",
+ *   "end_time": "11:00:00",
+ *   "is_available": true,
+ *   "is_blocked": false
+ * }
+ * ```
+ *
+ * - **Recurring Availability:**
+ * ```json
+ * {
+ *   "practitioner_id": 1,
+ *   "day_of_week": "MONDAY",
+ *   "start_time": "09:00:00",
+ *   "end_time": "11:00:00",
+ *   "is_available": true,
+ *   "is_blocked": false
+ * }
+ * ```
+ *
+ * ---
+ *
+ * **Response Example:**
+ * ```json
+ * {
+ *   "message": "One-time availability updated successfully.",
+ *   "availability": {
+ *     "id": 48,
+ *     "date": "2024-12-29",
+ *     "start_time": "09:00:00",
+ *     "end_time": "11:00:00",
+ *     "is_available": true,
+ *     "is_blocked": false
+ *   }
+ * }
+ * ```
+ *
+ * ---
+ *
+ * **How it Works:**
+ * 1. Validates required fields and time ranges.
+ * 2. Checks if the practitioner exists.
+ * 3. Updates or creates availability based on `date` or `day_of_week`.
+ * 4. Ensures no conflicts or overlaps occur.
+ * 5. Returns the updated availability details.
+ *
+ * ---
+ *
+ * **Quick Recap:**
+ * - Use `date` for specific overrides.
+ * - Use `day_of_week` for weekly recurring availability.
+ * - Both `is_available` and `is_blocked` cannot conflict logically.
+ */
 
 /**
- * Update Practitioner Availability
+ * 📚 **Practitioner Availability API - POST**
+ *
+ * Updates availability for either a **specific date** (override) or a **recurring weekly schedule**.
  */
+
 export async function POST(req: NextRequest) {
   const db = prisma;
 
@@ -19,6 +113,7 @@ export async function POST(req: NextRequest) {
       start_time,
       end_time,
       is_available,
+      is_blocked,
     } = body;
 
     console.log("📥 Received Availability Data:", body);
@@ -28,12 +123,13 @@ export async function POST(req: NextRequest) {
       !practitioner_id ||
       !start_time ||
       !end_time ||
-      is_available === undefined
+      is_available === undefined ||
+      is_blocked === undefined
     ) {
       return NextResponse.json(
         {
           error:
-            "Missing required fields: practitioner_id, start_time, end_time, and is_available.",
+            "Missing required fields: practitioner_id, start_time, end_time, is_available, and is_blocked.",
         },
         { status: 400 },
       );
@@ -47,27 +143,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Validate Time Parsing
-    const parsedStartTime = new Date(
-      Date.UTC(1970, 0, 1, ...start_time.split(":").map(Number)),
-    );
-    const parsedEndTime = new Date(
-      Date.UTC(1970, 0, 1, ...end_time.split(":").map(Number)),
-    );
+    // ✅ Validate Time Parsing with Melbourne Time
+    const parsedStartTime = convertToMelbourneTime(`1900-01-01T${start_time}`);
+    const parsedEndTime = convertToMelbourneTime(`1900-01-01T${end_time}`);
 
     console.log("Start Time:", parsedStartTime, "End Time:", parsedEndTime);
 
-    if (isNaN(parsedStartTime.getTime()) || isNaN(parsedEndTime.getTime())) {
-      return NextResponse.json(
-        {
-          error:
-            "Invalid start_time or end_time format. Use 'HH:MM:SS' (e.g., '09:00:00').",
-        },
-        { status: 400 },
-      );
-    }
-
-    if (parsedStartTime >= parsedEndTime) {
+    if (new Date(parsedStartTime) >= new Date(parsedEndTime)) {
       return NextResponse.json(
         { error: "start_time must be earlier than end_time." },
         { status: 400 },
@@ -127,33 +209,50 @@ export async function POST(req: NextRequest) {
 
     let availability;
 
-    // ✅ Handle One-Time Availability (Date Provided)
+    // ✅ Handle One-Time Availability (Override Availability)
     if (parsedDate) {
       console.log("🔄 Handling One-Time Availability Override...");
+
+      // Combine date with start_time and end_time for accurate datetime storage
+      const startDateTime = convertToMelbourneTime(`${date}T${start_time}`);
+      const endDateTime = convertToMelbourneTime(`${date}T${end_time}`);
+
+      console.log("🕒 Start DateTime:", startDateTime);
+      console.log("🕒 End DateTime:", endDateTime);
+
       availability = await db.practitioner_availability.upsert({
         where: {
           practitioner_id_date: {
             practitioner_id: serializeBigInt(practitioner_id),
             date: parsedDate,
+            start_time: new Date(startDateTime),
+            end_time: new Date(endDateTime),
           },
         },
         update: {
-          start_time: parsedStartTime,
-          end_time: parsedEndTime,
           is_available,
-          updated_at: new Date(),
+          is_blocked,
+          updated_at: convertToMelbourneTime(new Date().toISOString()),
         },
         create: {
-          practitioner_id: serializeBigInt(practitioner_id),
-          clinic_id: serializeBigInt(clinic_id),
           date: parsedDate,
-          start_time: parsedStartTime,
-          end_time: parsedEndTime,
+          start_time: new Date(startDateTime),
+          end_time: new Date(endDateTime),
           is_available,
+          is_blocked,
+          day_of_week: null,
+          created_at: convertToMelbourneTime(new Date().toISOString()),
+          updated_at: convertToMelbourneTime(new Date().toISOString()),
+          clinics: {
+            connect: { id: serializeBigInt(clinic_id) }, // Explicit connection to clinic
+          },
+          practitioners: {
+            connect: { id: serializeBigInt(practitioner_id) }, // Explicit connection to practitioner
+          },
         },
       });
     }
-    // ✅ Handle Recurring Availability (Day of Week Provided)
+    // ✅ Handle Recurring Availability (Day of Week)
     else if (day_of_week) {
       console.log("🔄 Handling Recurring Availability...");
       availability = await db.practitioner_availability.upsert({
@@ -167,7 +266,8 @@ export async function POST(req: NextRequest) {
           start_time: parsedStartTime,
           end_time: parsedEndTime,
           is_available,
-          updated_at: new Date(),
+          is_blocked,
+          updated_at: convertToMelbourneTime(new Date().toISOString()),
         },
         create: {
           practitioner_id: serializeBigInt(practitioner_id),
@@ -176,6 +276,9 @@ export async function POST(req: NextRequest) {
           start_time: parsedStartTime,
           end_time: parsedEndTime,
           is_available,
+          is_blocked,
+          created_at: convertToMelbourneTime(new Date().toISOString()),
+          updated_at: convertToMelbourneTime(new Date().toISOString()),
         },
       });
     }
@@ -216,3 +319,32 @@ export async function POST(req: NextRequest) {
     await db.$disconnect();
   }
 }
+//Sample payloads
+//Case when date is provided and marking availability for a specific date
+// {
+//   "practitioner_id": 1,
+//   "date": "2024-12-29",
+//   "start_time": "09:00:00",
+//   "end_time": "11:00:00",
+//   "is_available": true,
+//   "is_blocked": false
+// }
+//Case when day_of_week is provided and marking availability for a recurring day of the week
+// {
+//   "practitioner_id": 1,
+//   "day_of_week": "MONDAY",
+//   "start_time": "09:00:00",
+//   "end_time": "11:00:00",
+//   "is_available": true,
+//   "is_blocked": false
+// }
+//Case when date is provided and marking blockage for a specific date
+//is_available is set to null and is_blocked is set to true to mark the slot as blocked(by admin)
+// {
+//   "practitioner_id": 1,
+//   "date": "2024-12-31",
+//   "start_time": "09:00:00",
+//   "end_time": "17:00:00",
+//   "is_available": null,
+//   "is_blocked": true
+// }

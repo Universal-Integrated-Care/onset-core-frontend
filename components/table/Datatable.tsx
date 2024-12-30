@@ -6,6 +6,8 @@ import {
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
 } from "@tanstack/react-table";
 
 import {
@@ -31,6 +33,7 @@ export function DataTable<TData, TValue>({
   data: initialData,
 }: DataTableProps<TData, TValue>) {
   const [data, setData] = useState(initialData);
+  const [globalFilter, setGlobalFilter] = useState("");
 
   // ✅ Update a specific row in the table
   const handleRowUpdate = (updatedRow: Partial<TData>, rowId: string) => {
@@ -65,10 +68,22 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      globalFilter,
+    },
+    onGlobalFilterChange: setGlobalFilter,
   });
 
   return (
     <div className="data-table">
+      <input
+        value={globalFilter ?? ""}
+        onChange={(e) => setGlobalFilter(e.target.value)}
+        placeholder="Search all columns..."
+        className="mb-4 p-2 border rounded"
+      />
       <Table className="shad-table">
         <TableHeader className="bg-dark-200">
           {table.getHeaderGroups().map((headerGroup) => (

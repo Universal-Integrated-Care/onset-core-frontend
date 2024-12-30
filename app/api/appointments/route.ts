@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
+import {
+  validateRequiredFields,
+  validateEntities,
+  checkDuplicateAppointment,
+  validatePractitionerAvailability,
+  updatePractitionerAvailability,
+  createAppointment,
+  validatePatientPractitionerClinicAssociation,
+  fetchAppointmentDetails,
+} from "@/lib/appointmentUtils";
+
+import {
+  calculateAppointmentEndTime,
+  validateISODateTime,
+  getDayOfWeekEnum,
+  convertToMelbourneTime,
+  extractDateFromMelbourneTime,
+} from "@/lib/utils";
 
 /**
  * Fetch Appointments by Clinic ID with Patient & Practitioner Details
@@ -89,204 +107,108 @@ export async function GET(req: NextRequest) {
   }
 }
 
+/**
+ * Main POST Function
+ */
 export async function POST(req: NextRequest) {
   const db = prisma;
 
   try {
-    // ✅ Parse the incoming JSON body
     const body = await req.json();
-
     const {
       patient_id,
       clinic_id,
       practitioner_id,
-      appointment_start_datetime,
+      appointment_start_datetime: original_appointment_start_datetime,
       duration,
-      appointment_context,
-      status = "PENDING", // Default status
     } = body;
 
-    console.log("📥 Received Data:", body);
+    // Step 1: Validate required fields
+    await validateRequiredFields(body);
 
-    // ✅ Validate Required Fields
-    if (!patient_id || !clinic_id || !appointment_start_datetime || !duration) {
-      return NextResponse.json(
-        {
-          error:
-            "Please ensure all required fields are provided: patient, clinic, appointment date & time, and duration.",
-        },
-        { status: 400 },
+    //Step 2: Validate ISO Datetime
+    await validateISODateTime(original_appointment_start_datetime);
+
+    //Step 4: Calculate appointment end datetime
+    const appointment_end_datetime = await calculateAppointmentEndTime(
+      original_appointment_start_datetime,
+      duration,
+    );
+
+    // ✅ Step 5: Convert appointment_start_datetime to Melbourne Time
+    const appointment_start_datetime = await convertToMelbourneTime(
+      original_appointment_start_datetime,
+    );
+
+    // ✅ Step 6: Extract date from Melbourne Time
+    const appointment_date = await extractDateFromMelbourneTime(
+      appointment_start_datetime,
+    );
+
+    // ✅ Step 7: Validate Day of Week Enum
+    const dayOfWeekEnum = getDayOfWeekEnum(appointment_start_datetime);
+
+    console.log("📅 Appointment Date:", appointment_date);
+    console.log("🕒 Appointment Start Time:", appointment_start_datetime);
+    console.log("🕒 Appointment End Time:", appointment_end_datetime);
+    console.log("📅 Day of the Week:", dayOfWeekEnum);
+
+    // ✅ Wrap booking logic in a transaction
+    const appointment = await db.$transaction(async (prisma) => {
+      // Step 2: Validate entities
+      await validateEntities(prisma, patient_id, clinic_id, practitioner_id);
+
+      // Step 3: Check for duplicate appointments
+      await checkDuplicateAppointment(
+        prisma,
+        patient_id,
+        clinic_id,
+        appointment_start_datetime,
       );
-    }
 
-    // ✅ Validate Appointment Status Enum
-    if (!["SCHEDULED", "CANCELLED", "PENDING"].includes(status)) {
-      return NextResponse.json(
-        {
-          error:
-            "Invalid appointment status. Please choose between 'SCHEDULED', 'CANCELLED', or 'PENDING'.",
-        },
-        { status: 400 },
+      // Step 4: Validate Practitioner Availability
+      await validatePractitionerAvailability(
+        prisma,
+        practitioner_id,
+        appointment_start_datetime,
+        appointment_end_datetime,
+        appointment_date,
+        dayOfWeekEnum,
+        duration,
       );
-    }
+      // Step 5: Validate Practitioner and patient in Same clinic
+      await validatePatientPractitionerClinicAssociation(
+        db,
+        patient_id,
+        practitioner_id,
+        clinic_id,
+      );
 
-    // ✅ Batch Validation: Check if Patient, Clinic, and Practitioner exist
-    console.log("🔍 Validating patient, clinic, and practitioner IDs...");
+      // Step 5: Update Practitioner Availability
+      await updatePractitionerAvailability(
+        prisma,
+        practitioner_id,
+        clinic_id,
+        appointment_start_datetime,
+        appointment_end_datetime,
+      );
 
-    const [patient, clinic, practitioner] = await Promise.all([
-      db.patients.findUnique({ where: { id: serializeBigInt(patient_id) } }),
-      db.clinics.findUnique({ where: { id: serializeBigInt(clinic_id) } }),
-      practitioner_id
-        ? db.practitioners.findUnique({
-            where: { id: serializeBigInt(practitioner_id) },
-          })
-        : Promise.resolve(null),
-    ]);
-    const isPatientRegistered = await db.patients.findFirst({
-      where: {
-        id: serializeBigInt(patient_id),
-        clinic_id: serializeBigInt(clinic_id),
-      },
+      // Step 6: Create the appointment
+      return await createAppointment(
+        prisma,
+        body,
+        practitioner_id,
+        appointment_start_datetime,
+      );
     });
 
-    if (!isPatientRegistered) {
-      return NextResponse.json(
-        {
-          error: `The selected patient (ID: ${patient_id}) is not registered with the specified clinic (ID: ${clinic_id}). Please register the patient first.`,
-        },
-        { status: 400 },
-      );
-    }
+    // Step 7: Fetch detailed appointment
+    const mappedAppointment = await fetchAppointmentDetails(db, appointment.id);
 
-    console.log("✅ Patient is registered with the clinic.");
-
-    if (!patient) {
-      return NextResponse.json(
-        {
-          error: `The patient ID ${patient_id} does not exist. Please provide a valid patient ID.`,
-        },
-        { status: 400 },
-      );
-    }
-
-    if (!clinic) {
-      return NextResponse.json(
-        {
-          error: `The clinic ID ${clinic_id} is not valid. Please check and try again.`,
-        },
-        { status: 400 },
-      );
-    }
-
-    if (practitioner_id && !practitioner) {
-      return NextResponse.json(
-        {
-          error: `The practitioner ID ${practitioner_id} does not match any record. Please verify the ID.`,
-        },
-        { status: 400 },
-      );
-    }
-
-    console.log("✅ Validation successful: IDs are valid.");
-
-    // ✅ Check for Duplicate Appointment
-    console.log("🔍 Checking for duplicate appointments...");
-    const existingAppointment = await db.patient_appointments.findFirst({
-      where: {
-        patient_id: serializeBigInt(patient_id),
-        clinic_id: serializeBigInt(clinic_id),
-        appointment_start_datetime: new Date(appointment_start_datetime),
-      },
-    });
-
-    if (existingAppointment) {
-      return NextResponse.json(
-        {
-          error: `An appointment already exists for the selected patient at this clinic on ${appointment_start_datetime}. Please choose a different time slot.`,
-        },
-        { status: 400 },
-      );
-    }
-
-    console.log("✅ No duplicate appointment found. Proceeding with creation.");
-
-    // ✅ Create Appointment
-    console.log("🛠️ Creating appointment...");
-    const appointment = await db.patient_appointments.create({
-      data: {
-        patient_id: serializeBigInt(patient_id),
-        clinic_id: serializeBigInt(clinic_id),
-        practitioner_id: practitioner_id
-          ? serializeBigInt(practitioner_id)
-          : null,
-        appointment_start_datetime: new Date(appointment_start_datetime),
-        duration: Number(duration),
-        status,
-        appointment_context: appointment_context || null,
-      },
-    });
-
-    console.log("✅ Appointment Created:", appointment);
-
-    // ✅ Fetch Detailed Appointment with Relational Data
-    console.log("🔍 Fetching detailed appointment information...");
-    const detailedAppointment = await db.patient_appointments.findUnique({
-      where: { id: appointment.id },
-      include: {
-        patients: {
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-          },
-        },
-        practitioners: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-    });
-
-    if (!detailedAppointment) {
-      throw new Error("Failed to retrieve appointment details after creation.");
-    }
-
-    // ✅ Map and serialize the detailed appointment data
-    const mappedAppointment = {
-      id: detailedAppointment.id,
-      patient_id: detailedAppointment.patients?.id || null,
-      patient: detailedAppointment.patients
-        ? `${detailedAppointment.patients.first_name} ${detailedAppointment.patients.last_name}`
-        : "Unknown Patient",
-      practitioner: detailedAppointment.practitioners
-        ? detailedAppointment.practitioners.name
-        : "Unknown Practitioner",
-      clinic_id: detailedAppointment.clinic_id,
-      appointment_start_datetime: detailedAppointment.appointment_start_datetime
-        ? detailedAppointment.appointment_start_datetime.toISOString()
-        : null,
-      duration: detailedAppointment.duration,
-      status: detailedAppointment.status,
-      appointment_context: detailedAppointment.appointment_context,
-      created_at: detailedAppointment.created_at.toISOString(),
-      updated_at: detailedAppointment.updated_at.toISOString(),
-    };
-
-    // ✅ Serialize serializeBigInt fields
+    // Step 8: Serialize appointment data
     const serializedAppointment = serializeBigInt(mappedAppointment);
-    console.log("🔄 Serialized Appointment Data:", serializedAppointment);
 
-    // ✅ Emit event via Socket.IO
-    if ((global as any).io) {
-      (global as any).io.emit("new_appointment", serializedAppointment);
-      console.log("📢 Emitted 'new_appointment' event via Socket.IO");
-    } else {
-      console.warn(
-        "⚠️ Real-time updates are unavailable. Socket.IO is not configured properly.",
-      );
-    }
+    console.log("✅ Serialized Appointment Data:", serializedAppointment);
 
     return NextResponse.json(
       {
@@ -295,15 +217,11 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error creating appointment:", error);
-    await db.$disconnect();
     return NextResponse.json(
-      {
-        error:
-          "Something went wrong while creating your appointment. Please try again later.",
-      },
-      { status: 500 },
+      { error: error.message || "An unexpected error occurred." },
+      { status: 400 },
     );
   } finally {
     await db.$disconnect();

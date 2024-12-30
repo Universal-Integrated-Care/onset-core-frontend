@@ -1,6 +1,21 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+import moment from "moment-timezone";
+/**
+ * Converts a timestamp to Australia/Melbourne time.
+ * @param {string} timestamp - The input timestamp in ISO format (e.g., "2024-01-01T12:00:00Z").
+ * @returns {string} - Converted timestamp in Australia/Melbourne timezone.
+ */
+export function convertToMelbourneTime(timestamp) {
+  if (!timestamp) {
+    throw new Error("Timestamp is required");
+  }
+
+  const melbourneTime = moment.tz(timestamp, "Australia/Melbourne");
+  return melbourneTime.toISOString(true);
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -97,4 +112,73 @@ export function serializeBigInt(obj: any) {
     return serializedObj;
   }
   return obj;
+}
+
+export async function validateISODateTime(datetime: string): void {
+  if (!moment(datetime, moment.ISO_8601, true).isValid()) {
+    throw new Error(
+      "Invalid appointment_start_datetime format. Use ISO format: 'YYYY-MM-DDTHH:MM:SSZ' or with timezone offset.",
+    );
+  }
+}
+
+/**
+ * Calculates the end time of an appointment given the start time and duration.
+ * @param {string} startDatetime - Start time in ISO format.
+ * @param {number} durationInMinutes - Duration of the appointment in minutes.
+ * @returns {string} - End time in ISO format adjusted to Melbourne timezone.
+ */
+export async function calculateAppointmentEndTime(
+  startDatetime: string,
+  durationInMinutes: number,
+): string {
+  if (!durationInMinutes || durationInMinutes <= 0) {
+    throw new Error("Duration must be a positive number.");
+  }
+
+  // Convert start time to Melbourne timezone
+  const startTime = moment.tz(startDatetime, "Australia/Melbourne");
+
+  if (!startTime.isValid()) {
+    throw new Error("Invalid startDatetime provided for end time calculation.");
+  }
+
+  // Add duration
+  const endTime = startTime.clone().add(durationInMinutes, "minutes");
+
+  return endTime.toISOString(true); // Preserve Melbourne timezone offset
+}
+
+/**
+ * Extracts only the date from a datetime string in Melbourne timezone.
+ * @param {string} datetime - The ISO datetime string to extract the date from.
+ * @returns {string} - The date in 'YYYY-MM-DD' format.
+ */
+export function extractDateFromMelbourneTime(datetime: string): string {
+  const melbourneTime = moment.tz(datetime, "Australia/Melbourne");
+
+  if (!melbourneTime.isValid()) {
+    throw new Error("Invalid datetime provided for date extraction.");
+  }
+
+  // Extract only the date portion
+  return melbourneTime.format("YYYY-MM-DD");
+}
+
+/**
+ * Extracts the day of the week in ENUM format (e.g., MONDAY, TUESDAY)
+ * from a datetime string in Melbourne timezone.
+ *
+ * @param {string} datetime - The ISO datetime string.
+ * @returns {string} - The day of the week in uppercase ENUM format.
+ */
+export function getDayOfWeekEnum(datetime: string): string {
+  const melbourneTime = moment.tz(datetime, "Australia/Melbourne");
+
+  if (!melbourneTime.isValid()) {
+    throw new Error("Invalid datetime provided for day extraction.");
+  }
+
+  // Extract the day of the week and return in ENUM format
+  return melbourneTime.format("dddd").toUpperCase();
 }

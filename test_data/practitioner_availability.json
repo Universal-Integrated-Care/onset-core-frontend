@@ -4,8 +4,8 @@
     "clinic_id": 1,
     "day_of_week": "MONDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -13,8 +13,8 @@
     "clinic_id": 1,
     "day_of_week": "TUESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -22,8 +22,8 @@
     "clinic_id": 1,
     "day_of_week": "WEDNESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -31,8 +31,8 @@
     "clinic_id": 1,
     "day_of_week": "THURSDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -40,8 +40,26 @@
     "clinic_id": 1,
     "day_of_week": "FRIDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 1,
+    "clinic_id": 1,
+    "day_of_week": "SATURDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 1,
+    "clinic_id": 1,
+    "day_of_week": "SUNDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -49,8 +67,8 @@
     "clinic_id": 1,
     "day_of_week": "MONDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -58,8 +76,8 @@
     "clinic_id": 1,
     "day_of_week": "TUESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -67,8 +85,8 @@
     "clinic_id": 1,
     "day_of_week": "WEDNESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -76,8 +94,8 @@
     "clinic_id": 1,
     "day_of_week": "THURSDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -85,8 +103,26 @@
     "clinic_id": 1,
     "day_of_week": "FRIDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 2,
+    "clinic_id": 1,
+    "day_of_week": "SATURDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 2,
+    "clinic_id": 1,
+    "day_of_week": "SUNDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -94,8 +130,8 @@
     "clinic_id": 1,
     "day_of_week": "MONDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -103,8 +139,8 @@
     "clinic_id": 1,
     "day_of_week": "TUESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -112,8 +148,8 @@
     "clinic_id": 1,
     "day_of_week": "WEDNESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -121,8 +157,8 @@
     "clinic_id": 1,
     "day_of_week": "THURSDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -130,8 +166,26 @@
     "clinic_id": 1,
     "day_of_week": "FRIDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 3,
+    "clinic_id": 1,
+    "day_of_week": "SATURDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 3,
+    "clinic_id": 1,
+    "day_of_week": "SUNDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -139,8 +193,8 @@
     "clinic_id": 2,
     "day_of_week": "MONDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -148,8 +202,8 @@
     "clinic_id": 2,
     "day_of_week": "TUESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -157,8 +211,8 @@
     "clinic_id": 2,
     "day_of_week": "WEDNESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -166,8 +220,8 @@
     "clinic_id": 2,
     "day_of_week": "THURSDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -175,8 +229,26 @@
     "clinic_id": 2,
     "day_of_week": "FRIDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 4,
+    "clinic_id": 2,
+    "day_of_week": "SATURDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 4,
+    "clinic_id": 2,
+    "day_of_week": "SUNDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -184,8 +256,8 @@
     "clinic_id": 2,
     "day_of_week": "MONDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -193,8 +265,8 @@
     "clinic_id": 2,
     "day_of_week": "TUESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -202,8 +274,8 @@
     "clinic_id": 2,
     "day_of_week": "WEDNESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -211,8 +283,8 @@
     "clinic_id": 2,
     "day_of_week": "THURSDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -220,8 +292,26 @@
     "clinic_id": 2,
     "day_of_week": "FRIDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 5,
+    "clinic_id": 2,
+    "day_of_week": "SATURDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 5,
+    "clinic_id": 2,
+    "day_of_week": "SUNDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -229,8 +319,8 @@
     "clinic_id": 2,
     "day_of_week": "MONDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -238,8 +328,8 @@
     "clinic_id": 2,
     "day_of_week": "TUESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -247,8 +337,8 @@
     "clinic_id": 2,
     "day_of_week": "WEDNESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -256,8 +346,8 @@
     "clinic_id": 2,
     "day_of_week": "THURSDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -265,8 +355,26 @@
     "clinic_id": 2,
     "day_of_week": "FRIDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 6,
+    "clinic_id": 2,
+    "day_of_week": "SATURDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 6,
+    "clinic_id": 2,
+    "day_of_week": "SUNDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -274,8 +382,8 @@
     "clinic_id": 3,
     "day_of_week": "MONDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -283,8 +391,8 @@
     "clinic_id": 3,
     "day_of_week": "TUESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -292,8 +400,8 @@
     "clinic_id": 3,
     "day_of_week": "WEDNESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -301,8 +409,8 @@
     "clinic_id": 3,
     "day_of_week": "THURSDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -310,8 +418,26 @@
     "clinic_id": 3,
     "day_of_week": "FRIDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 7,
+    "clinic_id": 3,
+    "day_of_week": "SATURDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 7,
+    "clinic_id": 3,
+    "day_of_week": "SUNDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -319,8 +445,8 @@
     "clinic_id": 3,
     "day_of_week": "MONDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -328,8 +454,8 @@
     "clinic_id": 3,
     "day_of_week": "TUESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -337,8 +463,8 @@
     "clinic_id": 3,
     "day_of_week": "WEDNESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -346,8 +472,8 @@
     "clinic_id": 3,
     "day_of_week": "THURSDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -355,8 +481,26 @@
     "clinic_id": 3,
     "day_of_week": "FRIDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 8,
+    "clinic_id": 3,
+    "day_of_week": "SATURDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 8,
+    "clinic_id": 3,
+    "day_of_week": "SUNDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -364,8 +508,8 @@
     "clinic_id": 3,
     "day_of_week": "MONDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -373,8 +517,8 @@
     "clinic_id": 3,
     "day_of_week": "TUESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -382,8 +526,8 @@
     "clinic_id": 3,
     "day_of_week": "WEDNESDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -391,8 +535,8 @@
     "clinic_id": 3,
     "day_of_week": "THURSDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   },
   {
@@ -400,8 +544,26 @@
     "clinic_id": 3,
     "day_of_week": "FRIDAY",
     "date": null,
-    "start_time": "09:00:00",
-    "end_time": "17:00:00",
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 9,
+    "clinic_id": 3,
+    "day_of_week": "SATURDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
+    "is_available": true
+  },
+  {
+    "practitioner_id": 9,
+    "clinic_id": 3,
+    "day_of_week": "SUNDAY",
+    "date": null,
+    "start_time": "1900-01-01T09:00:00",
+    "end_time": "1900-01-01T17:00:00",
     "is_available": true
   }
 ]

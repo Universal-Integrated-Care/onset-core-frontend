@@ -27,11 +27,15 @@ export const columns: ColumnDef<Appointment>[] = [
   {
     accessorKey: "patient",
     header: "Patient",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => <p className="text-14-medium">{row.original.patient}</p>,
   },
   {
     accessorKey: "status",
     header: "Status",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => (
       <div className="min-w-[115px]">
         <StatusBadge status={row.original.status} />
@@ -41,6 +45,8 @@ export const columns: ColumnDef<Appointment>[] = [
   {
     accessorKey: "appointment_start_datetime",
     header: "Appointment Time",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => (
       <p className="text-14-regular min-w-[100px]">
         {formatDateTime(row.original.appointment_start_datetime).dateTime}
@@ -50,6 +56,8 @@ export const columns: ColumnDef<Appointment>[] = [
   {
     accessorKey: "practitioner",
     header: "Doctor",
+    enableSorting: true,
+    enableColumnFilter: true,
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
         <Image
