@@ -9,6 +9,7 @@ import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "../submitButton";
 import { SelectItem } from "../ui/select";
 import { formatDateTimeToMelbourne } from "@/lib/utils";
+import moment from "moment";
 
 /**
  * ✅ Zod Validation Schema
@@ -16,9 +17,9 @@ import { formatDateTimeToMelbourne } from "@/lib/utils";
  */
 const PractitionerAvailabilityFormSchema = z.object({
   day_of_week: z.string().optional(), // Only for recurring
-  date: z.string().optional(), // Only for override
-  start_time: z.string().min(1, "Start time is required"),
-  end_time: z.string().min(1, "End time is required"),
+  date: z.date().optional(), // Use Date for override
+  start_time: z.date(), // Use Date for start time
+  end_time: z.date(), // Use Date for end time
   is_available: z.boolean(),
   is_blocked: z.boolean(),
 });
@@ -50,9 +51,12 @@ const PractitionerAvailabilityForm = ({
     resolver: zodResolver(PractitionerAvailabilityFormSchema),
     defaultValues: {
       day_of_week: type === "recurring" ? "MONDAY" : undefined,
-      date: type === "override" ? new Date().toISOString() : undefined,
-      start_time: new Date().toISOString(), // Default start time
-      end_time: new Date().toISOString(), // Default end time
+      date:
+        type === "override"
+          ? new Date().toISOString().split("T")[0]
+          : undefined,
+      start_time: new Date(), // Keep as Date object
+      end_time: new Date(), // Keep as Date object
       is_available: true,
       is_blocked: false,
     },
@@ -69,34 +73,26 @@ const PractitionerAvailabilityForm = ({
 
     try {
       // Construct the payload
+      // Construct the payload
       const payload: any = {
         practitioner_id: Number(practitionerId),
-        start_time: formatDateTimeToMelbourne(
-          type === "override"
-            ? values.date!
-            : new Date().toISOString().split("T")[0],
-          values.start_time,
-        ),
-        end_time: formatDateTimeToMelbourne(
-          type === "override"
-            ? values.date!
-            : new Date().toISOString().split("T")[0],
-          values.end_time,
-        ),
+        start_time: moment(values.start_time).format("HH:mm"), // Format to time string
+        end_time: moment(values.end_time).format("HH:mm"), // Format to time string
         is_available: values.is_available,
         is_blocked: values.is_blocked,
       };
+      console.log("📤 Payload to API:", payload);
 
       if (type === "recurring") {
         payload.day_of_week = values.day_of_week; // e.g., "MONDAY"
       } else {
-        payload.date = values.date; // e.g., "2024-12-29"
+        payload.date = moment(values.date).format("YYYY-MM-DD"); // Format date to string
       }
 
       console.log("📤 Payload to API:", payload);
 
       // ✅ Make POST Request to /api/practitioner/availability
-      const response = await fetch("/api/practitioner/availability", {
+      const response = await fetch("/api/practitioners/availability", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -166,11 +162,11 @@ const PractitionerAvailabilityForm = ({
           </CustomFormField>
         ) : (
           <CustomFormField
-            fieldType={FormFieldType.DATE_PICKER}
+            fieldType={FormFieldType.PRACTITIONER_DATE_PICKER}
             control={form.control}
             name="date"
-            label="Override Date"
-            placeholder="Select a specific date"
+            label="Select Date"
+            placeholder="YYYY-MM-DD"
           />
         )}
 

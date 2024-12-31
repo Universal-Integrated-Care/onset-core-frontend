@@ -30,6 +30,7 @@ export enum FormFieldType {
   TIME_PICKER = "timePicker",
   SELECT = "select",
   SKELETON = "skeleton",
+  PRACTITIONER_DATE_PICKER = "practitionerDatePicker", // ✅ Add new type
 }
 
 interface CustomProps {
@@ -149,6 +150,32 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
               timeCaption="Time"
               placeholderText={props.placeholder}
               wrapperClassName="date-picker"
+            />
+          </FormControl>
+        </div>
+      );
+    case FormFieldType.PRACTITIONER_DATE_PICKER:
+      return (
+        <div className="flex rounded-md border border-dark-500 bg-dark-400">
+          <Image
+            src="/assets/icons/calendar.svg"
+            height={24}
+            width={24}
+            alt="calendar"
+            className="ml-2"
+          />
+          <FormControl>
+            <DatePicker
+              selected={
+                field.value instanceof Date
+                  ? field.value
+                  : new Date(field.value)
+              }
+              onChange={(date) => field.onChange(date)}
+              dateFormat="yyyy-MM-dd" // Ensures only the date is shown
+              placeholderText={props.placeholder}
+              wrapperClassName="date-picker"
+              className="shad-input border-0"
             />
           </FormControl>
         </div>
