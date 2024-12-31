@@ -26,11 +26,13 @@ import { getSocket } from "@/lib/socket"; // Ensure getSocket is correctly set u
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  clinicId: string; // ✅ Add clinicId
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data: initialData,
+  clinicId,
 }: DataTableProps<TData, TValue>) {
   const [data, setData] = useState(initialData);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -47,9 +49,16 @@ export function DataTable<TData, TValue>({
   useEffect(() => {
     const socket = getSocket();
 
-    // Listen for new appointments
+    // ✅ Join the clinic-specific room
+    const clinic_id = clinicId; // Replace with dynamic clinic_id if available
+    socket.emit("joinClinic", clinic_id);
+
+    // ✅ Listen for clinic-specific appointments
     socket.on("newAppointment", (newAppointment: TData) => {
-      console.log("🔄 New Appointment Received in DataTable:", newAppointment);
+      console.log(
+        `🔄 New Appointment Received in Clinic ${clinic_id}:`,
+        newAppointment,
+      );
       setData((prevData) => {
         const exists = prevData.some(
           (appointment: any) => appointment.id === (newAppointment as any).id,

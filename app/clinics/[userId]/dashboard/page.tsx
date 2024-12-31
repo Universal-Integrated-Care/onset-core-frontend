@@ -279,7 +279,11 @@ const Dashboard = () => {
 
             {/* Appointments Table */}
             <section>
-              <DataTable columns={columns} data={appointments} />
+              <DataTable
+                columns={columns}
+                data={appointments}
+                clinicId={clinicId?.toString()}
+              />
             </section>
           </>
         ) : (

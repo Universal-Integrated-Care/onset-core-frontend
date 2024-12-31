@@ -30,6 +30,12 @@ async function startServer() {
     io.on("connection", (socket) => {
       console.log("✅ Client connected via Socket.IO");
 
+      // Listen for clinic-specific room join
+      socket.on("joinClinic", (clinic_id) => {
+        socket.join(`clinic_${clinic_id}`);
+        console.log(`🏥 Client joined room: clinic_${clinic_id}`);
+      });
+
       socket.on("ping", () => {
         console.log("🏓 Received ping from client");
         socket.emit("pong", "🏓 Pong from server!");

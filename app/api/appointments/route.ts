@@ -209,9 +209,21 @@ export async function POST(req: NextRequest) {
     const serializedAppointment = serializeBigInt(mappedAppointment);
     // ✅ Emit event via Socket.IO
     // ✅ Emit event via Socket.IO
+    // if ((global as any).io) {
+    //   (global as any).io.emit("newAppointment", serializedAppointment);
+    //   console.log("📢 Emitted 'newAppointment' event via Socket.IO");
+    // } else {
+    //   console.warn("⚠️ Socket.IO not available in global scope.");
+    // }
+
+    // ✅ Emit event via Socket.IO to a specific clinic room
     if ((global as any).io) {
-      (global as any).io.emit("newAppointment", serializedAppointment);
-      console.log("📢 Emitted 'newAppointment' event via Socket.IO");
+      (global as any).io
+        .to(`clinic_${clinic_id}`)
+        .emit("newAppointment", serializedAppointment);
+      console.log(
+        `📢 Emitted 'newAppointment' to clinic_${clinic_id} via Socket.IO`,
+      );
     } else {
       console.warn("⚠️ Socket.IO not available in global scope.");
     }
