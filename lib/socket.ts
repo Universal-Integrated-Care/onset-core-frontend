@@ -1,11 +1,13 @@
+// /lib/socket.ts
 import { io, Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
 
-export const getSocket = () => {
+export const getSocket = (): Socket => {
   if (!socket) {
-    socket = io("http://localhost:3000", {
-      path: "/api/socket", // Ensure this matches the server path
+    socket = io({
+      path: "/api/socket", // Must match the server path
+      transports: ["websocket"], // Force WebSocket for better performance
     });
 
     socket.on("connect", () => {
@@ -14,6 +16,10 @@ export const getSocket = () => {
 
     socket.on("disconnect", () => {
       console.log("❌ Disconnected from Socket.IO server");
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("❌ Connection Error:", err.message);
     });
   }
 

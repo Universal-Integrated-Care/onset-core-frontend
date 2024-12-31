@@ -48,7 +48,7 @@ export function DataTable<TData, TValue>({
     const socket = getSocket();
 
     // Listen for new appointments
-    socket.on("new_appointment", (newAppointment: TData) => {
+    socket.on("newAppointment", (newAppointment: TData) => {
       console.log("🔄 New Appointment Received in DataTable:", newAppointment);
       setData((prevData) => {
         const exists = prevData.some(
@@ -59,7 +59,7 @@ export function DataTable<TData, TValue>({
     });
 
     return () => {
-      socket.off("new_appointment");
+      socket.off("newAppointment");
     };
   }, [setData]);
 
