@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
-  matcher: ["/clinics/:id/dashboard"],
+  matcher: ["/clinics/:id/dashboard", "/api/practitioners"],
   runtime: "nodejs", // Ensure Node.js runtime
 };
 
@@ -10,7 +10,7 @@ export async function middleware(req: NextRequest) {
 
   console.log("🔑 Token from cookie:", token);
 
-  const protectedRoutes = ["/clinics/:id/dashboard"];
+  const protectedRoutes = ["/clinics/:id/dashboard", "/api/practitioners"];
   const isProtectedRoute = protectedRoutes.some((path) =>
     new RegExp(`^${path.replace(":id", "\\d+")}$`).test(req.nextUrl.pathname),
   );

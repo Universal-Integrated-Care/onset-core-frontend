@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
+import { getSession } from "@/lib/session";
 
 /**
- * Fetch all practitioners
+ * Fetch practitioners for the user's clinic only
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    // ✅ Validate Session
+    const session = await getSession(req);
+    if (!session || !session.user || !session.user.clinic_id) {
+      return NextResponse.json(
+        { error: "Unauthorized. Please log in." },
+        { status: 401 },
+      );
+    }
+
+    const userClinicId = session.user.clinic_id;
+
+    // ✅ Fetch Practitioners by Clinic ID
     const practitioners = await prisma.practitioners.findMany({
+      where: {
+        clinic_id: userClinicId, // Enforces clinic-specific data
+      },
       select: {
         id: true,
         name: true,
@@ -27,7 +43,6 @@ export async function GET() {
     );
   }
 }
-
 /**
  * Add a new Practitioner
  */
