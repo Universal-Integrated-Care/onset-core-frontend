@@ -51,8 +51,8 @@ const PractitionerAvailabilityModal = ({
         <DialogHeader>
           <DialogTitle>
             {type === "recurring"
-              ? "Recurring Availability"
-              : "Override Availability"}
+              ? "Set Recurring Availability"
+              : "Block Availability"}
           </DialogTitle>
           <DialogDescription>
             {type === "recurring"

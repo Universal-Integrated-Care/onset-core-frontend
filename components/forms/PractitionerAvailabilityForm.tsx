@@ -20,8 +20,6 @@ const PractitionerAvailabilityFormSchema = z.object({
   date: z.date().optional(), // Use Date for override
   start_time: z.date(), // Use Date for start time
   end_time: z.date(), // Use Date for end time
-  is_available: z.boolean(),
-  is_blocked: z.boolean(),
 });
 
 /**
@@ -57,8 +55,6 @@ const PractitionerAvailabilityForm = ({
           : undefined,
       start_time: new Date(), // Keep as Date object
       end_time: new Date(), // Keep as Date object
-      is_available: true,
-      is_blocked: false,
     },
   });
 
@@ -78,15 +74,17 @@ const PractitionerAvailabilityForm = ({
         practitioner_id: Number(practitionerId),
         start_time: moment(values.start_time).format("HH:mm"), // Format to time string
         end_time: moment(values.end_time).format("HH:mm"), // Format to time string
-        is_available: values.is_available,
-        is_blocked: values.is_blocked,
       };
       console.log("📤 Payload to API:", payload);
 
       if (type === "recurring") {
         payload.day_of_week = values.day_of_week; // e.g., "MONDAY"
+        payload.is_available = true;
+        payload.is_blocked = null;
       } else {
         payload.date = moment(values.date).format("YYYY-MM-DD"); // Format date to string
+        payload.is_blocked = true;
+        payload.is_available = null;
       }
 
       console.log("📤 Payload to API:", payload);
@@ -186,24 +184,11 @@ const PractitionerAvailabilityForm = ({
           label="End Time"
         />
 
-        {/* Available */}
-        <CustomFormField
-          fieldType={FormFieldType.CHECKBOX}
-          control={form.control}
-          name="is_available"
-          label="Available"
-        />
-
-        {/* Blocked */}
-        <CustomFormField
-          fieldType={FormFieldType.CHECKBOX}
-          control={form.control}
-          name="is_blocked"
-          label="Blocked"
-        />
-
         {/* Submit */}
-        <SubmitButton isLoading={isLoading} className="w-full">
+        <SubmitButton
+          isLoading={isLoading}
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md shadow-md transition-colors"
+        >
           Save
         </SubmitButton>
       </form>
