@@ -126,18 +126,27 @@ const PractitionerCalendar = () => {
 
         // Map blocked slots
         const blockedEvents = blockedData.blockedSlots.map(
-          (slot: BlockedSlot) => ({
-            id: slot.id,
-            title: `🚫 Blocked Slot`,
-            start: slot.start_time,
-            end: slot.end_time,
-            backgroundColor: "#d1d5db",
-            borderColor: "#6b7280",
-            textColor: "#1f2937",
-            extendedProps: {
-              status: "Blocked",
-            },
-          }),
+          (slot: BlockedSlot) => {
+            const startTime = new Date(slot.start_time);
+            const endTime = new Date(slot.end_time);
+            const duration = Math.round(
+              (endTime.getTime() - startTime.getTime()) / 60000,
+            ); // Duration in minutes
+
+            return {
+              id: slot.id,
+              title: `🚫 Blocked Slot`,
+              start: slot.start_time,
+              end: slot.end_time,
+              backgroundColor: "#d1d5db",
+              borderColor: "#6b7280",
+              textColor: "#1f2937",
+              extendedProps: {
+                status: "Blocked",
+                duration: duration,
+              },
+            };
+          },
         );
 
         setEvents([...appointmentEvents, ...blockedEvents]);
@@ -152,13 +161,21 @@ const PractitionerCalendar = () => {
   }, [selectedPractitioner]);
 
   // Tooltip Handlers
+  // Tooltip Handlers
   const handleMouseEnter = (info: any) => {
     const { patientId, duration, status } = info.event.extendedProps;
+    let tooltipContent = `📝 Status: ${status}\n⏱ Duration: ${duration || "N/A"} mins`;
+
+    // Exclude patientId for Blocked events
+    if (status !== "Blocked" && patientId) {
+      tooltipContent = `📝 Status: ${status}\n👤 Patient: ${patientId}\n⏱ Duration: ${
+        duration || "N/A"
+      } mins`;
+    }
+
     setTooltip({
       visible: true,
-      content: `📝 Status: ${status}\n👤 Patient: ${patientId || "N/A"}\n⏱ Duration: ${
-        duration || "N/A"
-      } mins`,
+      content: tooltipContent,
       x: info.jsEvent.clientX,
       y: info.jsEvent.clientY,
     });
