@@ -12,6 +12,13 @@
     "dev:server": "npx tsx server.ts"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.7.2",
+    "@fullcalendar/bootstrap": "^6.1.15",
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
     "@hookform/resolvers": "^3.9.1",
     "@prisma/adapter-pg": "^6.1.0",
     "@prisma/client": "^6.0.1",
@@ -30,6 +37,7 @@
     "@types/pdfjs-dist": "^2.10.377",
     "@types/uuid": "^10.0.0",
     "bcrypt": "^5.1.1",
+    "bootstrap": "^5.3.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",

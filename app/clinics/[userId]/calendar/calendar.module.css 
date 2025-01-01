@@ -1,0 +1,44 @@
+/* Calendar Container with Rounded Edges */
+.calendar-container {
+  @apply border border-dark-500 rounded-xl overflow-hidden shadow-xl bg-dark-400 p-4;
+}
+
+/* Calendar Header Styling */
+.fc-header-toolbar {
+  @apply bg-dark-500 text-light-200 rounded-t-xl p-3;
+}
+
+/* Calendar Body Styling */
+.fc-view {
+  @apply rounded-b-xl overflow-hidden;
+}
+
+/* Calendar Event Styling */
+.fc-event {
+  @apply rounded-md shadow-md text-sm px-2 py-1;
+}
+
+/* Event Colors */
+.event-pending {
+  background-color: #fef3c7;
+  border-color: #facc15;
+  color: #111827;
+}
+
+.event-scheduled {
+  background-color: #dbeafe;
+  border-color: #3b82f6;
+  color: #111827;
+}
+
+.event-cancelled {
+  background-color: #fee2e2;
+  border-color: #ef4444;
+  color: #111827;
+}
+
+.event-blocked {
+  background-color: #d1d5db;
+  border-color: #6b7280;
+  color: #1f2937;
+}

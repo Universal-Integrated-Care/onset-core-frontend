@@ -194,6 +194,21 @@ const Dashboard = () => {
           <Stethoscope className="h-5 w-5" />
           {!isSidebarCollapsed && <span>Practitioners</span>}
         </Button>
+        {/* Practitioner Calendar Toggle */}
+        <Button
+          variant="default"
+          className="w-full flex items-center gap-2"
+          onClick={() => {
+            if (clinicId) {
+              router.push(`/clinics/${clinicId}/calendar`);
+            } else {
+              console.warn("⚠️ Clinic ID is not available.");
+            }
+          }}
+        >
+          <Calendar className="h-5 w-5" />
+          {!isSidebarCollapsed && <span>Practitioner Calendar</span>}
+        </Button>
 
         {/* Add Practitioner Toggle */}
         {showPractitioners && (

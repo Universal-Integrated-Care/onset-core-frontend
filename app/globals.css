@@ -348,3 +348,93 @@
 .PhoneInputInput::placeholder {
   color: #1a1d21;
 }
+
+/* Base Calendar Styles */
+.fc {
+  --fc-border-color: #374151; /* Gray-700 border */
+  --fc-daygrid-event-dot-width: 8px;
+  --fc-event-bg-color: #1e3a8a; /* Dark blue for events */
+  --fc-event-border-color: #1e3a8a;
+  --fc-event-text-color: #ffffff;
+  --fc-bg-event-opacity: 0.9;
+  --fc-button-bg-color: #1e3a8a; /* Buttons in toolbar */
+  --fc-button-border-color: #1e3a8a;
+  --fc-button-hover-bg-color: #2563eb;
+  --fc-button-hover-border-color: #2563eb;
+  --fc-button-text-color: #ffffff;
+}
+
+/* Toolbar Header */
+.fc-toolbar {
+  background-color: #1f2937; /* Gray-800 */
+  color: #e5e7eb; /* Gray-200 */
+  border-radius: 6px;
+  padding: 8px;
+}
+
+/* Days Grid */
+.fc-daygrid-day {
+  background-color: #1e293b; /* Gray-900 */
+  color: #e5e7eb; /* Gray-200 */
+  border: 1px solid #374151; /* Gray-700 */
+}
+
+/* Month & Day Headers */
+.fc-col-header-cell {
+  background-color: #374151; /* Gray-700 */
+  color: #e5e7eb; /* Gray-200 */
+  font-weight: 600;
+}
+
+/* Active Day Highlight */
+.fc-day-today {
+  background-color: #2563eb !important; /* Blue-600 */
+  border: 1px solid #1e3a8a; /* Darker Blue */
+}
+
+/* Event Title Text */
+.fc-event-title {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Tooltip Hover for Events */
+.fc-event:hover {
+  opacity: 0.95;
+  cursor: pointer;
+}
+
+/* Calendar Buttons */
+.fc-button {
+  background-color: #1e3a8a !important; /* Blue-800 */
+  border: 1px solid #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* Calendar Button Hover */
+.fc-button:hover {
+  background-color: #2563eb !important; /* Blue-600 */
+  border-color: #2563eb !important;
+}
+
+/* Dark Mode Legend */
+.legend {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #e5e7eb;
+}
+
+.legend div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend span {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
