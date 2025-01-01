@@ -15,6 +15,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 import React from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import BlockSlotsForm from "@/components/forms/BlockSlotsForm";
+import { Button } from "@/components/ui/button";
+import { io, Socket } from "socket.io-client";
 
 interface Practitioner {
   id: string;
@@ -47,6 +49,8 @@ const PractitionerCalendar = () => {
     useState<Practitioner | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [patients, setPatients] = useState<any[]>([]);
 
   // Tooltip State
   const [tooltip, setTooltip] = useState<{
@@ -94,10 +98,11 @@ const PractitionerCalendar = () => {
         const blockedData = await blockedRes.json();
 
         // Map appointments
+        // While Mapping Appointments
         const appointmentEvents = appointmentsData.appointments.map(
           (appt: Appointment) => ({
             id: appt.id,
-            title: `👤 Patient ID: ${appt.patient_id}`,
+            title: `👤 ${patientMap[appt.patient_id] || "Unknown Patient"}`,
             start: appt.appointment_start_datetime,
             end: new Date(
               new Date(appt.appointment_start_datetime).getTime() +
@@ -117,11 +122,6 @@ const PractitionerCalendar = () => {
                   ? "#3b82f6"
                   : "#ef4444",
             textColor: "#111827",
-            extendedProps: {
-              patientId: appt.patient_id,
-              duration: appt.duration,
-              status: appt.status,
-            },
           }),
         );
 
@@ -160,6 +160,27 @@ const PractitionerCalendar = () => {
 
     fetchCalendarData();
   }, [selectedPractitioner]);
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const res = await fetch(`/api/patients`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch patients.");
+        }
+        const data = await res.json();
+        setPatients(data.patients || []);
+      } catch (error) {
+        console.error("❌ Error fetching patients:", error);
+      }
+    };
+
+    fetchPatients();
+  }, []);
+
+  const patientMap = Object.fromEntries(
+    patients.map((p: any) => [p.id, `${p.first_name} ${p.last_name}`]),
+  );
 
   // Tooltip Handlers
   // Tooltip Handlers
@@ -212,6 +233,22 @@ const PractitionerCalendar = () => {
           </SelectContent>
         </Select>
       </div>
+      {/* Block Slots Button */}
+      <Button
+        className="w-full"
+        onClick={() => setIsFormVisible(!isFormVisible)}
+      >
+        {isFormVisible ? "Hide Block Slots Form" : "Show Block Slots Form"}
+      </Button>
+      {/* Block Slots Form */}
+      {isFormVisible && (
+        <BlockSlotsForm
+          apiUrl={`/api/practitioners/${selectedPractitioner?.id}/blocked`}
+          onClose={() => setIsFormVisible(false)}
+        />
+      )}
+
+      {/* Block Slots Form */}
       {/* Calendar */}
       {selectedPractitioner && !isLoading && (
         <>
@@ -229,6 +266,12 @@ const PractitionerCalendar = () => {
               eventMouseEnter={handleMouseEnter}
               eventMouseLeave={handleMouseLeave}
               height="auto"
+              eventTimeFormat={{
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true, // ✅ Ensures 12-hour format
+                meridiem: "short", // ✅ Display AM/PM
+              }}
             />
           </div>
 
@@ -248,13 +291,6 @@ const PractitionerCalendar = () => {
           )}
         </>
       )}
-      <BlockSlotsForm
-        apiUrl={`/api/practitioners/${selectedPractitioner?.id}/blocked`}
-        onClose={() => {
-          console.log("Form Closed");
-          // Optionally refresh calendar data here
-        }}
-      />
     </div>
   );
 };
