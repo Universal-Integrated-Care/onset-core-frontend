@@ -47,6 +47,14 @@ const PractitionerCalendar = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Tooltip State
+  const [tooltip, setTooltip] = useState<{
+    visible: boolean;
+    content: string;
+    x: number;
+    y: number;
+  }>({ visible: false, content: "", x: 0, y: 0 });
+
   // Fetch practitioners from API
   useEffect(() => {
     const fetchPractitioners = async () => {
@@ -97,10 +105,10 @@ const PractitionerCalendar = () => {
             status: appt.status,
             backgroundColor:
               appt.status === "PENDING"
-                ? "#fef3c7" // Light Yellow
+                ? "#fef3c7"
                 : appt.status === "SCHEDULED"
-                  ? "#dbeafe" // Light Blue
-                  : "#fee2e2", // Light Red
+                  ? "#dbeafe"
+                  : "#fee2e2",
             borderColor:
               appt.status === "PENDING"
                 ? "#facc15"
@@ -108,6 +116,11 @@ const PractitionerCalendar = () => {
                   ? "#3b82f6"
                   : "#ef4444",
             textColor: "#111827",
+            extendedProps: {
+              patientId: appt.patient_id,
+              duration: appt.duration,
+              status: appt.status,
+            },
           }),
         );
 
@@ -118,9 +131,12 @@ const PractitionerCalendar = () => {
             title: `🚫 Blocked Slot`,
             start: slot.start_time,
             end: slot.end_time,
-            backgroundColor: "#d1d5db", // Light Gray
+            backgroundColor: "#d1d5db",
             borderColor: "#6b7280",
             textColor: "#1f2937",
+            extendedProps: {
+              status: "Blocked",
+            },
           }),
         );
 
@@ -135,8 +151,25 @@ const PractitionerCalendar = () => {
     fetchCalendarData();
   }, [selectedPractitioner]);
 
+  // Tooltip Handlers
+  const handleMouseEnter = (info: any) => {
+    const { patientId, duration, status } = info.event.extendedProps;
+    setTooltip({
+      visible: true,
+      content: `📝 Status: ${status}\n👤 Patient: ${patientId || "N/A"}\n⏱ Duration: ${
+        duration || "N/A"
+      } mins`,
+      x: info.jsEvent.clientX,
+      y: info.jsEvent.clientY,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip({ visible: false, content: "", x: 0, y: 0 });
+  };
+
   return (
-    <div className="p-6 space-y-6 bg-gray-900 text-gray-200 rounded-lg shadow-md">
+    <div className="p-6 space-y-6 bg-gray-900 text-gray-200 rounded-lg shadow-md relative">
       <h1 className="text-3xl font-bold text-gray-100 flex items-center gap-2">
         Practitioner Calendar 📅
       </h1>
@@ -162,32 +195,6 @@ const PractitionerCalendar = () => {
         </Select>
       </div>
 
-      {/* Selected Practitioner Info */}
-      {selectedPractitioner && (
-        <div className="border border-gray-700 rounded-md bg-gray-800 p-4 shadow-lg">
-          <h2 className="text-xl font-semibold text-gray-100">
-            {selectedPractitioner.name}
-          </h2>
-          <p className="text-sm text-gray-300">
-            <strong>Email:</strong> {selectedPractitioner.email}
-          </p>
-          <p className="text-sm text-gray-300">
-            <strong>Phone:</strong> {selectedPractitioner.phone}
-          </p>
-          <p className="text-sm text-gray-300">
-            <strong>Specialization:</strong>{" "}
-            {selectedPractitioner.specialization.join(", ")}
-          </p>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {isLoading && (
-        <p className="text-center text-sm text-gray-400">
-          Loading calendar data...
-        </p>
-      )}
-
       {/* Calendar */}
       {selectedPractitioner && !isLoading && (
         <>
@@ -202,29 +209,26 @@ const PractitionerCalendar = () => {
               }}
               events={events}
               editable={false}
-              eventClick={(info) => alert(`Event: ${info.event.title}`)}
-              eventMouseEnter={(info) => {
-                info.el.title = `Status: ${info.event.extendedProps.status}`;
-              }}
+              eventMouseEnter={handleMouseEnter}
+              eventMouseLeave={handleMouseLeave}
               height="auto"
             />
           </div>
 
-          {/* Legend */}
-          <div className="legend">
-            <div>
-              <span className="bg-yellow-400"></span> Pending
+          {/* Tooltip */}
+          {tooltip.visible && (
+            <div
+              className="absolute z-50 bg-gray-800 text-gray-200 text-sm rounded-md shadow-md p-2 pointer-events-none"
+              style={{
+                top: tooltip.y + 10,
+                left: tooltip.x + 10,
+              }}
+            >
+              {tooltip.content.split("\n").map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
             </div>
-            <div>
-              <span className="bg-blue-400"></span> Scheduled
-            </div>
-            <div>
-              <span className="bg-red-400"></span> Cancelled
-            </div>
-            <div>
-              <span className="bg-gray-500"></span> Blocked
-            </div>
-          </div>
+          )}
         </>
       )}
     </div>
