@@ -438,3 +438,35 @@
   height: 12px;
   border-radius: 2px;
 }
+
+/* Calendar Popover Styles */
+.fc-popover {
+  background-color: #1f2937 !important; /* Dark background */
+  border-color: #374151 !important;
+  border-radius: 0.5rem !important;
+}
+
+.fc-popover-header {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+  padding: 0.5rem !important;
+}
+
+.fc-popover-body {
+  color: #f3f4f6 !important;
+  padding: 0.5rem !important;
+}
+
+.fc-daygrid-more-link {
+  color: #60a5fa !important; /* Blue color for the "+more" link */
+}
+
+/* Optional: Style the close button */
+.fc-popover-close {
+  color: #f3f4f6 !important;
+  opacity: 0.7 !important;
+}
+
+.fc-popover-close:hover {
+  opacity: 1 !important;
+}

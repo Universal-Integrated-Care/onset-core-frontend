@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
         phone: true,
         specialization: true,
         practitioner_type: true,
+        clinic_id: true,
       },
     });
 
