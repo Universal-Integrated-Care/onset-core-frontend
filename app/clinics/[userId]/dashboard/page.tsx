@@ -65,6 +65,8 @@ const Dashboard = () => {
   const [showForm, setShowForm] = useState(false); // Toggle Practitioner Form
   const [showPractitioners, setShowPractitioners] = useState(false); // Toggle Practitioners Table
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // Toggle Sidebar
+  const [showBlockSlotsForm, setShowBlockSlotsForm] = useState(false);
+
   const [metadata, setMetadata] = useState<{
     practitionerTypes: string[];
     specializations: string[];
@@ -227,6 +229,16 @@ const Dashboard = () => {
               </span>
             )}
           </Button>
+        )}
+
+        {/* Block Slots Form */}
+        {showBlockSlotsForm && selectedPractitionerId && (
+          <div className="mt-4">
+            <BlockSlotsForm
+              apiUrl={`/api/practitioners/${selectedPractitionerId}/blocked`}
+              onClose={() => setShowBlockSlotsForm(false)}
+            />
+          </div>
         )}
 
         {showForm && clinicId && (

@@ -14,6 +14,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import React from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import BlockSlotsForm from "@/components/forms/BlockSlotsForm";
 
 interface Practitioner {
   id: string;
@@ -211,7 +212,6 @@ const PractitionerCalendar = () => {
           </SelectContent>
         </Select>
       </div>
-
       {/* Calendar */}
       {selectedPractitioner && !isLoading && (
         <>
@@ -248,6 +248,13 @@ const PractitionerCalendar = () => {
           )}
         </>
       )}
+      <BlockSlotsForm
+        apiUrl={`/api/practitioners/${selectedPractitioner?.id}/blocked`}
+        onClose={() => {
+          console.log("Form Closed");
+          // Optionally refresh calendar data here
+        }}
+      />
     </div>
   );
 };
