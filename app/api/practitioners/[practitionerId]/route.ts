@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: { practitionerId: string } },
 ) {
   try {
-    const { practitionerId } = params;
+    const { practitionerId } = await params;
     const practitioner = await prisma.practitioners.findUnique({
       where: { id: BigInt(practitionerId) },
       select: {

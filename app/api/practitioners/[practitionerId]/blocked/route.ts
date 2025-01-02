@@ -9,6 +9,179 @@ import { convertToMelbourneTime } from "@/lib/utils";
 /**
  * Fetch Blocked Slots for a Practitioner (Date-specific and Recurring)
  */
+
+// app/api/practitioners/[practitionerId]/blocked/route.ts
+
+/**
+ * @swagger
+ * /api/practitioners/{practitionerId}/blocked:
+ *   get:
+ *     tags:
+ *       - Practitioners
+ *       - Availability
+ *     summary: Fetch blocked slots for a practitioner
+ *     description: Retrieves all blocked time slots for a specific practitioner, optionally filtered by date
+ *     parameters:
+ *       - in: path
+ *         name: practitionerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the practitioner
+ *       - in: query
+ *         name: date
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Optional date to filter blocked slots (YYYY-MM-DD)
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved blocked slots
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Blocked slots fetched successfully."
+ *                 blockedSlots:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       practitioner_id:
+ *                         type: string
+ *                       clinic_id:
+ *                         type: string
+ *                       date:
+ *                         type: string
+ *                         format: date
+ *                       start_time:
+ *                         type: string
+ *                         format: date-time
+ *                       end_time:
+ *                         type: string
+ *                         format: date-time
+ *                       is_blocked:
+ *                         type: boolean
+ *                       day_of_week:
+ *                         type: string
+ *                         nullable: true
+ *       400:
+ *         description: Invalid practitioner ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid practitioner ID. It must be a positive number."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch blocked slots. Please try again later."
+ *   post:
+ *     tags:
+ *       - Practitioners
+ *       - Availability
+ *     summary: Block time slots for a practitioner
+ *     description: Creates or updates blocked time slots for a practitioner across a date range in Melbourne timezone
+ *     parameters:
+ *       - in: path
+ *         name: practitionerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the practitioner
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - start_datetime
+ *               - end_datetime
+ *               - is_blocked
+ *             properties:
+ *               start_datetime:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2025-01-06T09:00:00"
+ *                 description: Start datetime in Melbourne timezone
+ *               end_datetime:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2025-01-08T17:00:00"
+ *                 description: End datetime in Melbourne timezone
+ *               is_blocked:
+ *                 type: boolean
+ *                 description: Whether the time slots should be blocked
+ *     responses:
+ *       200:
+ *         description: Successfully created or updated blocked slots
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Blockage extended successfully across multiple dates."
+ *                 blockages:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       practitioner_id:
+ *                         type: string
+ *                       clinic_id:
+ *                         type: string
+ *                       date:
+ *                         type: string
+ *                         format: date
+ *                       start_time:
+ *                         type: string
+ *                         format: date-time
+ *                       end_time:
+ *                         type: string
+ *                         format: date-time
+ *                       is_blocked:
+ *                         type: boolean
+ *       400:
+ *         description: Invalid request parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields: start_datetime, end_datetime, is_blocked."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Something went wrong while extending blockage. Please try again later."
+ */
 export async function GET(
   req: NextRequest,
   { params }: { params: { practitionerId: string } },

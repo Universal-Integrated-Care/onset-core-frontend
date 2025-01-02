@@ -6,6 +6,186 @@ import { getSession } from "@/lib/session";
 /**
  * Fetch practitioners for the user's clinic only
  */
+
+// app/api/practitioners/route.ts
+
+/**
+ * @swagger
+ * /api/practitioners:
+ *   get:
+ *     tags:
+ *       - Practitioners
+ *     summary: Fetch practitioners for authenticated user's clinic
+ *     description: Retrieves all practitioners associated with the clinic of the currently authenticated user
+ *     security:
+ *       - sessionAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved practitioners
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 practitioners:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: Practitioner's unique identifier
+ *                       name:
+ *                         type: string
+ *                         description: Full name of the practitioner
+ *                       email:
+ *                         type: string
+ *                         format: email
+ *                         description: Email address
+ *                       phone:
+ *                         type: string
+ *                         description: Contact number
+ *                       specialization:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         description: List of specializations
+ *                       practitioner_type:
+ *                         type: string
+ *                         description: Type of practitioner
+ *                       clinic_id:
+ *                         type: string
+ *                         description: Associated clinic ID
+ *       401:
+ *         description: Unauthorized access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized. Please log in."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch practitioners."
+ *   post:
+ *     tags:
+ *       - Practitioners
+ *     summary: Add a new practitioner
+ *     description: Creates a new practitioner with validation for unique email and phone
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - phone
+ *               - clinic_id
+ *               - practitioner_type
+ *               - specialization
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Full name of the practitioner
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email address (must be unique)
+ *               phone:
+ *                 type: string
+ *                 description: Contact number (must be unique)
+ *               clinic_id:
+ *                 type: integer
+ *                 description: ID of the associated clinic
+ *               practitioner_type:
+ *                 type: string
+ *                 description: Type of practitioner
+ *               specialization:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of specializations
+ *               bio:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Practitioner's biography
+ *               practitioner_image_url:
+ *                 type: string
+ *                 nullable: true
+ *                 description: URL to practitioner's image
+ *     responses:
+ *       201:
+ *         description: Practitioner successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Practitioner added successfully."
+ *                 practitioner:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     clinic_id:
+ *                       type: string
+ *                     practitioner_type:
+ *                       type: string
+ *                     specialization:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       400:
+ *         description: Invalid request or duplicate entry
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   examples:
+ *                     missingFields: "All fields (name, email, phone, clinic_id, practitioner_type, specialization) are required."
+ *                     duplicateEmail: "A practitioner with this email already exists."
+ *                     duplicatePhone: "A practitioner with this phone number already exists."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 details:
+ *                   type: object
+ * components:
+ *   securitySchemes:
+ *     sessionAuth:
+ *       type: apiKey
+ *       in: cookie
+ *       name: session
+ *       description: Session-based authentication
+ */
 export async function GET(req: NextRequest) {
   try {
     // ✅ Validate Session

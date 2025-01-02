@@ -5,6 +5,205 @@ import { serializeBigInt } from "@/lib/utils";
 /**
  * Fetch Appointment by ID with Patient & Practitioner Details
  */
+
+// app/api/appointments/[id]/route.ts
+
+/**
+ * @swagger
+ * /api/appointments/{id}:
+ *   get:
+ *     tags:
+ *       - Appointments
+ *     summary: Fetch appointment by ID
+ *     description: Retrieves detailed information about a specific appointment including patient and practitioner details
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the appointment to fetch
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved appointment details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 appointment:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: Appointment ID
+ *                     patient_id:
+ *                       type: string
+ *                       description: Patient ID
+ *                     clinic_id:
+ *                       type: integer
+ *                       description: Clinic ID
+ *                     practitioner_id:
+ *                       type: string
+ *                       description: Practitioner ID
+ *                     appointment_start_datetime:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Start time of the appointment
+ *                     duration:
+ *                       type: integer
+ *                       description: Duration in minutes
+ *                     status:
+ *                       type: string
+ *                       description: Current status of the appointment
+ *                     appointment_context:
+ *                       type: string
+ *                       description: Additional context about the appointment
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                     updated_at:
+ *                       type: string
+ *                       format: date-time
+ *                     patient:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           description: Patient's ID
+ *                         name:
+ *                           type: string
+ *                           description: Patient's full name
+ *                         email:
+ *                           type: string
+ *                           format: email
+ *                         phone:
+ *                           type: string
+ *                         context:
+ *                           type: string
+ *                           description: Patient's medical context
+ *                     practitioner:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           description: Practitioner's ID
+ *                         name:
+ *                           type: string
+ *                           description: Practitioner's name
+ *                         email:
+ *                           type: string
+ *                           format: email
+ *                         phone:
+ *                           type: string
+ *       400:
+ *         description: Invalid appointment ID provided
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid or missing Appointment ID."
+ *       404:
+ *         description: Appointment not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Appointment not found."
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *   put:
+ *     tags:
+ *       - Appointments
+ *     summary: Update appointment by ID
+ *     description: Updates an existing appointment with new details
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the appointment to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               practitioner_id:
+ *                 type: string
+ *                 description: ID of the practitioner
+ *               Schedule:
+ *                 type: string
+ *                 format: date-time
+ *                 description: New appointment start time
+ *               appointment_context:
+ *                 type: string
+ *                 description: Updated context for the appointment
+ *               status:
+ *                 type: string
+ *                 description: Updated appointment status
+ *                 default: "PENDING"
+ *     responses:
+ *       200:
+ *         description: Appointment successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Appointment updated successfully"
+ *                 appointment:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     practitioner_id:
+ *                       type: string
+ *                     appointment_start_datetime:
+ *                       type: string
+ *                       format: date-time
+ *                     appointment_context:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *       400:
+ *         description: Invalid appointment ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid or missing Appointment ID."
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error while updating appointment."
+ */
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } },

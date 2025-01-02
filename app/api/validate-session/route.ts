@@ -1,6 +1,118 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+// app/api/session/validate/route.ts
+
+/**
+ * @swagger
+ * /api/session/validate:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *       - Session
+ *     summary: Validate user session
+ *     description: |
+ *       Validates the current user session using the session token from cookies.
+ *       Returns user data if the session is valid and not expired.
+ *     parameters:
+ *       - in: cookie
+ *         name: session_token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Session token stored in cookies
+ *     responses:
+ *       200:
+ *         description: Session is valid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valid:
+ *                   type: boolean
+ *                   description: Indicates if the session is valid
+ *                   example: true
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: User's unique identifier
+ *                       example: 1
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       description: User's email address
+ *                       example: "user@example.com"
+ *                     name:
+ *                       type: string
+ *                       description: User's full name
+ *                       example: "John Doe"
+ *                     clinic_id:
+ *                       type: integer
+ *                       nullable: true
+ *                       description: Associated clinic ID (if any)
+ *                       example: 123
+ *             example:
+ *               valid: true
+ *               user:
+ *                 id: 1
+ *                 email: "user@example.com"
+ *                 name: "John Doe"
+ *                 clinic_id: 123
+ *       401:
+ *         description: Unauthorized - Invalid or expired session
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *               examples:
+ *                 noToken:
+ *                   value:
+ *                     error: "Unauthorized: No session token provided."
+ *                   summary: No session token
+ *                 expiredSession:
+ *                   value:
+ *                     error: "Session expired or invalid."
+ *                   summary: Expired or invalid session
+ *                 noUser:
+ *                   value:
+ *                     error: "User not found or invalid session."
+ *                   summary: No user associated with session
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error."
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: User's unique identifier
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: User's email address
+ *         name:
+ *           type: string
+ *           description: User's full name
+ *         clinic_id:
+ *           type: integer
+ *           nullable: true
+ *           description: Associated clinic ID
+ */
 /**
  * Validate User Session
  */

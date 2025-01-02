@@ -8,12 +8,120 @@ import moment from "moment-timezone";
 /**
  * Fetch Blocked Slots for a Practitioner (Date-specific and Recurring)
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { practitionerId: string } },
-) {
+
+/**
+ * @swagger
+ * /api/practitioners/availability/slots:
+ *   get:
+ *     tags:
+ *       - Practitioners
+ *       - Availability
+ *     summary: Fetch blocked availability slots for a practitioner
+ *     description: |
+ *       Retrieves blocked time slots for a specific practitioner, with optional date filtering.
+ *       All times are handled in Melbourne timezone.
+ *     parameters:
+ *       - in: query
+ *         name: practitioner_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the practitioner
+ *       - in: query
+ *         name: date
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *         example: "2024-01-02"
+ *         description: Optional date to filter slots (YYYY-MM-DD format)
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved blocked slots
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Blocked slots fetched successfully."
+ *                 blockedSlots:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: Unique identifier for the slot
+ *                       date:
+ *                         type: string
+ *                         format: date
+ *                         nullable: true
+ *                         description: The specific date for the slot (YYYY-MM-DD)
+ *                       day_of_week:
+ *                         type: string
+ *                         enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+ *                         nullable: true
+ *                         description: Day of week for recurring slots
+ *                       start_time:
+ *                         type: string
+ *                         format: time
+ *                         example: "09:00:00"
+ *                         description: Start time in HH:mm:ss format (Melbourne timezone)
+ *                       end_time:
+ *                         type: string
+ *                         format: time
+ *                         example: "17:00:00"
+ *                         description: End time in HH:mm:ss format (Melbourne timezone)
+ *                       is_blocked:
+ *                         type: boolean
+ *                         description: Whether the slot is blocked
+ *                       is_available:
+ *                         type: boolean
+ *                         nullable: true
+ *                         description: Whether the slot is available
+ *             example:
+ *               message: "Blocked slots fetched successfully."
+ *               blockedSlots:
+ *                 - id: "1"
+ *                   date: "2024-01-02"
+ *                   day_of_week: null
+ *                   start_time: "09:00:00"
+ *                   end_time: "12:00:00"
+ *                   is_blocked: true
+ *                   is_available: null
+ *                 - id: "2"
+ *                   date: null
+ *                   day_of_week: "MONDAY"
+ *                   start_time: "14:00:00"
+ *                   end_time: "17:00:00"
+ *                   is_blocked: true
+ *                   is_available: false
+ *       400:
+ *         description: Invalid practitioner ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid practitioner ID. It must be a positive number."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch blocked slots. Please try again later."
+ */
+export async function GET(req: NextRequest) {
   try {
-    const { practitionerId } = params;
+    const practitionerId = req.nextUrl.searchParams.get("practitioner_id");
     const dateParam = req.nextUrl.searchParams.get("date");
 
     if (
@@ -82,10 +190,12 @@ export async function GET(
     console.log("📤 Serialized Blocked Slots:", serializedBlockedSlots);
 
     return new NextResponse(
-      JSON.stringify({
-        message: "Blocked slots fetched successfully.",
-        blockedSlots: serializedBlockedSlots,
-      }),
+      JSON.stringify(
+        serializeBigInt({
+          message: "Blocked slots fetched successfully.",
+          blockedSlots: serializedBlockedSlots,
+        }),
+      ),
       {
         status: 200,
         headers: {

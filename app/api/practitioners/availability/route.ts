@@ -99,6 +99,172 @@ import { convertToMelbourneTime } from "@/lib/utils";
  * Updates availability for either a **specific date** (override) or a **recurring weekly schedule**.
  */
 
+// app/api/practitioners/availability/route.ts
+
+/**
+ * @swagger
+ * /api/practitioners/availability:
+ *   post:
+ *     tags:
+ *       - Practitioners
+ *       - Availability
+ *     summary: Update practitioner availability
+ *     description: |
+ *       Updates a practitioner's availability for either a specific date (override) or a recurring weekly schedule.
+ *       Handles both one-time availability overrides and recurring weekly schedules in Melbourne timezone.
+ *
+ *       **Key Features:**
+ *       - One-time availability overrides for specific dates
+ *       - Recurring weekly schedule management
+ *       - Automatic timezone conversion to Melbourne time
+ *       - Conflict prevention with existing schedules
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - practitioner_id
+ *               - start_time
+ *               - end_time
+ *               - is_available
+ *               - is_blocked
+ *             properties:
+ *               practitioner_id:
+ *                 type: integer
+ *                 description: Unique identifier of the practitioner
+ *               start_time:
+ *                 type: string
+ *                 format: time
+ *                 example: "09:00:00"
+ *                 description: Start time in HH:MM:SS format
+ *               end_time:
+ *                 type: string
+ *                 format: time
+ *                 example: "17:00:00"
+ *                 description: End time in HH:MM:SS format
+ *               is_available:
+ *                 type: boolean
+ *                 nullable: true
+ *                 description: Indicates if the practitioner is available during this time
+ *               is_blocked:
+ *                 type: boolean
+ *                 description: Indicates if the time slot is blocked (e.g., by admin)
+ *               date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2024-12-29"
+ *                 description: Specific date for one-time availability (mutually exclusive with day_of_week)
+ *               day_of_week:
+ *                 type: string
+ *                 enum:
+ *                   - MONDAY
+ *                   - TUESDAY
+ *                   - WEDNESDAY
+ *                   - THURSDAY
+ *                   - FRIDAY
+ *                   - SATURDAY
+ *                   - SUNDAY
+ *                 description: Day of week for recurring availability (mutually exclusive with date)
+ *           examples:
+ *             oneTime:
+ *               summary: One-time availability
+ *               value:
+ *                 practitioner_id: 1
+ *                 date: "2024-12-29"
+ *                 start_time: "09:00:00"
+ *                 end_time: "11:00:00"
+ *                 is_available: true
+ *                 is_blocked: false
+ *             recurring:
+ *               summary: Recurring availability
+ *               value:
+ *                 practitioner_id: 1
+ *                 day_of_week: "MONDAY"
+ *                 start_time: "09:00:00"
+ *                 end_time: "11:00:00"
+ *                 is_available: true
+ *                 is_blocked: false
+ *             blocked:
+ *               summary: Blocked time slot
+ *               value:
+ *                 practitioner_id: 1
+ *                 date: "2024-12-31"
+ *                 start_time: "09:00:00"
+ *                 end_time: "17:00:00"
+ *                 is_available: null
+ *                 is_blocked: true
+ *     responses:
+ *       200:
+ *         description: Availability successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "One-time availability updated successfully."
+ *                 availability:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     practitioner_id:
+ *                       type: string
+ *                     clinic_id:
+ *                       type: string
+ *                     date:
+ *                       type: string
+ *                       format: date
+ *                       nullable: true
+ *                     day_of_week:
+ *                       type: string
+ *                       nullable: true
+ *                     start_time:
+ *                       type: string
+ *                       format: date-time
+ *                     end_time:
+ *                       type: string
+ *                       format: date-time
+ *                     is_available:
+ *                       type: boolean
+ *                       nullable: true
+ *                     is_blocked:
+ *                       type: boolean
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                     updated_at:
+ *                       type: string
+ *                       format: date-time
+ *       400:
+ *         description: Invalid request parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   examples:
+ *                     - "Missing required fields: practitioner_id, start_time, end_time, is_available, and is_blocked."
+ *                     - "Invalid practitioner_id. It must be a positive number."
+ *                     - "start_time must be earlier than end_time."
+ *                     - "Invalid day_of_week. Valid values are MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY."
+ *                     - "Either 'day_of_week' for recurring availability or 'date' for one-time availability must be provided."
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Something went wrong while updating availability. Please try again later."
+ */
 export async function POST(req: NextRequest) {
   const db = prisma;
 

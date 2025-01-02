@@ -20,6 +20,186 @@ import {
   extractDateFromMelbourneTime,
 } from "@/lib/utils";
 
+// app/api/appointments/route.ts
+
+/**
+ * @swagger
+ * /api/appointments:
+ *   get:
+ *     tags:
+ *       - Appointments
+ *     summary: Fetch appointments by clinic ID
+ *     description: Retrieves a list of appointments for a specific clinic with patient and practitioner details
+ *     parameters:
+ *       - in: query
+ *         name: clinicId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the clinic to fetch appointments for
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved appointments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 appointments:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: Appointment ID
+ *                       patient_id:
+ *                         type: string
+ *                         description: Patient ID
+ *                       patient:
+ *                         type: string
+ *                         description: Full name of the patient
+ *                       practitioner:
+ *                         type: string
+ *                         description: Name of the practitioner
+ *                       clinic_id:
+ *                         type: integer
+ *                         description: Clinic ID
+ *                       appointment_start_datetime:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Start time of the appointment
+ *                       duration:
+ *                         type: integer
+ *                         description: Duration of appointment in minutes
+ *                       status:
+ *                         type: string
+ *                         description: Current status of the appointment
+ *                       appointment_context:
+ *                         type: string
+ *                         description: Additional context about the appointment
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                       updated_at:
+ *                         type: string
+ *                         format: date-time
+ *       400:
+ *         description: Invalid clinic ID provided
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *   post:
+ *     tags:
+ *       - Appointments
+ *     summary: Create a new appointment
+ *     description: Creates a new appointment with validation checks for practitioner availability and clinic association
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - patient_id
+ *               - clinic_id
+ *               - practitioner_id
+ *               - appointment_start_datetime
+ *               - duration
+ *             properties:
+ *               patient_id:
+ *                 type: string
+ *                 description: ID of the patient
+ *               clinic_id:
+ *                 type: integer
+ *                 description: ID of the clinic
+ *               practitioner_id:
+ *                 type: string
+ *                 description: ID of the practitioner
+ *               appointment_start_datetime:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Start time of the appointment in ISO format
+ *               duration:
+ *                 type: integer
+ *                 description: Duration of appointment in minutes
+ *               appointment_context:
+ *                 type: string
+ *                 description: Additional context about the appointment
+ *     responses:
+ *       201:
+ *         description: Appointment successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Your appointment has been successfully created!
+ *                 appointment:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     patient:
+ *                       type: string
+ *                     practitioner:
+ *                       type: string
+ *                     clinic_id:
+ *                       type: integer
+ *                     appointment_start_datetime:
+ *                       type: string
+ *                       format: date-time
+ *                     duration:
+ *                       type: integer
+ *                     status:
+ *                       type: string
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                     updated_at:
+ *                       type: string
+ *                       format: date-time
+ *       400:
+ *         description: Validation error or invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   examples:
+ *                     - Required fields missing
+ *                     - Invalid datetime format
+ *                     - Duplicate appointment
+ *                     - Practitioner not available
+ *                     - Invalid clinic association
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
+
 /**
  * Fetch Appointments by Clinic ID with Patient & Practitioner Details
  */
