@@ -80,12 +80,19 @@ import { serializeBigInt } from "@/lib/utils";
  *                   type: string
  *                   example: "Internal server error while fetching appointments."
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { practitionerId: string } },
-) {
+type Props = {
+  params: Promise<{
+    practitionerId: string;
+  }>;
+};
+
+/**
+ * Fetch Practitioner by ID
+ */
+export async function GET(req: NextRequest, props: Props) {
   try {
-    const { practitionerId } = await params;
+    // ✅ Resolve params promise
+    const { practitionerId } = await props.params;
 
     console.log("🔍 Practitioner ID from Params:", practitionerId);
 

@@ -109,14 +109,19 @@ function serializeBigInt(obj: any): any {
  *                   type: string
  *                   example: "Internal server error while fetching practitioners."
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { clinicId: string } },
-) {
-  try {
-    // ✅ Extract clinicId from params
+type Props = {
+  params: Promise<{
+    clinicId: string;
+  }>;
+};
 
-    const { clinicId } = await params;
+/**
+ * Fetch Clinic by ID
+ */
+export async function GET(req: NextRequest, props: Props) {
+  try {
+    // ✅ Resolve params promise
+    const { clinicId } = await props.params;
 
     console.log("🏥 Clinic ID from params:", clinicId);
 

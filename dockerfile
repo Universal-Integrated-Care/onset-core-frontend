@@ -1,45 +1,41 @@
-# Stage 1: Build the application
-FROM node:20-alpine AS builder
+# Use Node.js 20 slim as base image
+FROM node:20-slim
 
-# Install required system dependencies
-RUN apk add --no-cache python3 make g++ 
+# Install dependencies needed for node-gyp and other native modules
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY package*.json ./
 
-# Install dependencies and rebuild bcrypt
-RUN npm install && \
-    npm rebuild bcrypt --build-from-source
+# Install dependencies
+RUN npm install
 
-# Copy application code
+# Copy prisma schema and generate client
+COPY prisma ./prisma/
+RUN npx prisma generate
+
+# Copy the rest of the application
 COPY . .
 
-# Disable ESLint checks during build
+# Disable Next.js telemetry and TypeScript/ESLint checks for build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV SKIP_ENV_VALIDATION=true
 ENV NEXT_DISABLE_ESLINT=1
 
-# Build Next.js application
-RUN npm run build
+# Set production environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOST=0.0.0.0
 
-# Stage 2: Run the application in production
-FROM node:20-alpine
-
-# Set working directory
-WORKDIR /app
-
-# Copy built application from the builder stage
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/public ./public
-
-# Expose the port your server listens on
+# Expose the port
 EXPOSE 3000
 
-# Set NODE_ENV to production
-ENV NODE_ENV=production
-
-# Run the server in production mode
-CMD ["npm", "run", "dev:server"]
+# Start the server
+CMD ["npx", "tsx", "server.ts"]

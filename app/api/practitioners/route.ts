@@ -356,12 +356,19 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
+type Props = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+/**
+ * Delete Resource by ID
+ */
+export async function DELETE(req: NextRequest, props: Props) {
   try {
-    const { id } = await params;
+    // ✅ Resolve params promise
+    const { id } = await props.params;
 
     // ✅ Validate ID
     if (!id) {

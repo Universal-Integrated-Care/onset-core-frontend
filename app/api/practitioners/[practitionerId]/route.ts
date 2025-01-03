@@ -5,12 +5,19 @@ import { serializeBigInt } from "@/lib/utils";
 /**
  * ✅ Get Practitioner by ID
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { practitionerId: string } },
-) {
+type Props = {
+  params: Promise<{
+    practitionerId: string;
+  }>;
+};
+
+/**
+ * Fetch Practitioner by ID
+ */
+export async function GET(req: NextRequest, props: Props) {
   try {
-    const { practitionerId } = await params;
+    // ✅ Resolve params promise
+    const { practitionerId } = await props.params;
     const practitioner = await prisma.practitioners.findUnique({
       where: { id: BigInt(practitionerId) },
       select: {
@@ -44,12 +51,10 @@ export async function GET(
 /**
  * ✅ Delete Practitioner by ID
  */
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { practitionerId: string } },
-) {
+export async function DELETE(req: NextRequest, props: Props) {
   try {
-    const { practitionerId } = await params;
+    // ✅ Resolve params promise
+    const { practitionerId } = await props.params;
 
     // ✅ Validate ID
     if (!practitionerId) {

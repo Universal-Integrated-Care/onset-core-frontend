@@ -182,12 +182,19 @@ import { convertToMelbourneTime } from "@/lib/utils";
  *                   type: string
  *                   example: "Something went wrong while extending blockage. Please try again later."
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { practitionerId: string } },
-) {
+type Props = {
+  params: Promise<{
+    practitionerId: string;
+  }>;
+};
+
+/**
+ * Fetch Practitioner by ID
+ */
+export async function GET(req: NextRequest, props: Props) {
   try {
-    const { practitionerId } = await params;
+    // ✅ Resolve params promise
+    const { practitionerId } = await props.params;
     const dateParam = req.nextUrl.searchParams.get("date");
 
     if (
@@ -265,15 +272,10 @@ export async function GET(
  * Block time slots for a practitioner across a range of dates for specified hours.
  */
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { practitionerId: string } },
-) {
-  const db = prisma;
-
+export async function POST(req: NextRequest, props: Props) {
   try {
-    // ✅ Extract practitionerId from URL params
-    const { practitionerId } = await params;
+    // ✅ Resolve params promise
+    const { practitionerId } = await props.params;
 
     console.log("🆔 Practitioner ID from URL:", practitionerId);
 

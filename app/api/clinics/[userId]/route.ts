@@ -130,17 +130,23 @@ import { serializeBigInt } from "@/lib/utils";
  *                   type: string
  *                   example: "Internal server error while fetching clinic details."
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { userId: string } },
-) {
+type Props = {
+  params: Promise<{
+    userId: string;
+  }>;
+};
+
+/**
+ * Fetch User by ID
+ */
+export async function GET(req: NextRequest, props: Props) {
   try {
-    // ✅ Extract userId from params
-    const userId = Number(params?.userId);
+    // ✅ Resolve params promise
+    const { userId } = await props.params;
 
     console.log("🏥 User ID from params:", userId);
 
-    if (!userId || isNaN(userId) || userId <= 0) {
+    if (!userId || isNaN(Number(userId)) || Number(userId) <= 0) {
       return NextResponse.json(
         { error: "Invalid or missing User ID." },
         { status: 400 },
