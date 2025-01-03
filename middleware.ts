@@ -1,64 +1,75 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
-  matcher: ["/clinics/:id/dashboard", "/api/practitioners"],
-  runtime: "nodejs", // Ensure Node.js runtime
+  matcher: [
+    "/clinics/:id/dashboard",
+    "/clinics/:id/calendar",
+    "/api/practitioners",
+  ],
+  runtime: "nodejs",
 };
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("session_token")?.value;
 
-  console.log("🔑 Token from cookie:", token);
+  console.log("🔑 Middleware Triggered");
+  console.log("🔑 Full Request URL:", req.nextUrl.pathname);
 
-  const protectedRoutes = ["/clinics/:id/dashboard", "/api/practitioners"];
+  const protectedRoutes = [
+    "/clinics/:id/dashboard",
+    "/clinics/:id/calendar",
+    "/api/practitioners",
+  ];
+
   const isProtectedRoute = protectedRoutes.some((path) =>
     new RegExp(`^${path.replace(":id", "\\d+")}$`).test(req.nextUrl.pathname),
   );
 
   if (isProtectedRoute) {
     if (!token) {
-      console.warn("⚠️ No session token found, redirecting to /login");
       return NextResponse.redirect(new URL("/login", req.url));
     }
 
     try {
-      // Call validate-session API route
       const res = await fetch(`${req.nextUrl.origin}/api/validate-session`, {
-        headers: { Cookie: `session_token=${token}` },
+        headers: {
+          Cookie: `session_token=${token}`,
+          "Content-Type": "application/json",
+        },
+        method: "GET",
       });
 
-      console.log("🔄 Validation response status:", res.status);
-
       if (!res.ok) {
-        console.warn("❌ Session validation failed, redirecting to /login");
         return NextResponse.redirect(new URL("/login", req.url));
       }
 
-      const { valid, user } = await res.json();
-      console.log("✅ Validation Result:", { valid, user });
+      const validationResult = await res.json();
 
-      if (!valid) {
-        console.warn("❌ Session invalid, redirecting to /login");
+      if (!validationResult.valid) {
         return NextResponse.redirect(new URL("/login", req.url));
       }
 
-      const clinicIdMatch = req.nextUrl.pathname.match(
+      const user = validationResult.user;
+
+      // Extract clinic ID from URL
+      const clinicIdMatchers = [
         /\/clinics\/(\d+)\/dashboard/,
-      );
+        /\/clinics\/(\d+)\/calendar/,
+      ];
 
-      if (clinicIdMatch) {
-        const clinicId = Number(clinicIdMatch[1]);
-        console.log(
-          "🏥 Requested Clinic ID:",
-          clinicId,
-          " | User Clinic ID:",
-          user?.clinic_id,
+      const matchedClinicId = clinicIdMatchers.reduce((match, regex) => {
+        const result = req.nextUrl.pathname.match(regex);
+        return result ? Number(result[1]) : match;
+      }, null);
+
+      // If matched clinic ID exists, redirect to user's actual clinic
+      if (matchedClinicId !== null && matchedClinicId !== user.clinic_id) {
+        console.warn(
+          `🚫 Redirecting to user's actual clinic: ${user.clinic_id}`,
         );
-
-        if (user?.clinic_id !== clinicId) {
-          console.warn("🚫 Clinic ID mismatch, redirecting to /unauthorized");
-          return NextResponse.redirect(new URL("/unauthorized", req.url));
-        }
+        return NextResponse.redirect(
+          new URL(`/clinics/${user.clinic_id}/dashboard`, req.url),
+        );
       }
     } catch (error) {
       console.error("❌ Middleware Error:", error);
