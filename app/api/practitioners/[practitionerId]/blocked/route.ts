@@ -332,7 +332,7 @@ export async function POST(req: NextRequest, props: Props) {
     console.log("🕒 Parsed End:", parsedEndDatetime.format());
 
     // ✅ Validate Practitioner Existence
-    const practitioner = await db.practitioners.findUnique({
+    const practitioner = await prisma.practitioners.findUnique({
       where: { id: BigInt(practitionerId) },
       select: { clinic_id: true },
     });
@@ -370,7 +370,7 @@ export async function POST(req: NextRequest, props: Props) {
 
       console.log("🛠 Blocking Date:", currentDate.format("YYYY-MM-DD"));
 
-      const blockage = await db.practitioner_availability.upsert({
+      const blockage = await prisma.practitioner_availability.upsert({
         where: {
           practitioner_id_date: {
             practitioner_id: BigInt(practitionerId),
@@ -425,7 +425,7 @@ export async function POST(req: NextRequest, props: Props) {
       { status: 500 },
     );
   } finally {
-    await db.$disconnect();
+    await prisma.$disconnect();
   }
 }
 
