@@ -173,15 +173,15 @@ export async function GET(req: NextRequest) {
     console.log("✅ Blocked Slots Fetched:", blockedSlots);
 
     // Map and serialize results
-    const serializedBlockedSlots = blockedSlots.map((slot) => ({
+    const serializedBlockedSlots = blockedSlots.map((slot: BlockedSlot) => ({
       id: serializeBigInt(slot.id),
-      date: slot.date ? slot.date.toISOString().split("T")[0] : null,
+      date: slot.date ? new Date(slot.date).toISOString().split("T")[0] : null,
       day_of_week: slot.day_of_week,
-      start_time: moment
-        .tz(slot.start_time.toISOString(), "Australia/Melbourne")
+      start_time: moment(slot.start_time)
+        .tz("Australia/Melbourne")
         .format("HH:mm:ss"),
       end_time: moment
-        .tz(slot.end_time.toISOString(), "Australia/Melbourne")
+        .tz(slot.end_time.toString(), "Australia/Melbourne")
         .format("HH:mm:ss"),
       is_blocked: slot.is_blocked,
       is_available: slot.is_available,

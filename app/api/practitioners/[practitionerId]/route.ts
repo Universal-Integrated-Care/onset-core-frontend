@@ -113,9 +113,11 @@ export async function DELETE(req: NextRequest, props: Props) {
       );
     }
 
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to delete practitioner.";
     return NextResponse.json(
       {
-        error: error.message || "Failed to delete practitioner.",
+        error: errorMessage,
         details: error,
       },
       { status: 500 },

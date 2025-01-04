@@ -80,6 +80,21 @@ import { serializeBigInt } from "@/lib/utils";
  *                   type: string
  *                   example: "Internal server error while fetching appointments."
  */
+interface Patient {
+  first_name: string;
+  last_name: string;
+  // Add other properties as needed
+}
+
+interface Appointment {
+  id: string;
+  patient_id: string;
+  appointment_start_datetime: string;
+  duration: number;
+  status: string;
+  patient?: Patient; // Ensure this property exists
+}
+
 type Props = {
   params: Promise<{
     practitionerId: string;
@@ -118,16 +133,15 @@ export async function GET(req: NextRequest, props: Props) {
       },
     });
 
-    const serializedAppointments = appointments.map((appt) => ({
+    const serializedAppointments = appointments.map((appt: Appointment) => ({
       id: appt.id,
       patient_id: appt.patient_id,
-      appointment_start_datetime:
-        appt.appointment_start_datetime?.toISOString(),
+      appointment_start_datetime: appt.appointment_start_datetime
+        ? new Date(appt.appointment_start_datetime).toISOString()
+        : null,
       duration: appt.duration,
       status: appt.status,
-      patient_name: `${appt.patients?.first_name || ""} ${
-        appt.patients?.last_name || ""
-      }`,
+      patient_name: `${appt.patient?.first_name || ""} ${appt.patient?.last_name || ""}`,
     }));
 
     return NextResponse.json({

@@ -21,6 +21,7 @@ import {
 import DashboardLoader from "@/components/DashboardLoader";
 import { Practitioner } from "@/components/table/practitionerColumns";
 import BlockSlotsForm from "@/components/forms/BlockSlotsForm";
+//import { ColumnDef } from "@tanstack/react-table";
 
 interface Appointment {
   id: number;
@@ -66,6 +67,9 @@ const Dashboard = () => {
   const [showPractitioners, setShowPractitioners] = useState(false); // Toggle Practitioners Table
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // Toggle Sidebar
   const [showBlockSlotsForm, setShowBlockSlotsForm] = useState(false);
+  const [selectedPractitionerId, setSelectedPractitionerId] = useState<
+    string | null
+  >(null);
 
   const [metadata, setMetadata] = useState<{
     practitionerTypes: string[];
@@ -78,6 +82,13 @@ const Dashboard = () => {
     setNewPractitioner(practitioner);
     setShowForm(false); // Close the form after adding
   };
+
+  const handlePractitionerSelect = (practitionerId: string) => {
+    setSelectedPractitionerId(practitionerId);
+    setShowBlockSlotsForm(true); // Show the form when a practitioner is selected
+  };
+
+  console.log(handlePractitionerSelect);
 
   /**
    * ✅ Validate session and fetch appointments
@@ -244,7 +255,7 @@ const Dashboard = () => {
         {showForm && clinicId && (
           <div className="mt-4">
             <PractitionerForm
-              clinicId={clinicId}
+              clinicId={String(clinicId)}
               practitionerTypes={metadata.practitionerTypes}
               specializations={metadata.specializations}
               onClose={() => setShowForm(false)}
@@ -309,7 +320,7 @@ const Dashboard = () => {
               <DataTable
                 columns={columns}
                 data={appointments}
-                clinicId={clinicId?.toString()}
+                clinicId={clinicId ? clinicId.toString() : undefined}
               />
             </section>
           </>

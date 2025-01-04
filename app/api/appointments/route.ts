@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma"; // Import the singleton
 import { serializeBigInt } from "@/lib/utils";
 import {
   validateRequiredFields,
@@ -20,190 +20,40 @@ import {
   extractDateFromMelbourneTime,
 } from "@/lib/utils";
 
-// app/api/appointments/route.ts
+import { PrismaClient } from "@prisma/client";
 
-/**
- * @swagger
- * /api/appointments:
- *   get:
- *     tags:
- *       - Appointments
- *     summary: Fetch appointments by clinic ID
- *     description: Retrieves a list of appointments for a specific clinic with patient and practitioner details
- *     parameters:
- *       - in: query
- *         name: clinicId
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID of the clinic to fetch appointments for
- *     responses:
- *       200:
- *         description: Successfully retrieved appointments
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 appointments:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         description: Appointment ID
- *                       patient_id:
- *                         type: string
- *                         description: Patient ID
- *                       patient:
- *                         type: string
- *                         description: Full name of the patient
- *                       practitioner:
- *                         type: string
- *                         description: Name of the practitioner
- *                       clinic_id:
- *                         type: integer
- *                         description: Clinic ID
- *                       appointment_start_datetime:
- *                         type: string
- *                         format: date-time
- *                         description: Start time of the appointment
- *                       duration:
- *                         type: integer
- *                         description: Duration of appointment in minutes
- *                       status:
- *                         type: string
- *                         description: Current status of the appointment
- *                       appointment_context:
- *                         type: string
- *                         description: Additional context about the appointment
- *                       created_at:
- *                         type: string
- *                         format: date-time
- *                       updated_at:
- *                         type: string
- *                         format: date-time
- *       400:
- *         description: Invalid clinic ID provided
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *   post:
- *     tags:
- *       - Appointments
- *     summary: Create a new appointment
- *     description: Creates a new appointment with validation checks for practitioner availability and clinic association
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - patient_id
- *               - clinic_id
- *               - practitioner_id
- *               - appointment_start_datetime
- *               - duration
- *             properties:
- *               patient_id:
- *                 type: string
- *                 description: ID of the patient
- *               clinic_id:
- *                 type: integer
- *                 description: ID of the clinic
- *               practitioner_id:
- *                 type: string
- *                 description: ID of the practitioner
- *               appointment_start_datetime:
- *                 type: string
- *                 format: date-time
- *                 description: Start time of the appointment in ISO format
- *               duration:
- *                 type: integer
- *                 description: Duration of appointment in minutes
- *               appointment_context:
- *                 type: string
- *                 description: Additional context about the appointment
- *     responses:
- *       201:
- *         description: Appointment successfully created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Your appointment has been successfully created!
- *                 appointment:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                     patient:
- *                       type: string
- *                     practitioner:
- *                       type: string
- *                     clinic_id:
- *                       type: integer
- *                     appointment_start_datetime:
- *                       type: string
- *                       format: date-time
- *                     duration:
- *                       type: integer
- *                     status:
- *                       type: string
- *                     created_at:
- *                       type: string
- *                       format: date-time
- *                     updated_at:
- *                       type: string
- *                       format: date-time
- *       400:
- *         description: Validation error or invalid input
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   examples:
- *                     - Required fields missing
- *                     - Invalid datetime format
- *                     - Duplicate appointment
- *                     - Practitioner not available
- *                     - Invalid clinic association
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- */
+// ... [Swagger Documentation] ...
+
+interface Patient {
+  id: string;
+  first_name: string;
+  last_name: string;
+  // Add other properties as needed
+}
+
+interface Practitioner {
+  id: string;
+  name: string;
+  // Add other properties as needed
+}
+
+interface Appointment {
+  id: string;
+  patients?: Patient; // Ensure this property exists
+  practitioners?: Practitioner; // Ensure this property exists
+  appointment_start_datetime: Date; // or string, depending on your data type
+  duration: number;
+  status: string;
+  clinic_id: string; // Ensure this property exists
+  appointment_context?: string; // Add this property
+  created_at: Date; // or string, depending on your data type
+  updated_at: Date; // or string, depending on your data type
+  // Add other properties as needed
+}
 
 /**
  * Fetch Appointments by Clinic ID with Patient & Practitioner Details
  */
-
 export async function GET(req: NextRequest) {
   try {
     // ✅ Extract clinicId from query parameters
@@ -251,9 +101,9 @@ export async function GET(req: NextRequest) {
     console.log("📊 Fetched Appointments (Raw):", appointments);
 
     // ✅ Map the data to include names and ensure appointment_start_datetime is serialized
-    const mappedAppointments = appointments.map((appointment) => ({
+    const mappedAppointments = appointments.map((appointment: Appointment) => ({
       id: appointment.id,
-      patient_id: appointment.patients?.id || null, // Include patient_id
+      patient_id: appointment.patients?.id || null,
       patient: appointment.patients
         ? `${appointment.patients.first_name} ${appointment.patients.last_name}`
         : "Unknown Patient",
@@ -261,14 +111,10 @@ export async function GET(req: NextRequest) {
         ? appointment.practitioners.name
         : "Unknown Practitioner",
       clinic_id: appointment.clinic_id,
-      appointment_start_datetime: appointment.appointment_start_datetime
-        ? appointment.appointment_start_datetime.toISOString()
-        : null, // Ensure datetime is serialized as ISO string
-      duration: appointment.duration,
       status: appointment.status,
       appointment_context: appointment.appointment_context,
-      created_at: appointment.created_at.toISOString(), // Ensure datetime is serialized
-      updated_at: appointment.updated_at.toISOString(), // Ensure datetime is serialized
+      created_at: appointment.created_at.toISOString(),
+      updated_at: appointment.updated_at.toISOString(),
     }));
 
     // ✅ Serialize serializeBigInt fields
@@ -292,8 +138,6 @@ export async function GET(req: NextRequest) {
  * Main POST Function
  */
 export async function POST(req: NextRequest) {
-  const db = prisma;
-
   try {
     const body = await req.json();
     const {
@@ -307,26 +151,26 @@ export async function POST(req: NextRequest) {
     // Step 1: Validate required fields
     await validateRequiredFields(body);
 
-    //Step 2: Validate ISO Datetime
+    // Step 2: Validate ISO Datetime
     await validateISODateTime(original_appointment_start_datetime);
 
-    //Step 4: Calculate appointment end datetime
+    // Step 3: Calculate appointment end datetime
     const appointment_end_datetime = await calculateAppointmentEndTime(
       original_appointment_start_datetime,
       duration,
     );
 
-    // ✅ Step 5: Convert appointment_start_datetime to Melbourne Time
+    // Step 4: Convert appointment_start_datetime to Melbourne Time
     const appointment_start_datetime = await convertToMelbourneTime(
       original_appointment_start_datetime,
     );
 
-    // ✅ Step 6: Extract date from Melbourne Time
+    // Step 5: Extract date from Melbourne Time
     const appointment_date = await extractDateFromMelbourneTime(
       appointment_start_datetime,
     );
 
-    // ✅ Step 7: Validate Day of Week Enum
+    // Step 6: Validate Day of Week Enum
     const dayOfWeekEnum = await getDayOfWeekEnum(appointment_start_datetime);
 
     console.log("📅 Appointment Date:", appointment_date);
@@ -334,14 +178,14 @@ export async function POST(req: NextRequest) {
     console.log("🕒 Appointment End Time:", appointment_end_datetime);
     console.log("📅 Day of the Week:", dayOfWeekEnum);
 
-    // ✅ Wrap booking logic in a transaction
-    const appointment = await db.$transaction(async (prisma) => {
+    // Wrap booking logic in a transaction
+    const appointment = await prisma.$transaction(async (tx: PrismaClient) => {
       // Step 2: Validate entities
-      await validateEntities(db, patient_id, clinic_id, practitioner_id);
+      await validateEntities(tx, patient_id, clinic_id, practitioner_id);
 
       // Step 3: Check for duplicate appointments
       await checkDuplicateAppointment(
-        db,
+        tx,
         patient_id,
         clinic_id,
         appointment_start_datetime,
@@ -349,7 +193,7 @@ export async function POST(req: NextRequest) {
 
       // Step 4: Validate Practitioner Availability
       await validatePractitionerAvailability(
-        db,
+        tx,
         practitioner_id,
         appointment_start_datetime,
         appointment_end_datetime,
@@ -357,45 +201,41 @@ export async function POST(req: NextRequest) {
         dayOfWeekEnum,
         duration,
       );
+
       // Step 5: Validate Practitioner and patient in Same clinic
       await validatePatientPractitionerClinicAssociation(
-        db,
+        tx,
         patient_id,
         practitioner_id,
         clinic_id,
       );
 
-      // Step 5: Update Practitioner Availability
+      // Step 6: Update Practitioner Availability
       await updatePractitionerAvailability(
-        db,
+        tx,
         practitioner_id,
         clinic_id,
         appointment_start_datetime,
         appointment_end_datetime,
       );
 
-      // Step 6: Create the appointment
+      // Step 7: Create the appointment
       return await createAppointment(
-        prisma,
+        tx,
         body,
         practitioner_id,
         appointment_start_datetime,
       );
     });
 
-    // Step 7: Fetch detailed appointment
-    const mappedAppointment = await fetchAppointmentDetails(db, appointment.id);
+    // Step 8: Fetch detailed appointment
+    const mappedAppointment = await fetchAppointmentDetails(
+      prisma,
+      appointment.id,
+    );
 
-    // Step 8: Serialize appointment data
+    // Step 9: Serialize appointment data
     const serializedAppointment = serializeBigInt(mappedAppointment);
-    // ✅ Emit event via Socket.IO
-    // ✅ Emit event via Socket.IO
-    // if ((global as any).io) {
-    //   (global as any).io.emit("newAppointment", serializedAppointment);
-    //   console.log("📢 Emitted 'newAppointment' event via Socket.IO");
-    // } else {
-    //   console.warn("⚠️ Socket.IO not available in global scope.");
-    // }
 
     // ✅ Emit event via Socket.IO to a specific clinic room
     if (global.io) {
@@ -423,7 +263,5 @@ export async function POST(req: NextRequest) {
     const message =
       error instanceof Error ? error.message : "An unexpected error occurred";
     return NextResponse.json({ error: message }, { status: 400 });
-  } finally {
-    await db.$disconnect();
   }
 }

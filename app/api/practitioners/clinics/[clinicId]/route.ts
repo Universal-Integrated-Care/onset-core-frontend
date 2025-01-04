@@ -125,7 +125,7 @@ export async function GET(req: NextRequest, props: Props) {
 
     console.log("🏥 Clinic ID from params:", clinicId);
 
-    if (!clinicId || isNaN(clinicId) || clinicId <= 0) {
+    if (!clinicId || isNaN(Number(clinicId)) || Number(clinicId) <= 0) {
       return NextResponse.json(
         { error: "Invalid or missing Clinic ID." },
         { status: 400 },

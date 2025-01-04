@@ -18,10 +18,11 @@ export type Appointment = {
 };
 
 // ✅ Define Columns
-export const columns: ColumnDef<Appointment>[] = [
+export const columns: ColumnDef<Appointment, unknown>[] = [
   {
     header: "ID",
     cell: ({ row }) => <p className="text-14-medium">{row.index + 1}</p>,
+    accessorKey: "id",
   },
   {
     accessorKey: "patient",

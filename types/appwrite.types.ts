@@ -10,7 +10,8 @@ export interface ClinicType {
 
 export interface Patient extends Models.Document {
   userId: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
   birthDate: Date;

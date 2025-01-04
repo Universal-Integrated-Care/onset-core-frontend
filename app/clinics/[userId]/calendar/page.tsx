@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Calendar, Stethoscope } from "lucide-react";
 import DashboardLoader from "@/components/DashboardLoader";
+import { EventHoveringArg } from "@fullcalendar/core";
 
 interface Practitioner {
   id: string;
@@ -47,18 +48,35 @@ interface BlockedSlot {
   is_blocked: boolean;
 }
 
+interface ExtendedProps {
+  patientName?: string;
+  duration: number;
+  status: string;
+}
+
+interface Event {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  patientId: string;
+  extendedProps: ExtendedProps;
+}
+
 const PractitionerCalendar = () => {
   const router = useRouter();
   const [practitioners, setPractitioners] = useState<Practitioner[]>([]);
   const [selectedPractitioner, setSelectedPractitioner] =
     useState<Practitioner | null>(null);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [patientMap, setPatientMap] = useState<{ [key: string]: string }>({});
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
+  const [clinicId, setClinicId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isValidSession, setIsValidSession] = useState<boolean>(false);
 
   const [tooltip, setTooltip] = useState<{
     visible: boolean;
@@ -94,7 +112,7 @@ const PractitionerCalendar = () => {
           return;
         }
 
-        setClinicId(clinicId);
+        setClinicId(String(clinicId));
         setUserId(userId);
         setIsValidSession(true);
       } catch (error) {
@@ -244,23 +262,13 @@ const PractitionerCalendar = () => {
     }
   };
 
-  const handleMouseEnter = (info: {
-    event: {
-      extendedProps: {
-        patientName?: string;
-        duration: number;
-        status: string;
-      };
-    };
-    jsEvent: { clientX: number; clientY: number };
-  }) => {
-    const { patientName, duration, status } = info.event.extendedProps;
+  const handleMouseEnter = (info: EventHoveringArg) => {
+    const { patientName, duration, status } = info.event
+      .extendedProps as ExtendedProps;
     const tooltipContent =
       status === "Blocked"
         ? `📝 Status: ${status}\n⏱ Duration: ${duration || "N/A"} mins`
-        : `📝 Status: ${status}\n👤 Patient: ${patientName}\n⏱ Duration: ${
-            duration || "N/A"
-          } mins`;
+        : `📝 Status: ${status}\n👤 Patient: ${patientName}\n⏱ Duration: ${duration || "N/A"} mins`;
 
     setTooltip({
       visible: true,
@@ -286,6 +294,14 @@ const PractitionerCalendar = () => {
 
   if (isLoading) {
     return <DashboardLoader text="Loading Calendar, please wait..." />;
+  }
+
+  if (!clinicId) {
+    return <div>Please select a clinic.</div>;
+  }
+
+  if (!isValidSession) {
+    return <div>Please log in to access the calendar.</div>;
   }
 
   return (
@@ -356,7 +372,6 @@ const PractitionerCalendar = () => {
           <div className="space-y-2 mb-4">
             <div className="flex gap-4">
               <Select
-                className="flex-1"
                 onValueChange={(value) => {
                   const practitioner = practitioners.find(
                     (p) => p.id === value,

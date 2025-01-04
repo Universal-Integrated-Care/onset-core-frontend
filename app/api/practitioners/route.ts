@@ -418,23 +418,13 @@ export async function DELETE(req: NextRequest, props: Props) {
       { message: `Practitioner with ID ${id} deleted successfully.` },
       { status: 200 },
     );
-  } catch (error: Error | unknown) {
-    console.error(
-      "❌ Error Deleting Practitioner:",
-      error instanceof Error ? error.message : error,
-    );
-
-    // Prisma-specific error handling
-    if (error.code === "P2025") {
-      return NextResponse.json(
-        { error: "Practitioner not found or already deleted." },
-        { status: 404 },
-      );
-    }
-
+  } catch (error: unknown) {
     return NextResponse.json(
       {
-        error: error.message || "Failed to delete practitioner.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete practitioner.",
         details: error,
       },
       { status: 500 },

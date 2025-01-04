@@ -7,10 +7,26 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { EventHoveringArg } from "@fullcalendar/core";
+
+interface ExtendedProps {
+  patientName?: string;
+  duration: number;
+  status: string;
+}
+
+interface Event {
+  id: string;
+  title: string;
+  start: string; // or Date
+  end: string; // or Date
+  patientId: string;
+  extendedProps: ExtendedProps;
+}
 
 const FullscreenCalendar = () => {
   const searchParams = useSearchParams();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<Event[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const practitionerId = searchParams.get("practitioner");
@@ -22,13 +38,15 @@ const FullscreenCalendar = () => {
     y: number;
   }>({ visible: false, content: "", x: 0, y: 0 });
 
+  const [patientMap, setPatientMap] = useState<{ [key: string]: string }>({});
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch patients
         const patientsRes = await fetch("/api/patients");
         const patientsData = await patientsRes.json();
-        const pMap = Object.fromEntries(
+        const pMap: { [key: string]: string } = Object.fromEntries(
           patientsData.patients.map((p: PatientBasic) => [
             p.id,
             `${p.first_name} ${p.last_name}`,
@@ -45,7 +63,7 @@ const FullscreenCalendar = () => {
         const appointmentsData = await appointmentsRes.json();
         const blockedData = await blockedRes.json();
 
-        const allEvents = [
+        const allEvents: Event[] = [
           ...appointmentsData.appointments.map((appt: Appointment) => ({
             id: appt.id,
             title: `👤 ${pMap[appt.patient_id] || "Unknown Patient"}`,
@@ -105,23 +123,13 @@ const FullscreenCalendar = () => {
     }
   }, [practitionerId]);
 
-  const handleMouseEnter = (info: {
-    event: {
-      extendedProps: {
-        patientName?: string;
-        duration: number;
-        status: string;
-      };
-    };
-    jsEvent: { clientX: number; clientY: number };
-  }) => {
-    const { patientName, duration, status } = info.event.extendedProps;
+  const handleMouseEnter = (info: EventHoveringArg) => {
+    const { patientName, duration, status } = info.event
+      .extendedProps as ExtendedProps;
     const tooltipContent =
       status === "Blocked"
         ? `📝 Status: ${status}\n⏱ Duration: ${duration || "N/A"} mins`
-        : `📝 Status: ${status}\n👤 Patient: ${patientName}\n⏱ Duration: ${
-            duration || "N/A"
-          } mins`;
+        : `📝 Status: ${status}\n👤 Patient: ${patientName}\n⏱ Duration: ${duration || "N/A"} mins`;
 
     setTooltip({
       visible: true,
@@ -135,12 +143,22 @@ const FullscreenCalendar = () => {
     setTooltip({ visible: false, content: "", x: 0, y: 0 });
   };
 
+  // Define the renderEvent function
+  const renderEvent = (event: Event) => {
+    const patientName = patientMap[event.patientId] || "Unknown Patient"; // Adjust based on your event structure
+    return `${patientName} - ${event.title}`; // Return a string instead of JSX
+  };
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-dark-100 text-gray-200">
         <div className="text-xl">Loading calendar...</div>
       </div>
     );
+  }
+
+  if (Object.keys(patientMap).length === 0) {
+    return <div>No patients found.</div>;
   }
 
   return (
@@ -153,7 +171,10 @@ const FullscreenCalendar = () => {
           center: "title",
           right: "dayGridMonth,timeGridWeek,timeGridDay",
         }}
-        events={events}
+        events={events.map((event) => ({
+          ...event,
+          title: renderEvent(event),
+        }))}
         eventMouseEnter={handleMouseEnter}
         eventMouseLeave={handleMouseLeave}
         height="100%"

@@ -51,6 +51,15 @@ import prisma from "@/lib/prisma";
  *                   type: string
  *                   example: "Failed to fetch enum values."
  */
+
+interface PractitionerType {
+  enumlabel: string; // Define the structure
+}
+
+interface Specialization {
+  enumlabel: string; // Define the structure
+}
+
 export async function GET() {
   try {
     // Fetch practitionertype enum values
@@ -64,8 +73,10 @@ export async function GET() {
     >`SELECT enumlabel FROM pg_enum WHERE enumtypid = 'specialization'::regtype`;
 
     return NextResponse.json({
-      practitionerTypes: practitionerTypes.map((t) => t.enumlabel),
-      specializations: specializations.map((s) => s.enumlabel),
+      practitionerTypes: practitionerTypes.map(
+        (t: PractitionerType) => t.enumlabel,
+      ),
+      specializations: specializations.map((s: Specialization) => s.enumlabel),
     });
   } catch (error: Error | unknown) {
     console.error(

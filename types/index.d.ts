@@ -72,6 +72,10 @@ declare interface BlockedSlot {
   id: string;
   start_time: string;
   end_time: string;
+  date: string;
+  day_of_week: string;
+  is_blocked: boolean;
+  is_available: boolean;
 }
 
 declare interface CalendarEvent {
