@@ -397,8 +397,8 @@ export async function POST(req: NextRequest) {
     // }
 
     // ✅ Emit event via Socket.IO to a specific clinic room
-    if ((global as any).io) {
-      (global as any).io
+    if (global.io) {
+      global.io
         .to(`clinic_${clinic_id}`)
         .emit("newAppointment", serializedAppointment);
       console.log(
@@ -417,12 +417,11 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     console.error("❌ Error creating appointment:", error);
-    return NextResponse.json(
-      { error: error.message || "An unexpected error occurred." },
-      { status: 400 },
-    );
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred";
+    return NextResponse.json({ error: message }, { status: 400 });
   } finally {
     await db.$disconnect();
   }
