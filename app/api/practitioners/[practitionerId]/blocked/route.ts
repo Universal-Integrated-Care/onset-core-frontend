@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
 import moment from "moment-timezone";
-import { convertToMelbourneTime } from "@/lib/utils";
 
 /**
  * Fetch Blocked Slots for a Practitioner (Date-specific and Recurring)
@@ -216,7 +215,7 @@ export async function GET(req: NextRequest, props: Props) {
     );
 
     // Base query condition
-    const queryConditions: any = {
+    const queryConditions: PractitionerAvailabilityQuery = {
       practitioner_id: BigInt(practitionerId),
       is_blocked: true,
     };
@@ -349,7 +348,7 @@ export async function POST(req: NextRequest, props: Props) {
 
     // ✅ Generate Date Range Between Start and End Datetimes
     const createdBlockages = [];
-    let currentDate = parsedStartDatetime.clone();
+    const currentDate = parsedStartDatetime.clone();
 
     while (currentDate.isSameOrBefore(parsedEndDatetime, "day")) {
       const startDateTime = currentDate

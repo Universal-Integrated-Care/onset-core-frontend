@@ -33,7 +33,9 @@ const AppointmentModal = ({
   onUpdate,
 }: AppointmentModalProps) => {
   const [open, setOpen] = useState(false);
-  const [appointmentData, setAppointmentData] = useState<any>(null);
+  const [appointmentData, setAppointmentData] = useState<Appointment | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

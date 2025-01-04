@@ -12,7 +12,10 @@ const pool = new Pool({
   connectionString: DATABASE_URL,
 });
 
-export const query = async (text: string, params?: any[]) => {
+export const query = async (
+  text: string,
+  params?: (string | number | boolean | Date | null)[],
+) => {
   try {
     const result = await pool.query(text, params);
     return result.rows;

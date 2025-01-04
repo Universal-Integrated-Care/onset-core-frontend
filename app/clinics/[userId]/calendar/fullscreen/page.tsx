@@ -11,7 +11,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 const FullscreenCalendar = () => {
   const searchParams = useSearchParams();
   const [events, setEvents] = useState([]);
-  const [patientMap, setPatientMap] = useState({});
+
   const [isLoading, setIsLoading] = useState(true);
   const practitionerId = searchParams.get("practitioner");
 
@@ -29,7 +29,7 @@ const FullscreenCalendar = () => {
         const patientsRes = await fetch("/api/patients");
         const patientsData = await patientsRes.json();
         const pMap = Object.fromEntries(
-          patientsData.patients.map((p: any) => [
+          patientsData.patients.map((p: PatientBasic) => [
             p.id,
             `${p.first_name} ${p.last_name}`,
           ]),
@@ -46,7 +46,7 @@ const FullscreenCalendar = () => {
         const blockedData = await blockedRes.json();
 
         const allEvents = [
-          ...appointmentsData.appointments.map((appt: any) => ({
+          ...appointmentsData.appointments.map((appt: Appointment) => ({
             id: appt.id,
             title: `👤 ${pMap[appt.patient_id] || "Unknown Patient"}`,
             start: appt.appointment_start_datetime,
@@ -74,7 +74,7 @@ const FullscreenCalendar = () => {
               status: appt.status,
             },
           })),
-          ...blockedData.blockedSlots.map((slot: any) => ({
+          ...blockedData.blockedSlots.map((slot: BlockedSlot) => ({
             id: slot.id,
             title: "🚫 Blocked Slot",
             start: slot.start_time,
@@ -105,7 +105,16 @@ const FullscreenCalendar = () => {
     }
   }, [practitionerId]);
 
-  const handleMouseEnter = (info: any) => {
+  const handleMouseEnter = (info: {
+    event: {
+      extendedProps: {
+        patientName?: string;
+        duration: number;
+        status: string;
+      };
+    };
+    jsEvent: { clientX: number; clientY: number };
+  }) => {
     const { patientName, duration, status } = info.event.extendedProps;
     const tooltipContent =
       status === "Blocked"

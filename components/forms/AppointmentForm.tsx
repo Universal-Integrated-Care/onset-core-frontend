@@ -151,9 +151,14 @@ const AppointmentForm = ({
         status: payload.status,
         appointment_start_datetime: payload.appointment_start_datetime,
       });
-    } catch (err: any) {
-      console.error("❌ Error submitting form:", err.message);
-      setError(err.message || `Failed to ${type} appointment`);
+    } catch (err: Error | unknown) {
+      console.error(
+        "❌ Error submitting form:",
+        err instanceof Error ? err.message : err,
+      );
+      setError(
+        err instanceof Error ? err.message : `Failed to ${type} appointment`,
+      );
     } finally {
       setIsLoading(false);
     }

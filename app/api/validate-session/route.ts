@@ -173,8 +173,11 @@ export async function GET(req: NextRequest) {
       valid: true,
       user: userData,
     });
-  } catch (error: any) {
-    console.error("❌ Error validating session:", error.message || error);
+  } catch (error: Error | unknown) {
+    console.error(
+      "❌ Error validating session:",
+      error instanceof Error ? error.message : error,
+    );
     return NextResponse.json(
       { error: "Internal server error." },
       { status: 500 },

@@ -216,8 +216,11 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ practitioners: serializeBigInt(practitioners) });
-  } catch (error: any) {
-    console.error("❌ Error fetching practitioners:", error.message);
+  } catch (error: Error | unknown) {
+    console.error(
+      "❌ Error fetching practitioners:",
+      error instanceof Error ? error.message : error,
+    );
     return NextResponse.json(
       { error: "Failed to fetch practitioners." },
       { status: 500 },
@@ -332,23 +335,33 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
-    console.error("❌ Backend Error:", error);
+  } catch (error: Error | unknown) {
+    console.error(
+      "❌ Backend Error:",
+      error instanceof Error ? error.message : error,
+    );
 
-    // Prisma-specific error handling
-    if (error.code === "P2002") {
-      return NextResponse.json(
-        {
+    // Type guard for Prisma error
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      "meta" in error
+    ) {
+      if (error.code === "P2002") {
+        return NextResponse.json({
           error: "A unique constraint violation occurred. Check email/phone.",
           details: error.meta,
-        },
-        { status: 400 },
-      );
+        });
+      }
     }
 
     return NextResponse.json(
       {
-        error: error.message || "Failed to add practitioner.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to add practitioner.",
         details: error,
       },
       { status: 500 },
@@ -405,8 +418,11 @@ export async function DELETE(req: NextRequest, props: Props) {
       { message: `Practitioner with ID ${id} deleted successfully.` },
       { status: 200 },
     );
-  } catch (error: any) {
-    console.error("❌ Error Deleting Practitioner:", error);
+  } catch (error: Error | unknown) {
+    console.error(
+      "❌ Error Deleting Practitioner:",
+      error instanceof Error ? error.message : error,
+    );
 
     // Prisma-specific error handling
     if (error.code === "P2025") {

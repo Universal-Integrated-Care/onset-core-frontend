@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 declare type SearchParamProps = {
   params: { [key: string]: string };
   searchParams: { [key: string]: string | string[] | undefined };
@@ -55,3 +53,47 @@ declare type UpdateAppointmentParams = {
   appointment: Appointment;
   type: string;
 };
+
+declare interface PractitionerAvailabilityQuery {
+  practitioner_id: bigint;
+  is_blocked: boolean;
+  date?: Date;
+  start_time?: { gte: Date };
+  end_time?: { lte: Date };
+}
+
+declare interface PatientBasic {
+  id: string;
+  first_name: string;
+  last_name: string;
+}
+
+declare interface BlockedSlot {
+  id: string;
+  start_time: string;
+  end_time: string;
+}
+
+declare interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  backgroundColor: string;
+  borderColor: string;
+  textColor: string;
+  extendedProps: {
+    patientId?: string;
+    patientName?: string;
+    duration: number;
+    status: string;
+  };
+}
+
+declare interface Appointment {
+  id: string;
+  patient_id: string;
+  appointment_start_datetime: string;
+  duration: number;
+  status: string;
+}

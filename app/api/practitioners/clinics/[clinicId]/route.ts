@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 /**
  * Helper Function to Convert BigInt to Number in Objects
  */
-function serializeBigInt(obj: any): any {
+function serializeBigInt(obj: unknown): unknown {
   if (typeof obj === "bigint") {
     return Number(obj);
   }

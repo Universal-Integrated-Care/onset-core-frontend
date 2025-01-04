@@ -34,7 +34,7 @@ export enum FormFieldType {
 }
 
 interface CustomProps {
-  control: Control<any>;
+  control: Control<Record<string, unknown>>;
   fieldType: FormFieldType;
   name: string;
   label?: string;
@@ -228,8 +228,30 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
                     props.children &&
                     Array.isArray(React.Children.toArray(props.children)) &&
                     React.Children.toArray(props.children).find(
-                      (child: any) => child.props.value === field.value,
-                    )?.props.children}
+                      (
+                        child,
+                      ): child is React.ReactElement<{
+                        value: unknown;
+                        children?: React.ReactNode;
+                      }> =>
+                        React.isValidElement(child) &&
+                        typeof child.props === "object" &&
+                        child.props !== null &&
+                        "value" in child.props,
+                    )?.props?.value === field.value &&
+                    React.Children.toArray(props.children).find(
+                      (
+                        child,
+                      ): child is React.ReactElement<{
+                        value: unknown;
+                        children?: React.ReactNode;
+                      }> =>
+                        React.isValidElement(child) &&
+                        typeof child.props === "object" &&
+                        child.props !== null &&
+                        "value" in child.props &&
+                        child.props.value === field.value,
+                    )?.props?.children}
                 </SelectValue>
               </SelectTrigger>
             </FormControl>

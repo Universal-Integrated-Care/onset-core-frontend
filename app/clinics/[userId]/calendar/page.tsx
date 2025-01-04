@@ -52,7 +52,7 @@ const PractitionerCalendar = () => {
   const [practitioners, setPractitioners] = useState<Practitioner[]>([]);
   const [selectedPractitioner, setSelectedPractitioner] =
     useState<Practitioner | null>(null);
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [patientMap, setPatientMap] = useState<{ [key: string]: string }>({});
@@ -132,7 +132,7 @@ const PractitionerCalendar = () => {
         if (!res.ok) throw new Error("Failed to fetch patients");
         const data = await res.json();
         const pMap = Object.fromEntries(
-          data.patients.map((p: any) => [
+          data.patients.map((p: PatientBasic) => [
             p.id,
             `${p.first_name} ${p.last_name}`,
           ]),
@@ -245,7 +245,16 @@ const PractitionerCalendar = () => {
     }
   };
 
-  const handleMouseEnter = (info: any) => {
+  const handleMouseEnter = (info: {
+    event: {
+      extendedProps: {
+        patientName?: string;
+        duration: number;
+        status: string;
+      };
+    };
+    jsEvent: { clientX: number; clientY: number };
+  }) => {
     const { patientName, duration, status } = info.event.extendedProps;
     const tooltipContent =
       status === "Blocked"

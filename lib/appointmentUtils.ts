@@ -1,17 +1,17 @@
-import { serializeBigInt } from "@/lib/utils";
-import moment from "moment-timezone";
+import { PrismaClient } from "@prisma/client";
 
-const parseTime = (time: string | null): Date | null => {
-  return time ? new Date(`1970-01-01T${time}Z`) : null;
-};
-/**
- * ✅ Create Appointment with moment.utc
- */
+interface AppointmentBody {
+  patient_id: string;
+  clinic_id: string;
+  duration: number;
+  appointment_context?: string;
+  status?: string;
+}
+
 export async function createAppointment(
-  db: any,
-  body: any,
-  practitioner_id: any,
-  appointment_start_datetime: string,
+  db: PrismaClient,
+  body: AppointmentBody,
+  practitioner_id: string | null,
 ) {
   const {
     patient_id,

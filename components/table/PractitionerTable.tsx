@@ -71,9 +71,14 @@ const PractitionerTable = ({ newPractitioner }: PractitionerTableProps) => {
 
       // Remove deleted practitioner from the state
       setPractitioners((prev) => prev.filter((p) => p.id !== id));
-    } catch (error: any) {
-      console.error("❌ Error Deleting Practitioner:", error.message);
-      alert(`Error: ${error.message}`);
+    } catch (error: Error | unknown) {
+      console.error(
+        "❌ Error Deleting Practitioner:",
+        error instanceof Error ? error.message : error,
+      );
+      alert(
+        `Error: ${error instanceof Error ? error.message : "Failed to delete practitioner"}`,
+      );
     }
   };
 

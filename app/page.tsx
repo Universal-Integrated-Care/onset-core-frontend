@@ -18,6 +18,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 const LogoText = () => (
   <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
@@ -162,7 +163,7 @@ export default function HomePage() {
             <div className="relative lg:block">
               <div className="relative h-[500px] w-full rounded-lg overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent" />
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1587854680352-936b22b91030?auto=format&fit=crop&w=800&q=80"
                   alt="AI Healthcare Technology"
                   className="object-cover w-full h-full rounded-lg"

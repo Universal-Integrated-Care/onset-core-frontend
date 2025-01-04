@@ -39,8 +39,10 @@ export async function GET(req: NextRequest, props: Props) {
     }
 
     return NextResponse.json({ practitioner: serializeBigInt(practitioner) });
-  } catch (error: any) {
-    console.error("❌ Error fetching practitioner details:", error.message);
+  } catch (error: Error | unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("❌ Error fetching practitioner details:", errorMessage);
     return NextResponse.json(
       { error: "Failed to fetch practitioner details." },
       { status: 500 },
@@ -95,11 +97,16 @@ export async function DELETE(req: NextRequest, props: Props) {
       },
       { status: 200 },
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Error Deleting Practitioner:", error);
 
     // Prisma-specific error handling
-    if (error.code === "P2025") {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2025"
+    ) {
       return NextResponse.json(
         { error: "Practitioner not found or already deleted." },
         { status: 404 },

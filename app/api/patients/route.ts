@@ -127,8 +127,10 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ patients: serializeBigInt(patients) });
-  } catch (error: any) {
-    console.error("❌ Error fetching patients:", error.message);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("❌ Error fetching patients:", errorMessage);
     return NextResponse.json(
       { error: "Failed to fetch patients." },
       { status: 500 },

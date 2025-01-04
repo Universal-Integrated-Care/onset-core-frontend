@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
     );
 
     // Base query condition
-    const queryConditions: any = {
+    const queryConditions: PractitionerAvailabilityQuery = {
       practitioner_id: BigInt(practitionerId),
       is_blocked: true,
     };
