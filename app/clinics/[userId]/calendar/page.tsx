@@ -57,9 +57,8 @@ const PractitionerCalendar = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [patientMap, setPatientMap] = useState<{ [key: string]: string }>({});
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
-  const [clinicId, setClinicId] = useState<number | null>(null);
+
   const [userId, setUserId] = useState<string | null>(null);
-  const [isValidSession, setIsValidSession] = useState<boolean | null>(null);
 
   const [tooltip, setTooltip] = useState<{
     visible: boolean;

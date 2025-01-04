@@ -8,7 +8,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Control } from "react-hook-form";
+import { Control, FieldValues } from "react-hook-form";
 import Image from "next/image";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
@@ -45,10 +45,19 @@ interface CustomProps {
   dateformat?: string;
   showTimeSelect?: boolean;
   children?: React.ReactNode;
-  renderSkeleton?: (field: any) => React.ReactNode;
+  renderSkeleton?: (field: {
+    value: unknown;
+    onChange: (value: unknown) => void;
+  }) => React.ReactNode;
 }
 
-const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
+const RenderField = ({
+  field,
+  props,
+}: {
+  field: FieldValues;
+  props: CustomProps;
+}) => {
   const [showPassword, setShowPassword] = useState(false);
 
   switch (props.fieldType) {

@@ -27,15 +27,13 @@ interface AppointmentModalProps {
 
 const AppointmentModal = ({
   type,
-  patientId,
+
   appointmentId,
   clinicId,
   onUpdate,
 }: AppointmentModalProps) => {
   const [open, setOpen] = useState(false);
-  const [appointmentData, setAppointmentData] = useState<Appointment | null>(
-    null,
-  );
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,9 +54,16 @@ const AppointmentModal = ({
         }
         const { appointment } = await res.json();
         setAppointmentData(appointment);
-      } catch (error: any) {
-        console.error("❌ Error fetching appointment details:", error.message);
-        setError(error.message || "Failed to fetch appointment details");
+      } catch (error: Error | unknown) {
+        console.error(
+          "❌ Error fetching appointment details:",
+          error instanceof Error ? error.message : error,
+        );
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch appointment details",
+        );
       } finally {
         setIsLoading(false);
       }

@@ -29,19 +29,19 @@ interface DataTableProps<TData, TValue> {
   clinicId: string; // ✅ Add clinicId
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends Appointment, TValue>({
   columns,
   data: initialData,
   clinicId,
 }: DataTableProps<TData, TValue>) {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState<TData[]>(initialData);
   const [globalFilter, setGlobalFilter] = useState("");
 
   // ✅ Update a specific row in the table
   const handleRowUpdate = (updatedRow: Partial<TData>, rowId: string) => {
     setData((prevData) =>
       prevData.map((row) =>
-        (row as any).id === rowId ? { ...row, ...updatedRow } : row,
+        "id" in row && row.id === rowId ? { ...row, ...updatedRow } : row,
       ),
     );
   };
@@ -61,7 +61,8 @@ export function DataTable<TData, TValue>({
       );
       setData((prevData) => {
         const exists = prevData.some(
-          (appointment: any) => appointment.id === (newAppointment as any).id,
+          (appointment: Appointment) =>
+            appointment.id === (newAppointment as Appointment).id,
         );
         return exists ? prevData : [newAppointment, ...prevData];
       });

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -63,22 +63,29 @@ const AppointmentForm = ({
   /**
    * ✅ Fetch Practitioners
    */
-  const fetchPractitioners = async () => {
+  const fetchPractitioners = useCallback(async () => {
     try {
       const response = await fetch(`/api/practitioners/clinics/${clinicId}`);
       if (!response.ok) throw new Error("Failed to fetch practitioners list");
       const data = await response.json();
       setPractitioners(data.practitioners || []);
-    } catch (err: any) {
-      console.error("❌ Error fetching practitioners:", err.message);
-      setError(err.message || "Failed to fetch practitioners list");
+    } catch (err: Error | unknown) {
+      console.error(
+        "❌ Error fetching practitioners:",
+        err instanceof Error ? err.message : err,
+      );
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch practitioners list",
+      );
     }
-  };
+  }, [clinicId]);
 
   /**
    * ✅ Fetch Appointment Details for Prefill
    */
-  const fetchAppointment = async () => {
+  const fetchAppointment = useCallback(async () => {
     if (!appointmentId) return;
 
     try {
@@ -93,11 +100,18 @@ const AppointmentForm = ({
           ? new Date(appointment.appointment_start_datetime)
           : new Date(),
       });
-    } catch (err: any) {
-      console.error("❌ Error fetching appointment:", err.message);
-      setError(err.message || "Failed to fetch appointment details");
+    } catch (err: Error | unknown) {
+      console.error(
+        "❌ Error fetching appointment:",
+        err instanceof Error ? err.message : err,
+      );
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch appointment details",
+      );
     }
-  };
+  }, [appointmentId]);
 
   /**
    * ✅ Initial Data Fetching
@@ -109,16 +123,21 @@ const AppointmentForm = ({
 
       try {
         await Promise.all([fetchPractitioners(), fetchAppointment()]);
-      } catch (err: any) {
-        console.error("❌ Error during fetch:", err.message);
-        setError(err.message || "Failed to fetch initial data");
+      } catch (err: Error | unknown) {
+        console.error(
+          "❌ Error during fetch:",
+          err instanceof Error ? err.message : err,
+        );
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch initial data",
+        );
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [clinicId, appointmentId]);
+  }, [clinicId, appointmentId, fetchAppointment, fetchPractitioners]);
 
   /**
    * ✅ Handle Form Submission
@@ -132,7 +151,12 @@ const AppointmentForm = ({
         throw new Error("Appointment ID is required for updates.");
       }
 
-      const payload: any = {
+      const payload: {
+        practitioner_id: number;
+        appointment_start_datetime: string;
+        appointment_context?: string;
+        status: string;
+      } = {
         practitioner_id: Number(values.practitioner_id),
         appointment_start_datetime:
           values.appointment_start_datetime.toISOString(),

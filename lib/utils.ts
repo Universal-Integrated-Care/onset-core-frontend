@@ -20,7 +20,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
+export const parseStringify = (value: unknown) =>
+  JSON.parse(JSON.stringify(value));
 
 export const convertFileToUrl = (file: File) => URL.createObjectURL(file);
 
@@ -95,11 +96,11 @@ export function decryptKey(passkey: string) {
  * ✅ Helper Function to Serialize BigInt
  * Converts BigInt values to String to prevent JSON serialization errors.
  */
-export function serializeBigInt(obj: any) {
+export function serializeBigInt(obj: unknown): unknown {
   if (Array.isArray(obj)) {
     return obj.map(serializeBigInt);
   } else if (obj !== null && typeof obj === "object") {
-    const serializedObj: any = {};
+    const serializedObj: Record<string, unknown> = {};
     for (const key in obj) {
       if (typeof obj[key] === "bigint") {
         serializedObj[key] = obj[key].toString();
@@ -111,7 +112,7 @@ export function serializeBigInt(obj: any) {
     }
     return serializedObj;
   }
-  return obj;
+  return obj; // Return the original object if it's not an array or object
 }
 
 export async function validateISODateTime(datetime: string): void {

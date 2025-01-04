@@ -16,7 +16,9 @@ interface PractitionerAvailabilityModalProps {
   practitionerId: string;
   clinicId: string;
   type: "recurring" | "override";
-  onUpdate?: (updatedData?: any) => void; // callback
+  onUpdate?: (
+    updatedData?: { id: string; start_time: string; end_time: string }[],
+  ) => void;
 }
 
 const PractitionerAvailabilityModal = ({
@@ -30,7 +32,9 @@ const PractitionerAvailabilityModal = ({
   /**
    * ✅ Close Handler
    */
-  const handleCloseModal = (updatedData?: any) => {
+  const handleCloseModal = (
+    updatedData?: { id: string; start_time: string; end_time: string }[],
+  ) => {
     setOpen(false);
     if (onUpdate && updatedData) {
       onUpdate(updatedData);

@@ -94,12 +94,17 @@ const PractitionerForm = ({
 
       form.reset(); // Reset form fields
       onClose();
-    } catch (err: any) {
-      console.error("❌ Error adding practitioner:", err.message);
+    } catch (err: unknown) {
+      console.error(
+        "❌ Error adding practitioner:",
+        err instanceof Error ? err.message : String(err),
+      );
       toast({
         title: "❌ Error",
         description:
-          err.message || "Failed to add practitioner. Please try again.",
+          err instanceof Error
+            ? err.message
+            : "Failed to add practitioner. Please try again.",
         variant: "destructive",
         className:
           "bg-gray-900 text-gray-300 p-4 rounded-lg shadow-md border border-gray-700",

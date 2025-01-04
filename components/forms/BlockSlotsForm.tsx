@@ -55,7 +55,7 @@ const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
   const apiRequest = async (
     url: string,
     method: "GET" | "POST" | "PUT" | "DELETE" = "POST",
-    payload?: any,
+    payload?: Record<string, unknown>,
   ) => {
     try {
       const response = await fetch(url, {
@@ -72,8 +72,11 @@ const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
       }
 
       return await response.json();
-    } catch (error: any) {
-      console.error(`❌ API Request Error (${method} ${url}):`, error.message);
+    } catch (error: Error | unknown) {
+      console.error(
+        `❌ API Request Error (${method} ${url}):`,
+        error instanceof Error ? error.message : error,
+      );
       throw error;
     }
   };
@@ -96,9 +99,12 @@ const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
 
       console.log("✅ Slots blocked successfully");
       onClose?.(); // Close modal if onClose is provided
-    } catch (err: any) {
-      console.error("❌ Error blocking slots:", err.message);
-      setError(err.message || "Failed to block slots");
+    } catch (err: Error | unknown) {
+      console.error(
+        "❌ Error blocking slots:",
+        err instanceof Error ? err.message : err,
+      );
+      setError(err instanceof Error ? err.message : "Failed to block slots");
     } finally {
       setIsLoading(false);
     }

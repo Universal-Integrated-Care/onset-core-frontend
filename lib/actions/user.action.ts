@@ -13,8 +13,15 @@ interface CreateUserParams {
   password: string;
 }
 
+interface User {
+  id: number;
+  email: string;
+  name: string;
+  // Add any other properties that are relevant to the user
+}
+
 interface UserResponse {
-  user: any;
+  user: User | null;
   error?: string;
 }
 

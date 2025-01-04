@@ -75,11 +75,17 @@ export const getPractitionerColumns = (
               className:
                 "bg-green-600 text-white p-4 rounded-lg shadow-md border border-green-500",
             });
-          } catch (error: any) {
-            console.error("❌ Error deleting practitioner:", error.message);
+          } catch (error: unknown) {
+            console.error(
+              "❌ Error deleting practitioner:",
+              error instanceof Error ? error.message : String(error),
+            );
             toast({
               title: "❌ Error",
-              description: error.message || "Failed to delete practitioner.",
+              description:
+                error instanceof Error
+                  ? error.message
+                  : String(error) || "Failed to delete practitioner.",
               variant: "destructive",
               className:
                 "bg-red-600 text-white p-4 rounded-lg shadow-md border border-red-500",
@@ -90,7 +96,7 @@ export const getPractitionerColumns = (
         };
 
         // Determine if you have clinic_id in row.original
-        const clinicId = (row.original as any).clinic_id || "";
+        const clinicId = (row.original as Practitioner).clinic_id || "";
 
         return (
           <div className="flex items-center gap-2">

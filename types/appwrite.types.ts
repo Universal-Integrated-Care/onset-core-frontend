@@ -1,6 +1,13 @@
 import { SerializableTurborepoAccessTraceResult } from "next/dist/build/turborepo-access-trace";
 import { Models } from "node-appwrite";
 
+// Or if it's an object type
+export interface ClinicType {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 export interface Patient extends Models.Document {
   userId: string;
   name: string;
@@ -26,18 +33,23 @@ export interface Patient extends Models.Document {
 }
 
 export interface Clinic extends Models.Document {
-  clinicianEmail: string; // Changed from email to clinicianEmail
-  clinicianPhone: string; // Added clinicianPhone
-  userId: string;
-  address: string;
-  url: string;
-  description: string;
-  clinicContext: string;
-  openingTime: string;
-  closingTime: string;
-  clinicType: string;
-  clinicImage: string;
-  clinicianName: string; // No change
+  name: string;
+  phone: string;
+  address: string | null;
+  id: bigint;
+  url: string | null;
+  description: string | null;
+  clinic_context: string | null;
+  opening_time: Date | null;
+  closing_time: Date | null;
+  clinic_type: ClinicType[]; // Ensure this type is defined
+  days_opened: DayOfWeek[]; // Ensure this type is defined
+  created_at: Date | null;
+  updated_at: Date | null;
+  clinicianEmail: string; // Add missing properties
+  clinicianPhone: string; // Add missing properties
+  userId: number; // Add missing properties
+  // Add any other properties that are required
 }
 
 export interface Appointment extends Models.Document {
@@ -50,3 +62,13 @@ export interface Appointment extends Models.Document {
   userId: string;
   cancellationReason: string | null;
 }
+
+// Define DayOfWeek as a union of string literals
+export type DayOfWeek =
+  | "Monday"
+  | "Tuesday"
+  | "Wednesday"
+  | "Thursday"
+  | "Friday"
+  | "Saturday"
+  | "Sunday";

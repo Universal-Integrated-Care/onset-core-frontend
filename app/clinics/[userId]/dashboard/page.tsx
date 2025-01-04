@@ -16,11 +16,11 @@ import {
   ChevronRight,
   UserPlus,
   Calendar,
-  Users,
   Stethoscope,
 } from "lucide-react";
 import DashboardLoader from "@/components/DashboardLoader";
 import { Practitioner } from "@/components/table/practitionerColumns";
+import BlockSlotsForm from "@/components/forms/BlockSlotsForm";
 
 interface Appointment {
   id: number;

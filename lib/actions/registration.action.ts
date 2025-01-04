@@ -4,6 +4,7 @@ import { RegisterFormValidation } from "@/lib/validation";
 import { z } from "zod";
 
 import prisma from "@/lib/prisma";
+import { Clinic } from "@/types/appwrite.types";
 
 interface CreateClinicParams {
   userId: number;
@@ -11,7 +12,7 @@ interface CreateClinicParams {
 }
 
 interface ClinicResponse {
-  clinic?: any;
+  clinic?: Clinic;
   isFirstTimeRegistration?: boolean;
   error?: string;
 }

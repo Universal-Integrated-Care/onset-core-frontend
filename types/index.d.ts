@@ -97,3 +97,15 @@ declare interface Appointment {
   duration: number;
   status: string;
 }
+
+declare interface StatCardProps {
+  count: number;
+  label: string;
+  icon: string;
+  type: "appointments" | "pending" | "cancelled";
+}
+
+declare interface DataTableRow {
+  id: string;
+  [key: string]: unknown;
+}

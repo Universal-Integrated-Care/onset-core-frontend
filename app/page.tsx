@@ -7,9 +7,7 @@ import { motion } from "framer-motion";
 import {
   ChevronRight,
   Calendar,
-  Users,
   Shield,
-  Clock,
   Activity,
   Heart,
   Mic,
@@ -143,7 +141,7 @@ export default function HomePage() {
               </h1>
               <p className="text-lg text-dark-600">
                 Transform your healthcare practice with our AI-powered platform.
-                From voice-assisted booking to intelligent analytics, we're
+                From voice-assisted booking to intelligent analytics, we are
                 bringing the future of healthcare management to you today.
               </p>
               <div className="flex gap-4">

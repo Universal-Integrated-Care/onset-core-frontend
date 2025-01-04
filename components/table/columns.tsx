@@ -1,7 +1,6 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "../ui/button";
 import Image from "next/image";
 import AppointmentModal from "../AppointmentModal";
 import StatusBadge from "../StatusBadge";

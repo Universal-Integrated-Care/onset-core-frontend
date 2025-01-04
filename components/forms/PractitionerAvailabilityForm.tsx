@@ -8,7 +8,7 @@ import { Form } from "@/components/ui/form";
 import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "../submitButton";
 import { SelectItem } from "../ui/select";
-import { formatDateTimeToMelbourne } from "@/lib/utils";
+
 import moment from "moment";
 
 /**
@@ -29,7 +29,9 @@ interface PractitionerAvailabilityFormProps {
   type: "recurring" | "override";
   practitionerId: string;
   clinicId: string;
-  onClose: (updatedData?: any) => void;
+  onClose: (
+    updatedData?: { id: string; start_time: string; end_time: string }[],
+  ) => void;
 }
 
 /**
@@ -38,7 +40,6 @@ interface PractitionerAvailabilityFormProps {
 const PractitionerAvailabilityForm = ({
   type,
   practitionerId,
-  clinicId,
   onClose,
 }: PractitionerAvailabilityFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -69,8 +70,15 @@ const PractitionerAvailabilityForm = ({
 
     try {
       // Construct the payload
-      // Construct the payload
-      const payload: any = {
+      const payload: {
+        practitioner_id: number;
+        start_time: string; // Formatted time string
+        end_time: string; // Formatted time string
+        day_of_week?: string; // Optional for recurring
+        date?: string; // Optional for override
+        is_available?: boolean; // Optional
+        is_blocked?: boolean; // Optional
+      } = {
         practitioner_id: Number(practitionerId),
         start_time: moment(values.start_time).format("HH:mm"), // Format to time string
         end_time: moment(values.end_time).format("HH:mm"), // Format to time string
@@ -108,9 +116,14 @@ const PractitionerAvailabilityForm = ({
 
       // If success, notify parent via onClose callback
       onClose(responseData.availability);
-    } catch (err: any) {
-      console.error("❌ Error updating availability:", err.message);
-      setError(err.message || "Failed to update availability");
+    } catch (err: unknown) {
+      console.error(
+        "❌ Error updating availability:",
+        err instanceof Error ? err.message : String(err),
+      );
+      setError(
+        err instanceof Error ? err.message : "Failed to update availability",
+      );
     } finally {
       setIsLoading(false);
     }

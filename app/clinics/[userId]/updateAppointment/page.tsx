@@ -96,13 +96,17 @@ const UpdateAppointmentPage = async ({ params }: SearchParamProps) => {
         />
       </div>
     );
-  } catch (error: any) {
-    console.error("❌ Error loading appointment page:", error.message || error);
+  } catch (error: Error | unknown) {
+    console.error(
+      "❌ Error loading appointment page:",
+      error instanceof Error ? error.message : error,
+    );
     return (
       <div className="flex items-center justify-center h-screen text-red-500">
         ❌{" "}
-        {error.message ||
-          "An unexpected error occurred while loading the appointment page."}
+        {error instanceof Error
+          ? error.message
+          : "An unexpected error occurred while loading the appointment page."}
       </div>
     );
   }
