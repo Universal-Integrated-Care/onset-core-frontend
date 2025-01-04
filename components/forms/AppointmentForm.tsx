@@ -111,7 +111,7 @@ const AppointmentForm = ({
           : "Failed to fetch appointment details",
       );
     }
-  }, [appointmentId]);
+  }, [appointmentId, form]);
 
   /**
    * ✅ Initial Data Fetching

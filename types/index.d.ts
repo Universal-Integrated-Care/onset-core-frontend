@@ -96,6 +96,7 @@ declare interface Appointment {
   appointment_start_datetime: string;
   duration: number;
   status: string;
+  clinic_id: string;
 }
 
 declare interface StatCardProps {

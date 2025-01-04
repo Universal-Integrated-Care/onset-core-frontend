@@ -5,7 +5,7 @@ import RegisterForm from "@/components/forms/RegisterForm";
 import { getUser } from "@/lib/actions/user.action";
 
 interface SearchParamProps {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 }
 const Register = async ({ params }: SearchParamProps) => {
   const { userId } = await params;

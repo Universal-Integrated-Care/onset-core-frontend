@@ -71,7 +71,7 @@ export function DataTable<TData extends Appointment, TValue>({
     return () => {
       socket.off("newAppointment");
     };
-  }, [setData]);
+  }, [setData, clinicId]);
 
   const table = useReactTable({
     data,

@@ -96,23 +96,21 @@ export function decryptKey(passkey: string) {
  * ✅ Helper Function to Serialize BigInt
  * Converts BigInt values to String to prevent JSON serialization errors.
  */
-export function serializeBigInt(obj: unknown): unknown {
+export function serializeBigInt(obj: unknown): number | bigint | undefined {
   if (Array.isArray(obj)) {
-    return obj.map(serializeBigInt);
+    return obj.map(serializeBigInt) as number[];
   } else if (obj !== null && typeof obj === "object") {
     const serializedObj: Record<string, unknown> = {};
     for (const key in obj) {
       if (typeof obj[key] === "bigint") {
-        serializedObj[key] = obj[key].toString();
-      } else if (obj[key] instanceof Date) {
-        serializedObj[key] = obj[key].toISOString();
+        serializedObj[key] = Number(obj[key]);
       } else {
         serializedObj[key] = serializeBigInt(obj[key]);
       }
     }
     return serializedObj;
   }
-  return obj; // Return the original object if it's not an array or object
+  return typeof obj === "bigint" ? Number(obj) : obj;
 }
 
 export async function validateISODateTime(datetime: string): void {

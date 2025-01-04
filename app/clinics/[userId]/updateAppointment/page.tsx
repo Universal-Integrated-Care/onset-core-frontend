@@ -3,7 +3,7 @@ import Image from "next/image";
 import AppointmentForm from "@/components/forms/AppointmentForm";
 
 interface SearchParamProps {
-  params: { clinicId: string; appointmentId: string };
+  params: Promise<{ clinicId: string; appointmentId: string }>;
 }
 
 // ✅ Fetch Clinic Details from Server
@@ -28,7 +28,7 @@ const fetchAppointmentById = async (appointmentId: string) => {
 
 // ✅ Main Component
 const UpdateAppointmentPage = async ({ params }: SearchParamProps) => {
-  const { clinicId, appointmentId } = params;
+  const { clinicId, appointmentId } = await params;
 
   try {
     if (!clinicId || !appointmentId) {

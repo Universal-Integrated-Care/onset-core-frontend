@@ -203,6 +203,7 @@ import {
 /**
  * Fetch Appointments by Clinic ID with Patient & Practitioner Details
  */
+
 export async function GET(req: NextRequest) {
   try {
     // ✅ Extract clinicId from query parameters
@@ -336,11 +337,11 @@ export async function POST(req: NextRequest) {
     // ✅ Wrap booking logic in a transaction
     const appointment = await db.$transaction(async (prisma) => {
       // Step 2: Validate entities
-      await validateEntities(prisma, patient_id, clinic_id, practitioner_id);
+      await validateEntities(db, patient_id, clinic_id, practitioner_id);
 
       // Step 3: Check for duplicate appointments
       await checkDuplicateAppointment(
-        prisma,
+        db,
         patient_id,
         clinic_id,
         appointment_start_datetime,
@@ -348,7 +349,7 @@ export async function POST(req: NextRequest) {
 
       // Step 4: Validate Practitioner Availability
       await validatePractitionerAvailability(
-        prisma,
+        db,
         practitioner_id,
         appointment_start_datetime,
         appointment_end_datetime,
@@ -366,7 +367,7 @@ export async function POST(req: NextRequest) {
 
       // Step 5: Update Practitioner Availability
       await updatePractitionerAvailability(
-        prisma,
+        db,
         practitioner_id,
         clinic_id,
         appointment_start_datetime,

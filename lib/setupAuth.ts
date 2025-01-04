@@ -1,7 +1,9 @@
-const { Pool } = require("pg");
+import { Pool } from "pg";
+
+import dotenv from "dotenv";
 
 // Load environment variables
-require("dotenv").config();
+dotenv.config();
 
 console.log(process.env.DATABASE_URL);
 const pool = new Pool({

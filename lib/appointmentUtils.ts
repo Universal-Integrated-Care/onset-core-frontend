@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { serializeBigInt } from "./utils";
 
 interface AppointmentBody {
   patient_id: string;
@@ -7,6 +8,35 @@ interface AppointmentBody {
   appointment_context?: string;
   status?: string;
 }
+
+interface Database {
+  patients: {
+    findUnique: (args: { where: { id: string } }) => Promise<Patient | null>;
+  };
+  clinics: {
+    findUnique: (args: { where: { id: string } }) => Promise<Clinic | null>;
+  };
+  practitioners: {
+    findUnique: (args: {
+      where: { id: string };
+    }) => Promise<Practitioner | null>;
+  };
+}
+
+type Patient = {
+  id: string;
+  // Add other patient properties
+};
+
+type Clinic = {
+  id: string;
+  // Add other clinic properties
+};
+
+type Practitioner = {
+  id: string;
+  // Add other practitioner properties as needed
+};
 
 export async function createAppointment(
   db: PrismaClient,
@@ -25,11 +55,9 @@ export async function createAppointment(
 
   const appointment = await db.patient_appointments.create({
     data: {
-      patient_id: serializeBigInt(patient_id),
-      clinic_id: serializeBigInt(clinic_id),
-      practitioner_id: practitioner_id
-        ? serializeBigInt(practitioner_id)
-        : null,
+      patient_id: serializeBigInt(patient_id) as number | undefined,
+      clinic_id: serializeBigInt(clinic_id) as number | undefined,
+      practitioner_id: practitioner_id,
       appointment_start_datetime: appointment_start_datetime,
       duration: Number(duration),
       status,
@@ -41,7 +69,7 @@ export async function createAppointment(
   return appointment;
 }
 
-export async function validateRequiredFields(body: any) {
+export async function validateRequiredFields(body: Appointment) {
   const {
     patient_id,
     clinic_id,
@@ -67,10 +95,10 @@ export async function validateRequiredFields(body: any) {
  * Validate Patient, Clinic, and Practitioner
  */
 export async function validateEntities(
-  db: any,
-  patient_id: any,
-  clinic_id: any,
-  practitioner_id: any,
+  db: Database,
+  patient_id: string,
+  clinic_id: string,
+  practitioner_id: string,
 ) {
   const [patient, clinic, practitioner] = await Promise.all([
     db.patients.findUnique({ where: { id: serializeBigInt(patient_id) } }),
@@ -118,9 +146,9 @@ export async function validateEntities(
  * ✅ Check Duplicate Appointment with moment.utc
  */
 export async function checkDuplicateAppointment(
-  db: any,
-  patient_id: any,
-  clinic_id: any,
+  db: Database,
+  patient_id: string,
+  clinic_id: string,
   appointment_start_datetime: string,
 ) {
   const existingAppointment = await db.patient_appointments.findFirst({
@@ -145,8 +173,8 @@ export async function checkDuplicateAppointment(
  * ✅ Validate Practitioner Availability with moment.utc (No Z suffix)
  */
 export async function validatePractitionerAvailability(
-  db: any,
-  practitioner_id: any,
+  db: Database,
+  practitioner_id: string,
   appointment_start_datetime: string,
   appointment_end_datetime: string,
   appointment_date: string,
@@ -154,6 +182,7 @@ export async function validatePractitionerAvailability(
   duration: number,
 ) {
   console.log("🕒 Appointment Start timestamp:", appointment_start_datetime);
+  console.log("🕒 Appointment Duration:", duration);
   console.log("🕒 Appointment End timestamp:", appointment_end_datetime);
 
   // ✅ Case 4: Blocked Slots on Specific Date and Time
@@ -304,9 +333,9 @@ export async function validatePractitionerAvailability(
  * ✅ Update Practitioner Availability with moment.utc (No Z suffix)
  */
 export async function updatePractitionerAvailability(
-  db: any,
-  practitioner_id: any,
-  clinic_id: any,
+  db: Database,
+  practitioner_id: string,
+  clinic_id: string,
   appointment_start_datetime: string,
   appointment_end_datetime: string,
 ) {
@@ -390,10 +419,10 @@ export async function updatePractitionerAvailability(
  * Validate Patient and Practitioner Association with Clinic
  */
 export async function validatePatientPractitionerClinicAssociation(
-  db: any,
-  patient_id: any,
-  practitioner_id: any,
-  clinic_id: any,
+  db: Database,
+  patient_id: string,
+  practitioner_id: string,
+  clinic_id: string,
 ) {
   const [patient, practitioner] = await Promise.all([
     db.patients.findUnique({
@@ -428,7 +457,10 @@ export async function validatePatientPractitionerClinicAssociation(
 /**
  * Fetch Appointment Details
  */
-export async function fetchAppointmentDetails(db: any, appointmentId: any) {
+export async function fetchAppointmentDetails(
+  db: Database,
+  appointmentId: string,
+) {
   const detailedAppointment = await db.patient_appointments.findUnique({
     where: { id: appointmentId },
     include: {

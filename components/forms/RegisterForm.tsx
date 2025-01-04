@@ -65,7 +65,7 @@ const RegisterForm = ({ user }: { user: User }) => {
       console.log("Form values changed:", value);
     });
     return () => subscription.unsubscribe();
-  }, [form.watch]);
+  }, [form, form.watch]);
 
   const handleProcessingComplete = (text: string) => {
     setExtractedText(text);
@@ -239,6 +239,7 @@ const RegisterForm = ({ user }: { user: User }) => {
 
         <SubmitButton isLoading={isLoading}>Register Clinic</SubmitButton>
       </form>
+      {extractedText && <p>Extracted Text: {extractedText}</p>}
     </Form>
   );
 };

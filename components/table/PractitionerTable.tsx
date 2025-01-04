@@ -1,3 +1,5 @@
+// ./components/table/PractitionerTable.tsx
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -9,7 +11,9 @@ interface PractitionerTableProps {
   newPractitioner?: Practitioner; // ✅ Allow dynamic addition of new practitioner
 }
 
-const PractitionerTable = ({ newPractitioner }: PractitionerTableProps) => {
+const PractitionerTable: React.FC<PractitionerTableProps> = ({
+  newPractitioner,
+}) => {
   const [practitioners, setPractitioners] = useState<Practitioner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,7 +81,11 @@ const PractitionerTable = ({ newPractitioner }: PractitionerTableProps) => {
         error instanceof Error ? error.message : error,
       );
       alert(
-        `Error: ${error instanceof Error ? error.message : "Failed to delete practitioner"}`,
+        `Error: ${
+          error instanceof Error
+            ? error.message
+            : "Failed to delete practitioner"
+        }`,
       );
     }
   };
