@@ -7,41 +7,14 @@ interface AppointmentBody {
   duration: number;
   appointment_context?: string;
   status?: string;
+  appointment_start_datetime?: string;
 }
-
-interface Database {
-  patients: {
-    findUnique: (args: { where: { id: string } }) => Promise<Patient | null>;
-  };
-  clinics: {
-    findUnique: (args: { where: { id: string } }) => Promise<Clinic | null>;
-  };
-  practitioners: {
-    findUnique: (args: {
-      where: { id: string };
-    }) => Promise<Practitioner | null>;
-  };
-}
-
-type Patient = {
-  id: string;
-  // Add other patient properties
-};
-
-type Clinic = {
-  id: string;
-  // Add other clinic properties
-};
-
-type Practitioner = {
-  id: string;
-  // Add other practitioner properties as needed
-};
 
 export async function createAppointment(
   db: PrismaClient,
   body: AppointmentBody,
   practitioner_id: string | null,
+  appointment_start_datetime: string,
 ) {
   const {
     patient_id,
@@ -51,25 +24,79 @@ export async function createAppointment(
     status = "PENDING",
   } = body;
 
-  // Parse appointment start datetime using moment.utc
+  // Parse appointment start datetime using your preferred method (e.g., moment.utc)
+  //const appointment_start_datetime = new Date(); // Replace with actual parsing logic
 
-  const appointment = await db.patient_appointments.create({
-    data: {
-      patient_id: serializeBigInt(patient_id) as number | undefined,
-      clinic_id: serializeBigInt(clinic_id) as number | undefined,
-      practitioner_id: practitioner_id,
-      appointment_start_datetime: appointment_start_datetime,
-      duration: Number(duration),
-      status,
-      appointment_context: appointment_context || null,
-    },
+  // Use transaction to ensure atomicity
+  const appointment = await db.$transaction(async (prisma) => {
+    // Step 2: Validate entities
+    await validateEntities(prisma, patient_id, clinic_id, practitioner_id);
+
+    // Step 3: Check for duplicate appointments
+    await checkDuplicateAppointment(
+      prisma,
+      patient_id,
+      clinic_id,
+      appointment_start_datetime.toISOString(),
+    );
+
+    // Step 4: Validate practitioner availability if applicable
+    if (practitioner_id) {
+      // Define appointment end datetime based on duration
+      const appointment_end_datetime = new Date(
+        appointment_start_datetime.getTime() + duration * 60000,
+      ).toISOString();
+
+      // Replace with actual values for dayOfWeekEnum and appointment_date
+      const dayOfWeekEnum = appointment_start_datetime.toLocaleString("en-US", {
+        weekday: "long",
+      });
+      const appointment_date = appointment_start_datetime
+        .toISOString()
+        .split("T")[0];
+
+      await validatePractitionerAvailability(
+        prisma,
+        practitioner_id,
+        appointment_start_datetime.toISOString(),
+        appointment_end_datetime,
+        appointment_date,
+        dayOfWeekEnum,
+        duration,
+      );
+
+      // Update practitioner availability
+      await updatePractitionerAvailability(
+        prisma,
+        practitioner_id,
+        clinic_id,
+        appointment_start_datetime.toISOString(),
+        appointment_end_datetime,
+      );
+    }
+
+    // Step 5: Create the appointment
+    const createdAppointment = await prisma.patient_appointments.create({
+      data: {
+        patient_id: serializeBigInt(patient_id) as number | undefined,
+        clinic_id: serializeBigInt(clinic_id) as number | undefined,
+        practitioner_id: practitioner_id
+          ? (serializeBigInt(practitioner_id) as number | undefined)
+          : null,
+        appointment_start_datetime: appointment_start_datetime,
+        duration: Number(duration),
+        status,
+        appointment_context: appointment_context || null,
+      },
+    });
+
+    console.log("✅ Appointment Created:", createdAppointment);
+    return createdAppointment;
   });
 
-  console.log("✅ Appointment Created:", appointment);
   return appointment;
 }
-
-export async function validateRequiredFields(body: Appointment) {
+export async function validateRequiredFields(body: AppointmentBody) {
   const {
     patient_id,
     clinic_id,
@@ -90,12 +117,8 @@ export async function validateRequiredFields(body: Appointment) {
     );
   }
 }
-
-/**
- * Validate Patient, Clinic, and Practitioner
- */
 export async function validateEntities(
-  db: Database,
+  db: PrismaClient, // Use the correct Prisma client type
   patient_id: string,
   clinic_id: string,
   practitioner_id: string,
@@ -110,6 +133,7 @@ export async function validateEntities(
       : Promise.resolve(null),
   ]);
 
+  // Check and throw errors for invalid data
   if (!patient) {
     throw new Error(`The patient ID ${patient_id} does not exist.`);
   }
@@ -142,19 +166,16 @@ export async function validateEntities(
   );
 }
 
-/**
- * ✅ Check Duplicate Appointment with moment.utc
- */
 export async function checkDuplicateAppointment(
-  db: Database,
+  db: PrismaClient,
   patient_id: string,
   clinic_id: string,
   appointment_start_datetime: string,
 ) {
   const existingAppointment = await db.patient_appointments.findFirst({
     where: {
-      patient_id: serializeBigInt(patient_id),
-      clinic_id: serializeBigInt(clinic_id),
+      patient_id: serializeBigInt(patient_id) as string,
+      clinic_id: serializeBigInt(clinic_id) as string,
       appointment_start_datetime: appointment_start_datetime,
       status: { not: "CANCELLED" },
     },
@@ -169,11 +190,8 @@ export async function checkDuplicateAppointment(
   console.log("✅ No duplicate appointment found.");
 }
 
-/**
- * ✅ Validate Practitioner Availability with moment.utc (No Z suffix)
- */
 export async function validatePractitionerAvailability(
-  db: Database,
+  db: PrismaClient,
   practitioner_id: string,
   appointment_start_datetime: string,
   appointment_end_datetime: string,
@@ -185,20 +203,20 @@ export async function validatePractitionerAvailability(
   console.log("🕒 Appointment Duration:", duration);
   console.log("🕒 Appointment End timestamp:", appointment_end_datetime);
 
-  // ✅ Case 4: Blocked Slots on Specific Date and Time
+  // Check for blocked slots
   const blockedSlot = await db.practitioner_availability.findFirst({
     where: {
-      practitioner_id: serializeBigInt(practitioner_id),
+      practitioner_id: serializeBigInt(practitioner_id) as string,
       is_blocked: true,
       is_available: null,
       OR: [
         {
-          // Case 1: Overlaps with blocked slot
+          // Overlaps with blocked slot
           start_time: { lt: appointment_end_datetime },
           end_time: { gt: appointment_start_datetime },
         },
         {
-          // Case 2: Appointment fully overlaps the blocked slot
+          // Appointment fully overlaps the blocked slot
           start_time: { gte: appointment_start_datetime },
           end_time: { lte: appointment_end_datetime },
         },
@@ -219,12 +237,12 @@ export async function validatePractitionerAvailability(
   }
 
   console.log(
-    `🔍 Checking Availability for Practitioner ID: ${practitioner_id}, Date: ${appointment_start_datetime}, Day: ${dayOfWeekEnum}, Start Time: ${appointment_start_datetime}, End Time: ${appointment_end_datetime}`,
+    `🔍 Checking Availability for Practitioner ID: ${practitioner_id}, Date: ${appointment_date}, Day: ${dayOfWeekEnum}, Start Time: ${appointment_start_datetime}, End Time: ${appointment_end_datetime}`,
   );
 
   const overlappingAppointment = await db.patient_appointments.findFirst({
     where: {
-      practitioner_id: serializeBigInt(practitioner_id),
+      practitioner_id: serializeBigInt(practitioner_id) as string,
       status: { not: "CANCELLED" },
       AND: [
         {
@@ -234,7 +252,7 @@ export async function validatePractitionerAvailability(
         },
         {
           appointment_start_datetime: {
-            gte: appointment_start_datetime, // New appointment starts before existing ends
+            gt: appointment_start_datetime, // New appointment starts before existing ends
           },
         },
       ],
@@ -250,13 +268,14 @@ export async function validatePractitionerAvailability(
       `The selected time slot ${overlappingAppointment.appointment_start_datetime} for duration of ${overlappingAppointment.duration} minutes overlaps with another appointment.`,
     );
   }
-  // ✅ Step 1: Check Specific Date Override
+
+  // Check Specific Date Override
   const overrideAvailability = await db.practitioner_availability.findFirst({
     where: {
-      practitioner_id: serializeBigInt(practitioner_id),
+      practitioner_id: serializeBigInt(practitioner_id) as string,
       is_available: true,
       is_blocked: false,
-      date: appointment_start_datetime, // Specific date availability
+      date: appointment_date, // Specific date availability
       start_time: { lte: appointment_start_datetime },
       end_time: { gte: appointment_end_datetime },
     },
@@ -269,10 +288,10 @@ export async function validatePractitionerAvailability(
 
   console.log("🔄 No override found. Checking recurring availability...");
 
-  // ✅ Step 2: Check Recurring Availability (Time-Only Comparison)
+  // Check Recurring Availability (Time-Only Comparison)
   const recurringAvailability = await db.practitioner_availability.findFirst({
     where: {
-      practitioner_id: serializeBigInt(practitioner_id),
+      practitioner_id: serializeBigInt(practitioner_id) as string,
       is_available: true,
       date: null, // Ensure it's recurring availability
       day_of_week: dayOfWeekEnum,
@@ -295,16 +314,16 @@ export async function validatePractitionerAvailability(
 
   const overlappingSlot = await db.practitioner_availability.findFirst({
     where: {
-      practitioner_id: serializeBigInt(practitioner_id),
+      practitioner_id: serializeBigInt(practitioner_id) as string,
       is_available: false,
       OR: [
         {
-          // Case 1: Existing slot starts before the appointment ends and ends after the appointment starts
+          // Overlaps with unavailable slot
           start_time: { lt: appointment_end_datetime },
           end_time: { gt: appointment_start_datetime },
         },
         {
-          // Case 2: Appointment fully overlaps with an existing unavailable slot
+          // Appointment fully overlaps with an unavailable slot
           start_time: { gte: appointment_start_datetime },
           end_time: { lte: appointment_end_datetime },
         },
@@ -329,11 +348,8 @@ export async function validatePractitionerAvailability(
   );
 }
 
-/**
- * ✅ Update Practitioner Availability with moment.utc (No Z suffix)
- */
 export async function updatePractitionerAvailability(
-  db: Database,
+  db: PrismaClient,
   practitioner_id: string,
   clinic_id: string,
   appointment_start_datetime: string,
@@ -341,20 +357,21 @@ export async function updatePractitionerAvailability(
 ) {
   console.log("🕒 Appointment Start timestamp:", appointment_start_datetime);
   console.log("🕒 Appointment End timestamp:", appointment_end_datetime);
-  // ✅ Check for overlapping appointments
+
+  // Check for overlapping appointments
   const overlappingAppointment = await db.patient_appointments.findFirst({
     where: {
-      practitioner_id: serializeBigInt(practitioner_id),
+      practitioner_id: serializeBigInt(practitioner_id) as string,
       status: { not: "CANCELLED" },
       AND: [
         {
           appointment_start_datetime: {
-            lt: appointment_start_datetime,
+            lt: new Date(appointment_start_datetime).toISOString(),
           },
         },
         {
           appointment_start_datetime: {
-            gte: appointment_end_datetime,
+            gt: new Date(appointment_end_datetime).toISOString(),
           },
         },
       ],
@@ -365,7 +382,7 @@ export async function updatePractitionerAvailability(
 
   if (overlappingAppointment) {
     throw new Error(
-      `The selected time slot (${appointment_start_datetime} is already booked for this practitioner.`,
+      `The selected time slot (${appointment_start_datetime}) is already booked for this practitioner.`,
     );
   }
 
@@ -373,11 +390,11 @@ export async function updatePractitionerAvailability(
     "✅ No overlapping appointments found. Proceeding to availability checks.",
   );
 
-  // ✅ Check for Override Slot
+  // Check for Override Slot
   const existingOverride = await db.practitioner_availability.findFirst({
     where: {
-      practitioner_id: serializeBigInt(practitioner_id),
-      date: appointment_start_datetime,
+      practitioner_id: serializeBigInt(practitioner_id) as string,
+      date: appointment_start_datetime.split("T")[0],
       start_time: appointment_start_datetime,
       end_time: appointment_end_datetime,
     },
@@ -392,22 +409,14 @@ export async function updatePractitionerAvailability(
     console.log("✅ Override slot marked as unavailable.");
   } else {
     console.log("✅ No override slot found. Creating a new override...");
-    console.log({
-      practitioner_id: serializeBigInt(practitioner_id),
-      clinic_id: serializeBigInt(clinic_id),
-      date: appointment_start_datetime,
-      start_time: appointment_start_datetime, // Valid Date object for TIME
-      end_time: appointment_end_datetime, // Valid Date object for TIME
-      is_available: false,
-    });
 
     await db.practitioner_availability.create({
       data: {
-        practitioner_id: serializeBigInt(practitioner_id),
-        clinic_id: serializeBigInt(clinic_id),
-        date: appointment_start_datetime,
-        start_time: appointment_start_datetime, // Valid Date object for TIME
-        end_time: appointment_end_datetime, // Valid Date object for TIME
+        practitioner_id: serializeBigInt(practitioner_id) as string,
+        clinic_id: serializeBigInt(clinic_id) as string,
+        date: appointment_start_datetime.split("T")[0],
+        start_time: appointment_start_datetime, // Ensure correct format
+        end_time: appointment_end_datetime, // Ensure correct format
         is_available: false,
       },
     });
@@ -415,22 +424,19 @@ export async function updatePractitionerAvailability(
   }
 }
 
-/**
- * Validate Patient and Practitioner Association with Clinic
- */
 export async function validatePatientPractitionerClinicAssociation(
-  db: Database,
+  db: PrismaClient,
   patient_id: string,
   practitioner_id: string,
   clinic_id: string,
 ) {
   const [patient, practitioner] = await Promise.all([
     db.patients.findUnique({
-      where: { id: serializeBigInt(patient_id) },
+      where: { id: serializeBigInt(patient_id) as string },
       select: { clinic_id: true },
     }),
     db.practitioners.findUnique({
-      where: { id: serializeBigInt(practitioner_id) },
+      where: { id: serializeBigInt(practitioner_id) as string },
       select: { clinic_id: true },
     }),
   ]);
@@ -454,11 +460,8 @@ export async function validatePatientPractitionerClinicAssociation(
   );
 }
 
-/**
- * Fetch Appointment Details
- */
 export async function fetchAppointmentDetails(
-  db: Database,
+  db: PrismaClient,
   appointmentId: string,
 ) {
   const detailedAppointment = await db.patient_appointments.findUnique({

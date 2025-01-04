@@ -165,6 +165,8 @@ export default function HomePage() {
                   src="https://images.unsplash.com/photo-1587854680352-936b22b91030?auto=format&fit=crop&w=800&q=80"
                   alt="AI Healthcare Technology"
                   className="object-cover w-full h-full rounded-lg"
+                  width={800}
+                  height={600}
                 />
               </div>
             </div>
