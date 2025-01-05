@@ -63,7 +63,6 @@ const PractitionerAvailabilityModal = ({
 
         <PractitionerAvailabilityForm
           practitionerId={practitionerId}
-          clinicId={clinicId}
           type={type}
           onClose={handleCloseModal}
         />

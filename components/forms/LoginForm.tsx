@@ -47,7 +47,7 @@ const LoginForm = () => {
         return;
       }
 
-      if (result.user) {
+      if (result.user && result.session?.session_token) {
         // Save session token in cookies
         document.cookie = `session_token=${result.session.session_token}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=604800`;
 

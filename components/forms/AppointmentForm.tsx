@@ -137,7 +137,7 @@ const AppointmentForm = ({
         appointment_start_datetime:
           values.appointment_start_datetime.toISOString(),
         appointment_context: values.appointment_context,
-        status: type === "cancel" ? "CANCELLED" : "SCHEDULED",
+        status: type === "cancel" ? "cancelled" : "scheduled",
       };
 
       await updateAppointment(Number(appointmentId), payload);

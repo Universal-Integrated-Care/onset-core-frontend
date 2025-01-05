@@ -157,7 +157,7 @@ import {AppointmentApiProps}  from "@/types/api";
  *               status:
  *                 type: string
  *                 description: Updated appointment status
- *                 default: "PENDING"
+ *                 default: "pending"
  *     responses:
  *       200:
  *         description: Appointment successfully updated
@@ -334,7 +334,7 @@ export async function PUT(req: NextRequest, props: AppointmentApiProps) {
         practitioner_id: body.practitioner_id,
         appointment_start_datetime: body.Schedule,
         appointment_context: body.appointment_context,
-        status: body.status || "PENDING", // Default status
+        status: body.status || "pending", // Default status
       },
     });
 

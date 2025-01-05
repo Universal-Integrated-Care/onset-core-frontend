@@ -2,7 +2,7 @@
 export const GenderOptions = ["MALE", "FEMALE", "OTHER"];
 
 // Appointment statuses
-export const appointmentStatus = ["SCHEDULED", "CANCELLED", "PENDING"];
+export const appointmentStatus = ["scheduled", "cancelled", "pending"];
 
 // Clinic types
 export const clinicType = [

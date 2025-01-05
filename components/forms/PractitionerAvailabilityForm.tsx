@@ -8,7 +8,6 @@ import { Form } from "@/components/ui/form";
 import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "../submitButton";
 import { SelectItem } from "../ui/select";
-import { formatDateTimeToMelbourne } from "@/lib/utils";
 import moment from "moment";
 
 /**
@@ -28,8 +27,17 @@ const PractitionerAvailabilityFormSchema = z.object({
 interface PractitionerAvailabilityFormProps {
   type: "recurring" | "override";
   practitionerId: string;
-  clinicId: string;
-  onClose: (updatedData?: any) => void;
+  onClose: (updatedData?: AvailabilityPayload) => void;  
+}
+
+interface AvailabilityPayload {
+  practitioner_id: number;
+  start_time: string;
+  end_time: string;
+  day_of_week?: string;
+  date?: string;
+  is_available?: boolean | null;
+  is_blocked?: boolean | null;
 }
 
 /**
@@ -38,7 +46,6 @@ interface PractitionerAvailabilityFormProps {
 const PractitionerAvailabilityForm = ({
   type,
   practitionerId,
-  clinicId,
   onClose,
 }: PractitionerAvailabilityFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -49,12 +56,9 @@ const PractitionerAvailabilityForm = ({
     resolver: zodResolver(PractitionerAvailabilityFormSchema),
     defaultValues: {
       day_of_week: type === "recurring" ? "MONDAY" : undefined,
-      date:
-        type === "override"
-          ? new Date().toISOString().split("T")[0]
-          : undefined,
-      start_time: new Date(), // Keep as Date object
-      end_time: new Date(), // Keep as Date object
+      date: type === "override" ? new Date() : undefined,
+      start_time: new Date(),
+      end_time: new Date(),
     },
   });
 
@@ -70,7 +74,7 @@ const PractitionerAvailabilityForm = ({
     try {
       // Construct the payload
       // Construct the payload
-      const payload: any = {
+      const payload: AvailabilityPayload = {
         practitioner_id: Number(practitionerId),
         start_time: moment(values.start_time).format("HH:mm"), // Format to time string
         end_time: moment(values.end_time).format("HH:mm"), // Format to time string

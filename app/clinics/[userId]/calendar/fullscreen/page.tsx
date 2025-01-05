@@ -72,15 +72,15 @@ const FullscreenCalendar = () => {
                 appt.duration * 60000,
             ).toISOString(),
             backgroundColor:
-              appt.status === "PENDING"
+              appt.status === "pending"
                 ? "#fef3c7"
-                : appt.status === "SCHEDULED"
+                : appt.status === "scheduled"
                   ? "#dbeafe"
                   : "#fee2e2",
             borderColor:
-              appt.status === "PENDING"
+              appt.status === "pending"
                 ? "#facc15"
-                : appt.status === "SCHEDULED"
+                : appt.status === "scheduled"
                   ? "#3b82f6"
                   : "#ef4444",
             textColor: "#111827",

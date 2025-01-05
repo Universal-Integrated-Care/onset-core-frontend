@@ -21,9 +21,11 @@ type ProcessingStage =
 type FileUploaderProps = {
   files: File[] | null | undefined;
   onChange: (value: string) => void;
+  onProcessingComplete?: (text: string) => void; // Add this prop
+
 };
 
-const FileUploader = ({ files, onChange }: FileUploaderProps) => {
+const FileUploader = ({ files, onChange,onProcessingComplete }: FileUploaderProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingStage, setProcessingStage] =
@@ -88,9 +90,17 @@ const FileUploader = ({ files, onChange }: FileUploaderProps) => {
         const extractedText = await extractTextFromFiles(validFiles);
         console.log("Extracted text:", extractedText);
 
-        onChange(extractedText);
+        if (onProcessingComplete) {
+          onProcessingComplete(extractedText);
+        } 
+        // ✅ Call onProcessingComplete if provided
+     
+
+      // ✅ Call onProcessingComplete if provided
 
         updateProgress("complete");
+
+
 
         setTimeout(() => {
           setProcessingStage("idle");

@@ -119,11 +119,12 @@ const Dashboard = () => {
         const transformedAppointments = appointmentsData.map((a) => ({
           ...a,
           id: String(a.id),
-          status: ["pending", "scheduled", "cancelled"].includes(a.status)
-            ? (a.status as Status)
+          status: ["pending", "scheduled", "cancelled"].includes(a.status.toLowerCase())
+            ? (a.status.toLowerCase() as Status)
             : "pending", // Default to 'pending' if status is invalid
         }));
         setAppointments(transformedAppointments);
+        console.log("✅ Appointments Transformed:", transformedAppointments);
 
         // Fetch Metadata
         const metadataResponse = await fetch("/api/practitioners/meta");

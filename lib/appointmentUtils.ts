@@ -18,7 +18,7 @@ export async function createAppointment(
     clinic_id,
     duration,
     appointment_context,
-    status = "PENDING",
+    status = "pending",
   } = body;
 
   // Parse appointment start datetime using moment.utc
@@ -56,9 +56,9 @@ export async function validateRequiredFields(body: any) {
     );
   }
 
-  if (!["SCHEDULED", "CANCELLED", "PENDING"].includes(status || "PENDING")) {
+  if (!["scheduled", "cancelled", "pending"].includes(status || "pending")) {
     throw new Error(
-      "Invalid appointment status. Please choose between 'SCHEDULED', 'CANCELLED', or 'PENDING'.",
+      "Invalid appointment status. Please choose between 'scheduled', 'cancelled', or 'pending'.",
     );
   }
 }
@@ -128,7 +128,7 @@ export async function checkDuplicateAppointment(
       patient_id: serializeBigInt(patient_id),
       clinic_id: serializeBigInt(clinic_id),
       appointment_start_datetime: appointment_start_datetime,
-      status: { not: "CANCELLED" },
+      status: { not: "cancelled" },
     },
   });
 
@@ -196,7 +196,7 @@ export async function validatePractitionerAvailability(
   const overlappingAppointment = await db.patient_appointments.findFirst({
     where: {
       practitioner_id: serializeBigInt(practitioner_id),
-      status: { not: "CANCELLED" },
+      status: { not: "cancelled" },
       AND: [
         {
           appointment_start_datetime: {
@@ -316,7 +316,7 @@ export async function updatePractitionerAvailability(
   const overlappingAppointment = await db.patient_appointments.findFirst({
     where: {
       practitioner_id: serializeBigInt(practitioner_id),
-      status: { not: "CANCELLED" },
+      status: { not: "cancelled" },
       AND: [
         {
           appointment_start_datetime: {

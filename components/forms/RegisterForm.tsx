@@ -69,6 +69,7 @@ const RegisterForm = ({ user }: { user: User }) => {
 
   const handleProcessingComplete = (text: string) => {
     setExtractedText(text);
+    form.setValue("clinicInformation", text); // Update the form state directly
     console.log("Extracted text from files:", text);
   };
 
@@ -80,10 +81,13 @@ const RegisterForm = ({ user }: { user: User }) => {
     setError("");
 
     try {
+      console.log("Form values submitted:", values);
+
       const result = await createClinic({
         userId: user.id,
         formData: values,
       });
+
 
       if (result.error) {
         console.error("Error from createClinic:", result.error);
@@ -196,7 +200,7 @@ const RegisterForm = ({ user }: { user: User }) => {
                 onChange={field.onChange}
                 onProcessingComplete={handleProcessingComplete}
               />
-            </FormControl>
+            </FormControl>  
           )}
         />
 
@@ -217,8 +221,8 @@ const RegisterForm = ({ user }: { user: User }) => {
               name={day}
               label={day.charAt(0).toUpperCase() + day.slice(1)}
             />
-            {form.watch(day) && (
-              <div className="flex items-center gap-4 flex-1">
+          {form.watch(day as "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday") && (                
+            <div className="flex items-center gap-4 flex-1">
                 <CustomFormField
                   fieldType={FormFieldType.TIME_PICKER}
                   control={form.control}
