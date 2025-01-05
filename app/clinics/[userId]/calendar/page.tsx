@@ -347,8 +347,8 @@ const PractitionerCalendar = () => {
           {/* Controls */}
           <div className="space-y-2 mb-4">
             <div className="flex gap-4">
+              <div className="flex-1">
               <Select
-                className="flex-1"
                 onValueChange={(value) => {
                   const practitioner = practitioners.find(
                     (p) => p.id === value,
@@ -374,6 +374,8 @@ const PractitionerCalendar = () => {
                 </SelectContent>
               </Select>
 
+              </div>
+              
               <Button
                 variant="outline"
                 className="bg-dark-300 text-gray-200 border-gray-600 hover:bg-dark-400"

@@ -10,7 +10,24 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const FullscreenCalendar = () => {
   const searchParams = useSearchParams();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<
+  {
+    id: string;
+    title: string;
+    start: string;
+    end: string;
+    backgroundColor: string;
+    borderColor: string;
+    textColor: string;
+    extendedProps: {
+      patientId?: string;
+      patientName?: string;
+      duration: number;
+      status: string;
+    };
+  }[]
+>([]);  
+
   const [patientMap, setPatientMap] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const practitionerId = searchParams.get("practitioner");

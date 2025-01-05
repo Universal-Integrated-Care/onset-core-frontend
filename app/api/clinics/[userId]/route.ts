@@ -153,7 +153,7 @@ export async function GET(req: NextRequest, props: ClinicUserIdApiProps) {
     const clinic = await prisma.clinics.findFirst({
       where: {
         users: {
-          some: { id: userId },
+          some: { id: Number(userId) },
         },
       },
       include: {
