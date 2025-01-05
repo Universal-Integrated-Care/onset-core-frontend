@@ -7,6 +7,7 @@ import DashboardLoader from "@/components/DashboardLoader";
 
 interface PractitionerTableProps {
   newPractitioner?: Practitioner; // ✅ Allow dynamic addition of new practitioner
+  
 }
 
 const PractitionerTable = ({ newPractitioner }: PractitionerTableProps) => {

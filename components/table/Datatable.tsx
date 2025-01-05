@@ -23,13 +23,16 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { getSocket } from "@/lib/socket"; // Ensure getSocket is correctly set up
 
-interface DataTableProps<TData, TValue> {
+interface BaseData {
+  id: string;
+}
+interface DataTableProps<TData extends BaseData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   clinicId: string; // ✅ Add clinicId
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData  extends BaseData, TValue>({
   columns,
   data: initialData,
   clinicId,
@@ -41,7 +44,7 @@ export function DataTable<TData, TValue>({
   const handleRowUpdate = (updatedRow: Partial<TData>, rowId: string) => {
     setData((prevData) =>
       prevData.map((row) =>
-        (row as any).id === rowId ? { ...row, ...updatedRow } : row,
+        row.id === rowId ? { ...row, ...updatedRow } : row,
       ),
     );
   };
@@ -59,9 +62,10 @@ export function DataTable<TData, TValue>({
         `🔄 New Appointment Received in Clinic ${clinic_id}:`,
         newAppointment,
       );
+      newAppointment.id = String(newAppointment.id);
       setData((prevData) => {
         const exists = prevData.some(
-          (appointment: any) => appointment.id === (newAppointment as any).id,
+          appointment => appointment.id === newAppointment.id,
         );
         return exists ? prevData : [newAppointment, ...prevData];
       });

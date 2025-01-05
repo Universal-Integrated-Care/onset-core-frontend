@@ -77,7 +77,7 @@ export const ClinicFormDefaultValues = {
 // console.log("Clinic Types:", clinicType);
 
 export const StatusIcon = {
-  SCHEDULED: "/assets/icons/check.svg",
-  PENDING: "/assets/icons/pending.svg",
-  CANCELLED: "/assets/icons/cancelled.svg",
+  scheduled: "/assets/icons/check.svg",
+  pending: "/assets/icons/pending.svg",
+  cancelled: "/assets/icons/cancelled.svg",
 };

@@ -224,12 +224,24 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
             <FormControl>
               <SelectTrigger className="shad-select-trigger">
                 <SelectValue placeholder={props.placeholder}>
-                  {field.value &&
-                    props.children &&
-                    Array.isArray(React.Children.toArray(props.children)) &&
-                    React.Children.toArray(props.children).find(
-                      (child: any) => child.props.value === field.value,
-                    )?.props.children}
+                {field.value &&
+                props.children &&
+                React.Children.toArray(props.children)
+                  .find((child) => 
+                    React.isValidElement(child) &&
+                    (child as React.ReactElement<{ value: string }>).props.value === field.value
+                  )
+                  ? (React.isValidElement(
+                      React.Children.toArray(props.children).find((child) => 
+                        React.isValidElement(child) &&
+                        (child as React.ReactElement<{ value: string }>).props.value === field.value
+                      )
+                    ) && 
+                    (React.Children.toArray(props.children).find((child) => 
+                      React.isValidElement(child) &&
+                      (child as React.ReactElement<{ value: string }>).props.value === field.value
+                    ) as React.ReactElement<{ children: React.ReactNode }>).props.children)
+                  : null}
                 </SelectValue>
               </SelectTrigger>
             </FormControl>

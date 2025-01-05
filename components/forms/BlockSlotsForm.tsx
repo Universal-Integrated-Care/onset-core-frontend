@@ -33,10 +33,12 @@ const BlockSlotsFormSchema = z.object({
 interface BlockSlotsFormProps {
   apiUrl: string; // API URL passed as a prop
   onClose: () => void; // Optional callback for closing modal
+  onOpen?: () => void; // Optional callback for opening modal
 }
 
 // ✅ Main Component
 const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
+  console.log(apiUrl)
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,6 +60,7 @@ const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
     payload?: any,
   ) => {
     try {
+      console.log(payload,"payload")
       const response = await fetch(url, {
         method,
         headers: {
@@ -91,7 +94,7 @@ const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
         end_datetime: values.end_datetime.toISOString(),
         is_blocked: values.is_blocked,
       };
-
+      console.log(apiUrl,"apiUrl")
       await apiRequest(apiUrl, "POST", payload);
 
       console.log("✅ Slots blocked successfully");

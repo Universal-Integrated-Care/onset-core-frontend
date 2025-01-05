@@ -231,7 +231,7 @@ const AppointmentForm = ({
           name="appointment_start_datetime"
           label="Expected appointment date"
           showTimeSelect
-          dateFormat="yyyy-MM-dd - h:mm aa"
+          dateformat="yyyy-MM-dd - h:mm aa"
         />
 
         {/* ✅ Appointment Context */}

@@ -11,7 +11,7 @@ import { formatDateTime } from "@/lib/utils";
 export type Appointment = {
   id: string;
   patient: string;
-  status: "scheduled" | "cancelled";
+  status: "scheduled" | "cancelled" | "pending";
   appointment_start_datetime: string;
   practitioner: string;
   clinic_id: string;
