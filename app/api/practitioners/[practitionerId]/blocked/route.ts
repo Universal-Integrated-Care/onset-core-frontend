@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
 import moment from "moment-timezone";
-import { convertToMelbourneTime } from "@/lib/utils";
+import { PractitionerApiProps } from "@/types/api";
 
 /**
  * Fetch Blocked Slots for a Practitioner (Date-specific and Recurring)

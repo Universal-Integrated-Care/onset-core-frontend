@@ -1,23 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { serializeBigInt } from "@/lib/utils";
+import { ClinicApiProps } from "@/types/api";
 
-/**
- * Helper Function to Convert BigInt to Number in Objects
- */
-function serializeBigInt(obj: any): any {
-  if (typeof obj === "bigint") {
-    return Number(obj);
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(serializeBigInt);
-  }
-  if (typeof obj === "object" && obj !== null) {
-    return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [key, serializeBigInt(value)]),
-    );
-  }
-  return obj;
-}
 
 /**
  * Fetch Practitioners by Clinic ID

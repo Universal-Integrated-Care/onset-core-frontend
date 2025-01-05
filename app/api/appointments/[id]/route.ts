@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
+import {AppointmentApiProps}  from "@/types/api";
 /**
  * Fetch Appointment by ID with Patient & Practitioner Details
  */

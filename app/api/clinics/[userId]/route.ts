@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
+import { ClinicUserIdApiProps } from "@/types/api";
 
 /**
  * Fetch Clinic Details by User ID
