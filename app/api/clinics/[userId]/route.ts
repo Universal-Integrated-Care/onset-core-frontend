@@ -130,16 +130,11 @@ import { serializeBigInt } from "@/lib/utils";
  *                   type: string
  *                   example: "Internal server error while fetching clinic details."
  */
-type Props = {
-  params: Promise<{
-    userId: string;
-  }>;
-};
 
 /**
  * Fetch User by ID
  */
-export async function GET(req: NextRequest, props: Props) {
+export async function GET(req: NextRequest, props: ClinicUserIdApiProps) {
   try {
     // ✅ Resolve params promise
     const { userId } = await props.params;

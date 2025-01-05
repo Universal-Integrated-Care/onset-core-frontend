@@ -6,11 +6,7 @@ import { serializeBigInt } from "@/lib/utils";
  * Fetch Appointment by ID with Patient & Practitioner Details
  */
 
-type Props = {
-  params: Promise<{
-    id: string;
-  }>;
-};
+
 /**
  * @swagger
  * /api/appointments/{id}:
@@ -208,7 +204,7 @@ type Props = {
  *                   example: "Internal server error while updating appointment."
  */
 
-export async function GET(req: NextRequest, props: Props) {
+export async function GET(req: NextRequest, props: AppointmentApiProps) {
   try {
     // ✅ Extract appointmentId from params
     const { id } = await props.params;
@@ -311,7 +307,7 @@ export async function GET(req: NextRequest, props: Props) {
  * Update Appointment by ID
  */
 
-export async function PUT(req: NextRequest, props: Props) {
+export async function PUT(req: NextRequest, props: AppointmentApiProps) {
   try {
     // ✅ Resolve params promise
     const { id } = await props.params;

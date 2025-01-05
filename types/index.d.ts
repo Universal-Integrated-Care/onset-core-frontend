@@ -55,3 +55,30 @@ declare type UpdateAppointmentParams = {
   appointment: Appointment;
   type: string;
 };
+
+
+declare type AppointmentApiProps = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+
+declare type PractitionerApiProps = {
+  params: Promise<{
+    practitionerId: string;
+  }>;
+};
+
+declare type ClinicUserIdApiProps = {
+  params: Promise<{
+    userId: string;
+  }>;
+};
+
+
+declare type ClinicApiProps = {
+  params: Promise<{
+    clinicId: number;
+  }>;
+};

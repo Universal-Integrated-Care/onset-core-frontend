@@ -182,16 +182,12 @@ import { convertToMelbourneTime } from "@/lib/utils";
  *                   type: string
  *                   example: "Something went wrong while extending blockage. Please try again later."
  */
-type Props = {
-  params: Promise<{
-    practitionerId: string;
-  }>;
-};
+
 
 /**
  * Fetch Practitioner by ID
  */
-export async function GET(req: NextRequest, props: Props) {
+export async function GET(req: NextRequest, props: PractitionerApiProps) {
   try {
     // ✅ Resolve params promise
     const { practitionerId } = await props.params;
@@ -272,7 +268,7 @@ export async function GET(req: NextRequest, props: Props) {
  * Block time slots for a practitioner across a range of dates for specified hours.
  */
 
-export async function POST(req: NextRequest, props: Props) {
+export async function POST(req: NextRequest, props: PractitionerApiProps) {
   try {
     // ✅ Resolve params promise
     const { practitionerId } = await props.params;
