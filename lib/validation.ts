@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { clinicType, dayOfWeek, GenderOptions } from "@/constants";
+import { clinicType, dayOfWeek } from "@/constants";
 
 export const ClinicFormValidation = z
   .object({

@@ -30,7 +30,7 @@ interface BaseData {
 interface DataTableProps<TData extends BaseData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  clinicId: string; // ✅ Add clinicId
+  clinicId?: string; // ✅ Add clinicId
   onRowUpdate?: (updatedData: UpdateData, rowId: string) => void; // Renamed from handleRowUpdate
 }
 

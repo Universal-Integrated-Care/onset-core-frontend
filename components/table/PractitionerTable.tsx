@@ -7,7 +7,6 @@ import DashboardLoader from "@/components/DashboardLoader";
 
 interface PractitionerTableProps {
   newPractitioner?: Practitioner; // ✅ Allow dynamic addition of new practitioner
-  
 }
 
 const PractitionerTable = ({ newPractitioner }: PractitionerTableProps) => {
@@ -72,9 +71,13 @@ const PractitionerTable = ({ newPractitioner }: PractitionerTableProps) => {
 
       // Remove deleted practitioner from the state
       setPractitioners((prev) => prev.filter((p) => p.id !== id));
-    } catch (error: any) {
-      console.error("❌ Error Deleting Practitioner:", error.message);
-      alert(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to delete practitioner";
+      console.error("❌ Error Deleting Practitioner:", errorMessage);
+      alert(`Error: ${errorMessage}`);
     }
   };
 

@@ -54,3 +54,9 @@ declare type UpdateAppointmentParams = {
   appointment: Appointment;
   type: string;
 };
+
+interface FormValuesAll {
+  email: string;
+  password: string;
+  phone: E164Number;
+}

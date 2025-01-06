@@ -27,7 +27,7 @@ const PractitionerAvailabilityFormSchema = z.object({
 interface PractitionerAvailabilityFormProps {
   type: "recurring" | "override";
   practitionerId: string;
-  onClose: (updatedData?: AvailabilityPayload) => void;  
+  onClose: (updatedData?: AvailabilityPayload) => void;
 }
 
 interface AvailabilityPayload {
@@ -100,7 +100,6 @@ const PractitionerAvailabilityForm = ({
         body: JSON.stringify(payload),
       });
 
-      // Handle any error response
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(errData.error || "Failed to update availability");
@@ -112,9 +111,11 @@ const PractitionerAvailabilityForm = ({
 
       // If success, notify parent via onClose callback
       onClose(responseData.availability);
-    } catch (err: any) {
-      console.error("❌ Error updating availability:", err.message);
-      setError(err.message || "Failed to update availability");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update availability";
+      console.error("❌ Error updating availability:", errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -12,7 +12,7 @@ type Props = {
 };
 
 /**
- * Fetch Practitioner by ID
+ * Fetch Practitioner by IDx`
  */
 export async function GET(req: NextRequest, props: Props) {
   try {
