@@ -47,3 +47,4 @@ docker build -t onset-core-frontend .
 docker run -p 3000:3000 \  
  -e DATABASE_URL=databaseurl \
  onset-core-frontend
+fly secrets set DATABASE_URL="postgres://postgres:<password>@onsetcoredb.internal:5432/postgres?sslmode=verify-full"

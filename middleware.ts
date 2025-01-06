@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
 export const config = {
   matcher: [
@@ -6,7 +6,6 @@ export const config = {
     "/clinics/:id/calendar",
     "/api/practitioners",
   ],
-  runtime: "nodejs",
 };
 
 export async function middleware(req: NextRequest) {
@@ -31,19 +30,37 @@ export async function middleware(req: NextRequest) {
     }
 
     try {
-      const res = await fetch(`${req.nextUrl.origin}/api/validate-session`, {
+      // Get the host from request headers
+      const host = req.headers.get("host");
+      const protocol = host?.includes("localhost") ? "http" : "https";
+      const validationUrl = new URL(
+        "/api/validate-session",
+        `${protocol}://${host}`,
+      );
+
+      console.log("🔍 Validation URL:", validationUrl.toString());
+
+      const validationReq = new Request(validationUrl, {
         headers: {
           Cookie: `session_token=${token}`,
-          "Content-Type": "application/json",
         },
-        method: "GET",
+        cache: "no-store",
       });
 
+      const res = await fetch(validationReq);
+      console.log("📡 Validation response status:", res.status);
+
       if (!res.ok) {
+        const errorText = await res.text();
+        console.warn("❌ Session validation failed:", {
+          status: res.status,
+          error: errorText,
+        });
         return NextResponse.redirect(new URL("/login", req.url));
       }
 
       const validationResult = await res.json();
+      console.log("✅ Validation result:", JSON.stringify(validationResult));
 
       if (!validationResult.valid) {
         return NextResponse.redirect(new URL("/login", req.url));
@@ -65,7 +82,6 @@ export async function middleware(req: NextRequest) {
         null,
       );
 
-      // If matched clinic ID exists, redirect to user's actual clinic
       if (matchedClinicId !== null && matchedClinicId !== user.clinic_id) {
         console.warn(
           `🚫 Redirecting to user's actual clinic: ${user.clinic_id}`,
@@ -75,7 +91,11 @@ export async function middleware(req: NextRequest) {
         );
       }
     } catch (error) {
-      console.error("❌ Middleware Error:", error);
+      console.error("❌ Detailed Middleware Error:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+        url: req.nextUrl.toString(),
+      });
       return NextResponse.redirect(new URL("/login", req.url));
     }
   }
