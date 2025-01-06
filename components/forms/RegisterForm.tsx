@@ -13,6 +13,7 @@ import { clinicType } from "@/constants";
 import { SelectItem } from "@radix-ui/react-select";
 import FileUploader from "../FileUploader";
 import { createClinic } from "@/lib/actions/registration.action";
+import { FormFieldNames } from "@/types/appwrite.types";
 
 interface User {
   id: number;
@@ -192,7 +193,7 @@ const RegisterForm = ({ user }: { user: User }) => {
           renderSkeleton={(field) => (
             <FormControl>
               <FileUploader
-                files={field.value}
+                files={field.value as File[] | null}
                 onChange={field.onChange}
                 onProcessingComplete={handleProcessingComplete}
               />
@@ -214,22 +215,22 @@ const RegisterForm = ({ user }: { user: User }) => {
             <CustomFormField
               fieldType={FormFieldType.CHECKBOX}
               control={form.control}
-              name={day}
+              name={day as FormFieldNames}
               label={day.charAt(0).toUpperCase() + day.slice(1)}
             />
-            {form.watch(day) && (
+            {form.watch(day as FormFieldNames) && (
               <div className="flex items-center gap-4 flex-1">
                 <CustomFormField
                   fieldType={FormFieldType.TIME_PICKER}
                   control={form.control}
-                  name={`${day}OpenTime`}
+                  name={`${day}OpenTime` as FormFieldNames}
                   placeholder="Opening Time"
                 />
                 <span className="text-dark-700">to</span>
                 <CustomFormField
                   fieldType={FormFieldType.TIME_PICKER}
                   control={form.control}
-                  name={`${day}CloseTime`}
+                  name={`${day}CloseTime` as FormFieldNames}
                   placeholder="Closing Time"
                 />
               </div>

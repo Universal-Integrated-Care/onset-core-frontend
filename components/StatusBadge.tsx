@@ -2,14 +2,19 @@ import React from "react";
 import Image from "next/image";
 import { StatusIcon } from "@/constants";
 import clsx from "clsx";
+import { Status } from "@/types/appwrite.types";
 
-const StatusBadge = ({ status }: { status: Status }) => {
+interface StatusBadgeProps {
+  status: Status;
+}
+
+const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   return (
     <div
       className={clsx("status-badge", {
-        "bg-green-600": status === "SCHEDULED",
-        "bg-red-600": status === "CANCELLED",
-        "bg-blue-600": status === "PENDING",
+        "bg-green-600": status === Status.SCHEDULED,
+        "bg-red-600": status === Status.CANCELLED,
+        "bg-blue-600": status === Status.PENDING,
       })}
     >
       <Image

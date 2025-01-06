@@ -1,5 +1,6 @@
 import { SerializableTurborepoAccessTraceResult } from "next/dist/build/turborepo-access-trace";
 import { Models } from "node-appwrite";
+import { Gender } from "./index";
 
 // Or if it's an object type
 export interface ClinicType {
@@ -62,6 +63,15 @@ export interface Appointment extends Models.Document {
   note: string;
   userId: string;
   cancellationReason: string | null;
+  id: number;
+  patient_id: number;
+  clinic_id: number;
+  practitioner_id: number | null;
+  appointment_start_datetime: Date;
+  duration: number;
+  appointment_context: string | null;
+  created_at: Date;
+  updated_at: Date;
 }
 
 // Define DayOfWeek as a union of string literals
@@ -73,3 +83,57 @@ export type DayOfWeek =
   | "Friday"
   | "Saturday"
   | "Sunday";
+
+export type AppointmentFormValues = {
+  appointment_start_datetime: Date;
+  practitioner_id: string;
+  appointment_context?: string;
+};
+
+// Add this type definition
+export type AppointmentFieldNames =
+  | "appointment_start_datetime"
+  | "practitioner_id"
+  | "appointment_context";
+
+export type BlockSlotsFormValues = {
+  is_blocked: boolean;
+  start_datetime: Date;
+  end_datetime: Date;
+};
+
+export type FormFieldNames =
+  | "address"
+  | "name"
+  | "phone"
+  | "clinicWebsite"
+  | "clinicType"
+  | "clinicInformation"
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday"
+  | "mondayOpenTime"
+  | "tuesdayOpenTime"
+  | "wednesdayOpenTime"
+  | "thursdayOpenTime"
+  | "fridayOpenTime"
+  | "saturdayOpenTime"
+  | "sundayOpenTime"
+  | "mondayCloseTime"
+  | "tuesdayCloseTime"
+  | "wednesdayCloseTime"
+  | "thursdayCloseTime"
+  | "fridayCloseTime"
+  | "saturdayCloseTime"
+  | "sundayCloseTime"
+  | `daysOpened.${number}`;
+
+export enum Status {
+  SCHEDULED = "SCHEDULED",
+  CANCELLED = "CANCELLED",
+  PENDING = "PENDING",
+}

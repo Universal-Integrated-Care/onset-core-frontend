@@ -2,7 +2,19 @@ import React from "react";
 import clsx from "clsx";
 import Image from "next/image";
 
-const StatCard = ({ count = 0, label, icon, type }) => {
+interface StatCardProps {
+  count?: number; // Optional prop
+  label: string; // Required prop
+  icon: string; // Required prop (assuming it's a string URL)
+  type: "appointments" | "pending" | "cancelled"; // Adjust based on your types
+}
+
+const StatCard: React.FC<StatCardProps> = ({
+  count = 0,
+  label,
+  icon,
+  type,
+}) => {
   return (
     <div
       className={clsx("stat-card", {

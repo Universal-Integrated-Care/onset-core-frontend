@@ -97,10 +97,12 @@ declare interface CalendarEvent {
 declare interface Appointment {
   id: string;
   patient_id: string;
+  patient: string;
   appointment_start_datetime: string;
   duration: number;
-  status: string;
+  status: Status;
   clinic_id: string;
+  practitioner: string;
 }
 
 declare interface StatCardProps {

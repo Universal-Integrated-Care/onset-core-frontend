@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "../submitButton";
+import { BlockSlotsFormValues } from "@/types/appwrite.types"; // Adjust the path accordingly
 
 // ✅ Define Zod Schema for Validation
 const BlockSlotsFormSchema = z.object({
@@ -40,12 +41,12 @@ const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const form = useForm<z.infer<typeof BlockSlotsFormSchema>>({
+  const form = useForm<BlockSlotsFormValues>({
     resolver: zodResolver(BlockSlotsFormSchema),
     defaultValues: {
+      is_blocked: true,
       start_datetime: new Date(),
       end_datetime: new Date(),
-      is_blocked: true,
     },
   });
 

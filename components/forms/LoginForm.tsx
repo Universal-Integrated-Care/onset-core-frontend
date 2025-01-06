@@ -49,7 +49,11 @@ const LoginForm = () => {
 
       if (result.user) {
         // Save session token in cookies
-        document.cookie = `session_token=${result.session.session_token}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=604800`;
+        if (result.session) {
+          document.cookie = `session_token=${result.session.session_token}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=604800`;
+        } else {
+          setError("Session token is missing. Please try again.");
+        }
 
         if (!result.user.hasClinic) {
           // Redirect to clinic registration if no clinic is associated

@@ -4,11 +4,15 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Control, FieldValues } from "react-hook-form";
+import {
+  Control,
+  FieldValues,
+  Path,
+  ControllerRenderProps,
+} from "react-hook-form";
 import Image from "next/image";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
@@ -33,10 +37,10 @@ export enum FormFieldType {
   PRACTITIONER_DATE_PICKER = "practitionerDatePicker", // ✅ Add new type
 }
 
-interface CustomProps {
-  control: Control<Record<string, unknown>>;
+interface CustomProps<T extends FieldValues> {
+  control: Control<T>;
   fieldType: FormFieldType;
-  name: string;
+  name: Path<T>;
   label?: string;
   placeholder?: string;
   iconSrc?: string;
@@ -51,12 +55,12 @@ interface CustomProps {
   }) => React.ReactNode;
 }
 
-const RenderField = ({
+const RenderField = <T extends FieldValues>({
   field,
   props,
 }: {
-  field: FieldValues;
-  props: CustomProps;
+  field: ControllerRenderProps<T, Path<T>>;
+  props: CustomProps<T>;
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -147,9 +151,11 @@ const RenderField = ({
           <FormControl>
             <DatePicker
               selected={
-                field.value instanceof Date
-                  ? field.value
-                  : new Date(field.value)
+                (field.value as Date) instanceof Date ||
+                (typeof field.value === "string" &&
+                  !isNaN(Date.parse(field.value)))
+                  ? new Date(field.value)
+                  : new Date()
               }
               onChange={(date) => field.onChange(date)}
               dateFormat={props.dateformat ?? "yyyy-MM-dd HH:mm"}
@@ -163,6 +169,7 @@ const RenderField = ({
           </FormControl>
         </div>
       );
+
     case FormFieldType.PRACTITIONER_DATE_PICKER:
       return (
         <div className="flex rounded-md border border-dark-500 bg-dark-400">
@@ -176,9 +183,11 @@ const RenderField = ({
           <FormControl>
             <DatePicker
               selected={
-                field.value instanceof Date
-                  ? field.value
-                  : new Date(field.value)
+                (field.value as Date) instanceof Date ||
+                (typeof field.value === "string" &&
+                  !isNaN(Date.parse(field.value)))
+                  ? new Date(field.value)
+                  : new Date()
               }
               onChange={(date) => field.onChange(date)}
               dateFormat="yyyy-MM-dd" // Ensures only the date is shown
@@ -300,25 +309,28 @@ const RenderField = ({
       );
 
     case FormFieldType.SKELETON:
-      return props.renderSkeleton ? props.renderSkeleton(field) : null;
+      return props.renderSkeleton
+        ? props.renderSkeleton({
+            value: field.value,
+            onChange: field.onChange,
+          })
+        : null;
 
     default:
-      break;
+      return null;
   }
 };
 
-const CustomFormField = (props: CustomProps) => {
-  const { control, fieldType, name, label } = props;
+const CustomFormField = <T extends FieldValues>(props: CustomProps<T>) => {
+  const { control, name } = props;
+
   return (
     <FormField
       control={control}
       name={name}
       render={({ field }) => (
         <FormItem className="flex-1">
-          {fieldType !== FormFieldType.CHECKBOX && label && (
-            <FormLabel>{label}</FormLabel>
-          )}
-          <RenderField field={field} props={props} />
+          <RenderField<T> field={field} props={props} />
           <FormMessage className="shad-error" />
         </FormItem>
       )}

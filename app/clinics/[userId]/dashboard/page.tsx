@@ -23,19 +23,6 @@ import { Practitioner } from "@/components/table/practitionerColumns";
 import BlockSlotsForm from "@/components/forms/BlockSlotsForm";
 //import { ColumnDef } from "@tanstack/react-table";
 
-interface Appointment {
-  id: number;
-  patient_id: number;
-  clinic_id: number;
-  practitioner_id: number | null;
-  appointment_start_datetime: Date;
-  duration: number;
-  status: string;
-  appointment_context: string | null;
-  created_at: Date;
-  updated_at: Date;
-}
-
 async function fetchAppointmentsByClinicId(
   clinicId: number,
 ): Promise<Appointment[]> {
@@ -300,7 +287,7 @@ const Dashboard = () => {
               <StatCard
                 type="pending"
                 count={
-                  appointments.filter((a) => a.status === "SCHEDULED").length
+                  appointments.filter((a) => a.status === "scheduled").length
                 }
                 label="Scheduled Appointments"
                 icon="/assets/icons/pending.svg"
@@ -308,7 +295,7 @@ const Dashboard = () => {
               <StatCard
                 type="cancelled"
                 count={
-                  appointments.filter((a) => a.status === "CANCELLED").length
+                  appointments.filter((a) => a.status === "cancelled").length
                 }
                 label="Cancelled Appointments"
                 icon="/assets/icons/cancelled.svg"
@@ -320,7 +307,7 @@ const Dashboard = () => {
               <DataTable
                 columns={columns}
                 data={appointments}
-                clinicId={clinicId ? clinicId.toString() : undefined}
+                clinicId={clinicId!.toString()}
               />
             </section>
           </>

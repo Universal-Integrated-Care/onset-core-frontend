@@ -5,17 +5,7 @@ import Image from "next/image";
 import AppointmentModal from "../AppointmentModal";
 import StatusBadge from "../StatusBadge";
 import { formatDateTime } from "@/lib/utils";
-
-// ✅ Define Appointment Type
-export type Appointment = {
-  id: string;
-  patient: string;
-  status: "scheduled" | "cancelled";
-  appointment_start_datetime: string;
-  practitioner: string;
-  clinic_id: string;
-  patient_id: string;
-};
+import { Status } from "@/types/appwrite.types";
 
 // ✅ Define Columns
 export const columns: ColumnDef<Appointment, unknown>[] = [
@@ -38,7 +28,7 @@ export const columns: ColumnDef<Appointment, unknown>[] = [
     enableColumnFilter: true,
     cell: ({ row }) => (
       <div className="min-w-[115px]">
-        <StatusBadge status={row.original.status} />
+        <StatusBadge status={row.original.status as Status} />
       </div>
     ),
   },
@@ -76,7 +66,7 @@ export const columns: ColumnDef<Appointment, unknown>[] = [
   {
     id: "actions",
     header: () => <div className="pl-4">Actions</div>,
-    cell: ({ row, handleRowUpdate }) => {
+    cell: ({ row }) => {
       const handleUpdate = (updatedData: Partial<Appointment>) => {
         handleRowUpdate(updatedData, row.original.id);
       };

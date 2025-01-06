@@ -77,7 +77,10 @@ const UpdateAppointmentPage = async ({ params }: SearchParamProps) => {
               appointment={{
                 ...appointment,
                 patient: appointment.patient,
-                practitioner: appointment.practitioner,
+              }}
+              onClose={(updatedData) => {
+                // Handle the close action, e.g., refresh data or navigate
+                console.log("Appointment updated:", updatedData);
               }}
             />
 

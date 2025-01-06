@@ -27,15 +27,19 @@ interface AppointmentModalProps {
 
 const AppointmentModal = ({
   type,
-
   appointmentId,
   clinicId,
   onUpdate,
 }: AppointmentModalProps) => {
   const [open, setOpen] = useState(false);
+  const [appointmentData, setAppointmentData] = useState<Appointment | null>(
+    null,
+  );
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  console.log(appointmentData);
 
   /**
    * ✅ Fetch Appointment Data for Editing
@@ -151,14 +155,17 @@ const AppointmentModal = ({
         </DialogHeader>
 
         {/* ✅ Pass Callbacks to AppointmentForm */}
-        <AppointmentForm
-          type={type}
-          clinicId={clinicId}
-          appointmentId={appointmentId || ""}
-          onClose={(updatedData) => {
-            handleCloseModal(updatedData);
-          }}
-        />
+        {appointmentData && (
+          <AppointmentForm
+            type={type}
+            clinicId={clinicId}
+            appointmentId={appointmentId}
+            appointment={appointmentData}
+            onClose={(updatedData) => {
+              handleCloseModal(updatedData);
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

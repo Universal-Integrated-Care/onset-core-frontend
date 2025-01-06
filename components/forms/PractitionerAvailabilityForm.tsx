@@ -50,10 +50,7 @@ const PractitionerAvailabilityForm = ({
     resolver: zodResolver(PractitionerAvailabilityFormSchema),
     defaultValues: {
       day_of_week: type === "recurring" ? "MONDAY" : undefined,
-      date:
-        type === "override"
-          ? new Date().toISOString().split("T")[0]
-          : undefined,
+      date: type === "override" ? new Date() : undefined,
       start_time: new Date(), // Keep as Date object
       end_time: new Date(), // Keep as Date object
     },
@@ -88,11 +85,11 @@ const PractitionerAvailabilityForm = ({
       if (type === "recurring") {
         payload.day_of_week = values.day_of_week; // e.g., "MONDAY"
         payload.is_available = true;
-        payload.is_blocked = null;
+        payload.is_blocked = undefined;
       } else {
         payload.date = moment(values.date).format("YYYY-MM-DD"); // Format date to string
         payload.is_blocked = true;
-        payload.is_available = null;
+        payload.is_available = undefined;
       }
 
       console.log("📤 Payload to API:", payload);

@@ -25,11 +25,19 @@ const AppointmentFormSchema = z.object({
     }),
 });
 
+// Define your form data type
+type AppointmentFormValues = {
+  appointment_start_datetime: Date;
+  practitioner_id: string;
+  appointment_context?: string;
+};
+
 // ✅ Define Props
 interface AppointmentFormProps {
-  type: "schedule" | "cancel";
+  type: "schedule" | "cancel" | "edit";
   clinicId: string;
   appointmentId?: string;
+  appointment: Appointment;
   onClose: (
     updatedData: Partial<{
       status: string;
@@ -51,7 +59,7 @@ const AppointmentForm = ({
   >([]);
   const [error, setError] = useState<string | null>(null);
 
-  const form = useForm<z.infer<typeof AppointmentFormSchema>>({
+  const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(AppointmentFormSchema),
     defaultValues: {
       practitioner_id: "",
@@ -153,13 +161,12 @@ const AppointmentForm = ({
 
       const payload: {
         practitioner_id: number;
-        appointment_start_datetime: string;
+        appointment_start_datetime: Date;
         appointment_context?: string;
-        status: string;
+        status: "SCHEDULED" | "CANCELLED";
       } = {
         practitioner_id: Number(values.practitioner_id),
-        appointment_start_datetime:
-          values.appointment_start_datetime.toISOString(),
+        appointment_start_datetime: new Date(values.appointment_start_datetime),
         appointment_context: values.appointment_context,
         status: type === "cancel" ? "CANCELLED" : "SCHEDULED",
       };
@@ -173,7 +180,8 @@ const AppointmentForm = ({
       // ✅ Close modal and pass updated data back
       onClose({
         status: payload.status,
-        appointment_start_datetime: payload.appointment_start_datetime,
+        appointment_start_datetime:
+          payload.appointment_start_datetime.toISOString(),
       });
     } catch (err: Error | unknown) {
       console.error(
@@ -194,6 +202,7 @@ const AppointmentForm = ({
   const buttonLabel = {
     cancel: "Cancel Appointment",
     schedule: "Schedule Appointment",
+    edit: "Edit Appointment",
   }[type];
 
   /**
@@ -258,9 +267,9 @@ const AppointmentForm = ({
           fieldType={FormFieldType.DATE_PICKER}
           control={form.control}
           name="appointment_start_datetime"
-          label="Expected appointment date"
+          label="Appointment Date"
           showTimeSelect
-          dateFormat="yyyy-MM-dd - h:mm aa"
+          dateformat="yyyy-MM-dd - h:mm aa"
         />
 
         {/* ✅ Appointment Context */}
