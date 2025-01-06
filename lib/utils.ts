@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { dayofweek } from "@prisma/client";
 
 import moment from "moment-timezone";
 /**
@@ -203,15 +204,34 @@ export function extractDateFromMelbourneTime(datetime: string): string {
  * @param {string} datetime - The ISO datetime string.
  * @returns {string} - The day of the week in uppercase ENUM format.
  */
-export async function getDayOfWeekEnum(datetime: string): Promise<string> {
+
+export async function getDayOfWeekEnum(datetime: string): Promise<dayofweek> {
   const melbourneTime = moment.tz(datetime, "Australia/Melbourne");
 
   if (!melbourneTime.isValid()) {
     throw new Error("Invalid datetime provided for day extraction.");
   }
 
-  // Extract the day of the week and return in ENUM format
-  return melbourneTime.format("dddd").toUpperCase();
+  // Map the day to the exact Prisma dayofweek enum values
+  const dayMap: { [key: string]: dayofweek } = {
+    SUNDAY: "SUNDAY",
+    MONDAY: "MONDAY",
+    TUESDAY: "TUESDAY",
+    WEDNESDAY: "WEDNESDAY",
+    THURSDAY: "THURSDAY",
+    FRIDAY: "FRIDAY",
+    SATURDAY: "SATURDAY",
+  };
+
+  // Extract the day of the week and convert to uppercase
+  const day = melbourneTime.format("dddd").toUpperCase();
+
+  // Ensure the day is a valid dayofweek enum value
+  if (!(day in dayMap)) {
+    throw new Error(`Invalid day: ${day}`);
+  }
+
+  return dayMap[day];
 }
 
 /**

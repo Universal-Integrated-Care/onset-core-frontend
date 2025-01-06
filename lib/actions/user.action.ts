@@ -14,7 +14,7 @@ interface CreateUserParams {
 }
 
 interface UserResponse {
-  user: any;
+  user: unknown;
   error?: string;
 }
 

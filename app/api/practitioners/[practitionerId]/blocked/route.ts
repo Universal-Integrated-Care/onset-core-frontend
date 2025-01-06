@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
 import moment from "moment-timezone";
 import { PractitionerApiProps } from "@/types/api";
+import { Prisma } from "@prisma/client";
 
 /**
  * Fetch Blocked Slots for a Practitioner (Date-specific and Recurring)
@@ -183,7 +184,6 @@ import { PractitionerApiProps } from "@/types/api";
  *                   example: "Something went wrong while extending blockage. Please try again later."
  */
 
-
 /**
  * Fetch Practitioner by ID
  */
@@ -212,7 +212,7 @@ export async function GET(req: NextRequest, props: PractitionerApiProps) {
     );
 
     // Base query condition
-    const queryConditions: any = {
+    const queryConditions: Prisma.practitioner_availabilityWhereInput = {
       practitioner_id: BigInt(practitionerId),
       is_blocked: true,
     };
@@ -345,7 +345,7 @@ export async function POST(req: NextRequest, props: PractitionerApiProps) {
 
     // ✅ Generate Date Range Between Start and End Datetimes
     const createdBlockages = [];
-    let currentDate = parsedStartDatetime.clone();
+    const currentDate = parsedStartDatetime.clone();
 
     while (currentDate.isSameOrBefore(parsedEndDatetime, "day")) {
       const startDateTime = currentDate

@@ -81,7 +81,9 @@ const LoginForm = () => {
           {/* Header Section */}
           <section className="mb-12 space-y-4">
             <h1 className="header">Welcome 🤗</h1>
-            <p className="text-dark-700">Please try Log in to your Onset account.</p>
+            <p className="text-dark-700">
+              Please try Log in to your Onset account.
+            </p>
           </section>
 
           {/* Error Message */}
@@ -132,7 +134,7 @@ const LoginForm = () => {
         className="shad-button_outline w-full mt-4"
         onClick={() => router.push("/signup")}
       >
-        Don't have an account? Sign up here
+        Don&apos;t have an account? Sign up here
       </button>
     </div>
   );

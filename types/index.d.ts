@@ -15,7 +15,6 @@ declare interface CreateUserParams {
 declare interface User extends CreateUserParams {
   $id: string;
 }
-
 declare interface RegisterUserParams extends CreateUserParams {
   userId: string;
   birthDate: Date;
@@ -59,4 +58,61 @@ interface FormValuesAll {
   email: string;
   password: string;
   phone: E164Number;
+}
+
+declare interface Patient {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  patient_type: string;
+  medicare_number: string;
+  medicare_expiry: string;
+  created_at: string;
+  updated_at: string;
+}
+
+declare interface PatientsResponse {
+  patients: Patient[];
+}
+
+interface Appointment {
+  id: number;
+  patient_id: number;
+  appointment_start_datetime: string;
+  duration: number;
+  status: AppointmentStatus;
+  patient_name: string;
+}
+
+interface AppointmentsResponse {
+  appointments: Appointment[];
+}
+
+interface BlockedSlot {
+  id: number;
+  start_time: string;
+  end_time: string;
+}
+
+interface BlockedSlotsResponse {
+  blockedSlots: BlockedSlot[];
+}
+
+declare interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  end?: string;
+  status?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  textColor?: string;
+  extendedProps: {
+    patientId?: string;
+    patientName?: string;
+    duration?: number;
+    status: string;
+  };
 }
