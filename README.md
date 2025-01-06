@@ -42,3 +42,8 @@ npx prisma generate
 npx prisma db push---> to push
 fly proxy 15432:5432 -a onsetcoredb
 npx tsx scripts/populateDatabase.ts
+docker build -t onset-core-frontend .
+
+docker run -p 3000:3000 \  
+ -e DATABASE_URL=databaseurl \
+ onset-core-frontend
