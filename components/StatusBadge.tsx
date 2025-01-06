@@ -3,7 +3,7 @@ import Image from "next/image";
 import { StatusIcon } from "@/constants";
 import clsx from "clsx";
 
-const StatusBadge = ({ status }: { status: Status }) => {
+const StatusBadge = ({ status }: { status: AppointmentStatus }) => {
   return (
     <div
       className={clsx("status-badge", {

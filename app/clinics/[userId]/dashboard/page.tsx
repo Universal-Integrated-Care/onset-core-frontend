@@ -25,10 +25,10 @@ interface Appointment {
   id: string;
   patient_id: string;
   clinic_id: string;
-  practitioner_id:  number | null;
+  practitioner_id: number | null;
   appointment_start_datetime: string;
   duration: number;
-  status: Status;
+  status: AppointmentStatus;
   appointment_context: string | null;
   created_at: string;
   updated_at: string;
@@ -79,7 +79,6 @@ const Dashboard = () => {
     setShowForm(false); // Close the form after adding
   };
 
-
   /**
    * ✅ Validate session and fetch appointments
    */
@@ -119,8 +118,10 @@ const Dashboard = () => {
         const transformedAppointments = appointmentsData.map((a) => ({
           ...a,
           id: String(a.id),
-          status: ["pending", "scheduled", "cancelled"].includes(a.status.toLowerCase())
-            ? (a.status.toLowerCase() as Status)
+          status: ["pending", "scheduled", "cancelled"].includes(
+            a.status.toLowerCase(),
+          )
+            ? (a.status.toLowerCase() as AppointmentStatus)
             : "pending", // Default to 'pending' if status is invalid
         }));
         setAppointments(transformedAppointments);
@@ -158,6 +159,23 @@ const Dashboard = () => {
     return <DashboardLoader text="Validating session, please wait..." />;
   }
   console.log("✅ New Practitioner State in Dashboard:", newPractitioner);
+
+  const handleRowUpdate = (updatedData: UpdateData, rowId: string) => {
+    setAppointments((prev: Appointment[]) =>
+      prev.map((appointment) => {
+        if (appointment.id === rowId) {
+          // Type cast the status if it exists in updatedData
+          const newData = {
+            ...updatedData,
+            status: updatedData.status as AppointmentStatus,
+          };
+          console.log("✅ Updated Data:", newData);
+          return { ...appointment, ...newData };
+        }
+        return appointment;
+      }),
+    );
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -310,13 +328,13 @@ const Dashboard = () => {
                 columns={columns}
                 data={appointments}
                 clinicId={clinicId?.toString() ?? ""}
-                />
+                onRowUpdate={handleRowUpdate} // Add this prop
+              />
             </section>
           </>
         ) : (
           <section>
-            <PractitionerTable newPractitioner={newPractitioner}  
-            />
+            <PractitionerTable newPractitioner={newPractitioner} />
           </section>
         )}
       </main>

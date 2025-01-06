@@ -32,7 +32,7 @@ interface AppointmentFormProps {
   appointmentId?: string;
   onClose: (
     updatedData: Partial<{
-      status: string;
+      status: AppointmentStatus;
       appointment_start_datetime: string;
     }>,
   ) => void; // Pass updated data back
@@ -69,9 +69,16 @@ const AppointmentForm = ({
       if (!response.ok) throw new Error("Failed to fetch practitioners list");
       const data = await response.json();
       setPractitioners(data.practitioners || []);
-    } catch (err: any) {
-      console.error("❌ Error fetching practitioners:", err.message);
-      setError(err.message || "Failed to fetch practitioners list");
+    } catch (err: unknown) {
+      console.error(
+        "❌ Error fetching appointment:",
+        err instanceof Error ? err.message : "Unknown error",
+      );
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch appointment details",
+      );
     }
   };
 
@@ -93,9 +100,16 @@ const AppointmentForm = ({
           ? new Date(appointment.appointment_start_datetime)
           : new Date(),
       });
-    } catch (err: any) {
-      console.error("❌ Error fetching appointment:", err.message);
-      setError(err.message || "Failed to fetch appointment details");
+    } catch (err: unknown) {
+      console.error(
+        "❌ Error fetching appointment:",
+        err instanceof Error ? err.message : "Unknown error",
+      );
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch appointment details",
+      );
     }
   };
 
@@ -109,9 +123,9 @@ const AppointmentForm = ({
 
       try {
         await Promise.all([fetchPractitioners(), fetchAppointment()]);
-      } catch (err: any) {
-        console.error("❌ Error during fetch:", err.message);
-        setError(err.message || "Failed to fetch initial data");
+      } catch (err: unknown) {
+        console.error("❌ Error during fetch:", err);
+        setError(err instanceof Error ? err.message : `Failed to fetch data`);
       } finally {
         setIsLoading(false);
       }
@@ -132,7 +146,7 @@ const AppointmentForm = ({
         throw new Error("Appointment ID is required for updates.");
       }
 
-      const payload: any = {
+      const payload: AppointmentPayload = {
         practitioner_id: Number(values.practitioner_id),
         appointment_start_datetime:
           values.appointment_start_datetime.toISOString(),
@@ -145,15 +159,23 @@ const AppointmentForm = ({
       console.log(
         `✅ Appointment ${type === "cancel" ? "Cancelled" : "Scheduled"} successfully`,
       );
-
-      // ✅ Close modal and pass updated data back
-      onClose({
+      console.log("✅ Form submission succeeded, sending update:", {
         status: payload.status,
         appointment_start_datetime: payload.appointment_start_datetime,
       });
-    } catch (err: any) {
-      console.error("❌ Error submitting form:", err.message);
-      setError(err.message || `Failed to ${type} appointment`);
+      // ✅ Close modal and pass updated data back
+      onClose({
+        status: payload.status as AppointmentStatus,
+        appointment_start_datetime: payload.appointment_start_datetime,
+      });
+    } catch (err: unknown) {
+      console.error(
+        "❌ Error submitting form:",
+        err instanceof Error ? err.message : "Unknown error",
+      );
+      setError(
+        err instanceof Error ? err.message : `Failed to ${type} appointment`,
+      );
     } finally {
       setIsLoading(false);
     }

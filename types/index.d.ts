@@ -6,7 +6,6 @@ declare type SearchParamProps = {
 };
 
 declare type Gender = "Male" | "Female" | "Other";
-declare type Status = "pending" | "scheduled" | "cancelled";
 
 declare interface CreateUserParams {
   name: string;
@@ -45,7 +44,7 @@ declare type CreateAppointmentParams = {
   primaryPhysician: string;
   reason: string;
   schedule: Date;
-  status: Status;
+  status: AppointmentStatus;
   note: string | undefined;
 };
 
@@ -55,5 +54,3 @@ declare type UpdateAppointmentParams = {
   appointment: Appointment;
   type: string;
 };
-
-

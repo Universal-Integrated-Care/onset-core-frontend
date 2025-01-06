@@ -1,13 +1,6 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { appointmentStatus } from "@/constants/index";
-
-/* ------------------------------
-    ✅ Types
-------------------------------- */
-// Define the enum type to match Prisma schema
-type AppointmentStatus = typeof appointmentStatus[keyof typeof appointmentStatus];
 
 // Base Prisma types matching schema
 interface PrismaPatient {
@@ -42,13 +35,20 @@ interface PrismaAppointment {
 }
 
 // Converted types for application use
-type ConvertBigIntToNumber<T> = T extends bigint | null ? number | null : T extends bigint ? number : T;
+type ConvertBigIntToNumber<T> = T extends bigint | null
+  ? number | null
+  : T extends bigint
+    ? number
+    : T;
 
 type Appointment = {
-  [K in keyof Omit<PrismaAppointment, 'patients' | 'practitioners'>]: ConvertBigIntToNumber<PrismaAppointment[K]>
+  [K in keyof Omit<
+    PrismaAppointment,
+    "patients" | "practitioners"
+  >]: ConvertBigIntToNumber<PrismaAppointment[K]>;
 } & {
-  patient?: Omit<PrismaPatient, 'id'> & { id: number };
-  practitioner?: Omit<PrismaPractitioner, 'id'> & { id: number };
+  patient?: Omit<PrismaPatient, "id"> & { id: number };
+  practitioner?: Omit<PrismaPractitioner, "id"> & { id: number };
 };
 
 interface AppointmentResponse {
@@ -60,11 +60,15 @@ interface AppointmentResponse {
 /* ------------------------------
     ✅ Conversion Utilities
 ------------------------------- */
-const convertPrismaAppointment = (prismaAppointment: PrismaAppointment): Appointment => ({
+const convertPrismaAppointment = (
+  prismaAppointment: PrismaAppointment,
+): Appointment => ({
   id: Number(prismaAppointment.id),
   patient_id: Number(prismaAppointment.patient_id),
   clinic_id: Number(prismaAppointment.clinic_id),
-  practitioner_id: prismaAppointment.practitioner_id ? Number(prismaAppointment.practitioner_id) : null,
+  practitioner_id: prismaAppointment.practitioner_id
+    ? Number(prismaAppointment.practitioner_id)
+    : null,
   appointment_start_datetime: prismaAppointment.appointment_start_datetime,
   duration: prismaAppointment.duration,
   status: prismaAppointment.status,
@@ -78,7 +82,7 @@ const convertPrismaAppointment = (prismaAppointment: PrismaAppointment): Appoint
       last_name: prismaAppointment.patients.last_name,
       email: prismaAppointment.patients.email,
       phone: prismaAppointment.patients.phone,
-    }
+    },
   }),
   ...(prismaAppointment.practitioners && {
     practitioner: {
@@ -86,8 +90,8 @@ const convertPrismaAppointment = (prismaAppointment: PrismaAppointment): Appoint
       name: prismaAppointment.practitioners.name,
       email: prismaAppointment.practitioners.email,
       phone: prismaAppointment.practitioners.phone,
-    }
-  })
+    },
+  }),
 });
 
 /* ------------------------------
@@ -104,7 +108,7 @@ export const getAppointmentsByClinicId = async (
     const numericClinicId =
       typeof clinicId === "bigint" ? Number(clinicId) : clinicId;
 
-    const prismaAppointments = await prisma.patient_appointments.findMany({
+    const prismaAppointments = (await prisma.patient_appointments.findMany({
       where: {
         clinic_id: numericClinicId,
       },
@@ -130,7 +134,7 @@ export const getAppointmentsByClinicId = async (
       orderBy: {
         appointment_start_datetime: "desc",
       },
-    }) as PrismaAppointment[];
+    })) as PrismaAppointment[];
 
     const appointments = prismaAppointments.map(convertPrismaAppointment);
     return { appointments };
@@ -150,7 +154,7 @@ export const updateAppointment = async (
   appointmentId: number,
   updates: {
     practitioner_id?: number;
-    appointment_start_datetime?: Date;
+    appointment_start_datetime?: string;
     appointment_context?: string | null;
     status?: AppointmentStatus;
   },
@@ -163,18 +167,17 @@ export const updateAppointment = async (
     // Prepare the update data with proper status case handling
     const updateData = {
       ...updates,
-      // Convert status to uppercase if it exists
       ...(updates.status && {
-        status: updates.status.toUpperCase() as AppointmentStatus
+        status: updates.status as AppointmentStatus,
       }),
       // Convert IDs to bigint if they exist
       ...(updates.practitioner_id && {
-        practitioner_id: BigInt(updates.practitioner_id)
+        practitioner_id: BigInt(updates.practitioner_id),
       }),
-      updated_at: new Date()
+      updated_at: new Date(),
     };
 
-    const prismaAppointment = await prisma.patient_appointments.update({
+    const prismaAppointment = (await prisma.patient_appointments.update({
       where: {
         id: BigInt(appointmentId),
       },
@@ -197,8 +200,8 @@ export const updateAppointment = async (
             phone: true,
           },
         },
-      }
-    }) as PrismaAppointment;
+      },
+    })) as PrismaAppointment;
 
     const appointment = convertPrismaAppointment(prismaAppointment);
     return { appointment };
@@ -207,7 +210,7 @@ export const updateAppointment = async (
     if (error instanceof Error) {
       return {
         appointment: null,
-        error: `Failed to update appointment: ${error.message}`
+        error: `Failed to update appointment: ${error.message}`,
       };
     }
     return {

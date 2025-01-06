@@ -1,7 +1,6 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "../ui/button";
 import Image from "next/image";
 import AppointmentModal from "../AppointmentModal";
 import StatusBadge from "../StatusBadge";
@@ -11,16 +10,21 @@ import { formatDateTime } from "@/lib/utils";
 export type Appointment = {
   id: string;
   patient: string;
-  status: "scheduled" | "cancelled" | "pending";
+  status: AppointmentStatus;
   appointment_start_datetime: string;
   practitioner: string;
   clinic_id: string;
   patient_id: string;
 };
 
+// Add this type definition
+type TableMeta = {
+  handleRowUpdate?: (updatedData: UpdateData, rowId: string) => void;
+};
 // ✅ Define Columns
 export const columns: ColumnDef<Appointment>[] = [
   {
+    accessorKey: "id", // Add accessorKey for ID column
     header: "ID",
     cell: ({ row }) => <p className="text-14-medium">{row.index + 1}</p>,
   },
@@ -76,29 +80,30 @@ export const columns: ColumnDef<Appointment>[] = [
   {
     id: "actions",
     header: () => <div className="pl-4">Actions</div>,
-    cell: ({ row, handleRowUpdate }) => {
-      const handleUpdate = (updatedData: Partial<Appointment>) => {
-        handleRowUpdate(updatedData, row.original.id);
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as TableMeta;
+
+      const handleUpdate = (updatedData: UpdateData) => {
+        if (meta.handleRowUpdate) {
+          meta.handleRowUpdate(updatedData, row.original.id);
+        }
       };
 
       return (
         <div className="flex gap-1">
-          {/* Schedule Appointment */}
           <AppointmentModal
             type="schedule"
             patientId={row.original.patient_id}
             appointmentId={row.original.id}
             clinicId={row.original.clinic_id}
-            onUpdate={(updatedData) => handleUpdate(updatedData)}
+            onUpdate={handleUpdate}
           />
-
-          {/* Cancel Appointment */}
           <AppointmentModal
             type="cancel"
             patientId={row.original.patient_id}
             appointmentId={row.original.id}
             clinicId={row.original.clinic_id}
-            onUpdate={(updatedData) => handleUpdate(updatedData)}
+            onUpdate={handleUpdate}
           />
         </div>
       );
