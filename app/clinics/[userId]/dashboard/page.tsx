@@ -16,23 +16,24 @@ import {
   ChevronRight,
   UserPlus,
   Calendar,
-  Users,
   Stethoscope,
 } from "lucide-react";
 import DashboardLoader from "@/components/DashboardLoader";
 import { Practitioner } from "@/components/table/practitionerColumns";
 
 interface Appointment {
-  id: number;
-  patient_id: number;
-  clinic_id: number;
+  id: string;
+  patient_id: string;
+  clinic_id: string;
   practitioner_id: number | null;
-  appointment_start_datetime: Date;
+  appointment_start_datetime: string;
   duration: number;
-  status: string;
+  status: AppointmentStatus;
   appointment_context: string | null;
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
+  patient: string;
+  practitioner: string;
 }
 
 async function fetchAppointmentsByClinicId(
@@ -65,7 +66,6 @@ const Dashboard = () => {
   const [showForm, setShowForm] = useState(false); // Toggle Practitioner Form
   const [showPractitioners, setShowPractitioners] = useState(false); // Toggle Practitioners Table
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // Toggle Sidebar
-  const [showBlockSlotsForm, setShowBlockSlotsForm] = useState(false);
 
   const [metadata, setMetadata] = useState<{
     practitionerTypes: string[];
@@ -114,7 +114,18 @@ const Dashboard = () => {
         setIsValidSession(true);
 
         const appointmentsData = await fetchAppointmentsByClinicId(clinicId);
-        setAppointments(appointmentsData);
+        console.log("✅ Appointments Fetched:", appointmentsData);
+        const transformedAppointments = appointmentsData.map((a) => ({
+          ...a,
+          id: String(a.id),
+          status: ["pending", "scheduled", "cancelled"].includes(
+            a.status.toLowerCase(),
+          )
+            ? (a.status.toLowerCase() as AppointmentStatus)
+            : "pending", // Default to 'pending' if status is invalid
+        }));
+        setAppointments(transformedAppointments);
+        console.log("✅ Appointments Transformed:", transformedAppointments);
 
         // Fetch Metadata
         const metadataResponse = await fetch("/api/practitioners/meta");
@@ -148,6 +159,23 @@ const Dashboard = () => {
     return <DashboardLoader text="Validating session, please wait..." />;
   }
   console.log("✅ New Practitioner State in Dashboard:", newPractitioner);
+
+  const handleRowUpdate = (updatedData: UpdateData, rowId: string) => {
+    setAppointments((prev: Appointment[]) =>
+      prev.map((appointment) => {
+        if (appointment.id === rowId) {
+          // Type cast the status if it exists in updatedData
+          const newData = {
+            ...updatedData,
+            status: updatedData.status as AppointmentStatus,
+          };
+          console.log("✅ Updated Data:", newData);
+          return { ...appointment, ...newData };
+        }
+        return appointment;
+      }),
+    );
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -231,20 +259,10 @@ const Dashboard = () => {
           </Button>
         )}
 
-        {/* Block Slots Form */}
-        {showBlockSlotsForm && selectedPractitionerId && (
-          <div className="mt-4">
-            <BlockSlotsForm
-              apiUrl={`/api/practitioners/${selectedPractitionerId}/blocked`}
-              onClose={() => setShowBlockSlotsForm(false)}
-            />
-          </div>
-        )}
-
         {showForm && clinicId && (
           <div className="mt-4">
             <PractitionerForm
-              clinicId={clinicId}
+              clinicId={clinicId.toString()}
               practitionerTypes={metadata.practitionerTypes}
               specializations={metadata.specializations}
               onClose={() => setShowForm(false)}
@@ -289,7 +307,7 @@ const Dashboard = () => {
               <StatCard
                 type="pending"
                 count={
-                  appointments.filter((a) => a.status === "SCHEDULED").length
+                  appointments.filter((a) => a.status === "scheduled").length
                 }
                 label="Scheduled Appointments"
                 icon="/assets/icons/pending.svg"
@@ -297,7 +315,7 @@ const Dashboard = () => {
               <StatCard
                 type="cancelled"
                 count={
-                  appointments.filter((a) => a.status === "CANCELLED").length
+                  appointments.filter((a) => a.status === "cancelled").length
                 }
                 label="Cancelled Appointments"
                 icon="/assets/icons/cancelled.svg"
@@ -309,7 +327,8 @@ const Dashboard = () => {
               <DataTable
                 columns={columns}
                 data={appointments}
-                clinicId={clinicId?.toString()}
+                clinicId={clinicId?.toString() ?? ""}
+                onRowUpdate={handleRowUpdate} // Add this prop
               />
             </section>
           </>

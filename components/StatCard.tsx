@@ -7,9 +7,9 @@ interface StatCardProps {
     label: string;
     icon: string;
     type: 'appointments' | 'pending' | 'cancelled';
-}
+    }
 
-const StatCard = ({count=0,label,icon,type}) => {
+const StatCard = ({count=0,label,icon,type}: StatCardProps) => {
     return (
         <div className={clsx('stat-card',{
             'bg-appointments': type === 'appointments',

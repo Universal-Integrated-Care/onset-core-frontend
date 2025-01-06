@@ -57,7 +57,11 @@ const ClinicForm = () => {
         return;
       }
 
-      if (result.user) {
+      if (
+        result.user &&
+        typeof result.user === "object" &&
+        "id" in result.user
+      ) {
         router.push(`/clinics/${result.user.id}/register`);
       }
     } catch (e) {

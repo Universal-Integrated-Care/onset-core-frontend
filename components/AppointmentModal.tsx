@@ -12,17 +12,34 @@ import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import AppointmentForm from "./forms/AppointmentForm";
 
+// Define the appointment data interface
+interface AppointmentData {
+  id: string;
+  patient_id: string;
+  clinic_id: string;
+  practitioner_id: number | null;
+  status: AppointmentStatus;
+  appointment_start_datetime: string;
+  appointment_context: string | null;
+  duration: number;
+  created_at: string;
+  updated_at: string;
+  patient: string;
+  practitioner: string;
+}
+
+// Update modal props interface
 interface AppointmentModalProps {
   type: "schedule" | "cancel";
   patientId: string;
-  appointmentId?: string; // Optional for scheduling
-  clinicId: string; // Required for API context
+  appointmentId?: string;
+  clinicId: string;
   onUpdate?: (
     updatedData: Partial<{
-      status: string;
+      status: AppointmentStatus;
       appointment_start_datetime: string;
     }>,
-  ) => void; // Callback for updating row state
+  ) => void;
 }
 
 const AppointmentModal = ({
@@ -33,16 +50,16 @@ const AppointmentModal = ({
   onUpdate,
 }: AppointmentModalProps) => {
   const [open, setOpen] = useState(false);
-  const [appointmentData, setAppointmentData] = useState<any>(null);
+  const [appointmentData, setAppointmentData] =
+    useState<AppointmentData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  console.log("Patient ID from AppointmentModal prop", patientId);
+  console.log("Data from AppointmentModal prop", appointmentData);
 
-  /**
-   * ✅ Fetch Appointment Data for Editing
-   */
   useEffect(() => {
     const fetchAppointmentData = async () => {
-      if (type === "schedule" || !appointmentId) return; // Skip fetch for scheduling
+      if (type === "schedule" || !appointmentId) return;
 
       setIsLoading(true);
       setError(null);
@@ -53,10 +70,14 @@ const AppointmentModal = ({
           throw new Error("Failed to fetch appointment details");
         }
         const { appointment } = await res.json();
-        setAppointmentData(appointment);
-      } catch (error: any) {
-        console.error("❌ Error fetching appointment details:", error.message);
-        setError(error.message || "Failed to fetch appointment details");
+        setAppointmentData(appointment as AppointmentData);
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch appointment details";
+        console.error("❌ Error fetching appointment details:", errorMessage);
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -67,24 +88,23 @@ const AppointmentModal = ({
     }
   }, [open, appointmentId, type]);
 
-  /**
-   * ✅ Handle Modal Close with State Update
-   */
   const handleCloseModal = (
     updatedData?: Partial<{
-      status: string;
+      status: AppointmentStatus;
       appointment_start_datetime: string;
     }>,
   ) => {
+    console.log("✅ Modal receiving update:", updatedData);
     setOpen(false);
     if (onUpdate && updatedData) {
-      onUpdate(updatedData); // Update row in the parent component
+      const typedData = {
+        ...updatedData,
+        status: updatedData.status as AppointmentStatus,
+      };
+      onUpdate(typedData);
     }
   };
 
-  /**
-   * ✅ Render Loading State
-   */
   if (isLoading) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
@@ -100,9 +120,6 @@ const AppointmentModal = ({
     );
   }
 
-  /**
-   * ✅ Render Error State
-   */
   if (error) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
@@ -118,9 +135,6 @@ const AppointmentModal = ({
     );
   }
 
-  /**
-   * ✅ Render Main Modal Content
-   */
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -143,14 +157,11 @@ const AppointmentModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        {/* ✅ Pass Callbacks to AppointmentForm */}
         <AppointmentForm
           type={type}
           clinicId={clinicId}
           appointmentId={appointmentId || ""}
-          onClose={(updatedData) => {
-            handleCloseModal(updatedData);
-          }}
+          onClose={handleCloseModal}
         />
       </DialogContent>
     </Dialog>

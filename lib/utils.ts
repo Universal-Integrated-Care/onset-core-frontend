@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { dayofweek } from "@prisma/client";
 
 import moment from "moment-timezone";
 /**
@@ -7,7 +8,7 @@ import moment from "moment-timezone";
  * @param {string} timestamp - The input timestamp in ISO format (e.g., "2024-01-01T12:00:00Z").
  * @returns {string} - Converted timestamp in Australia/Melbourne timezone.
  */
-export function convertToMelbourneTime(timestamp) {
+export function convertToMelbourneTime(timestamp: string) {
   if (!timestamp) {
     throw new Error("Timestamp is required");
   }
@@ -20,7 +21,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
+export const parseStringify = (value: unknown) =>
+  JSON.parse(JSON.stringify(value));
 
 export const convertFileToUrl = (file: File) => URL.createObjectURL(file);
 
@@ -95,26 +97,56 @@ export function decryptKey(passkey: string) {
  * ✅ Helper Function to Serialize BigInt
  * Converts BigInt values to String to prevent JSON serialization errors.
  */
-export function serializeBigInt(obj: any) {
+
+// First, let's define a generic helper type for converting types
+type RecursivelyReplaceType<T> = T extends bigint
+  ? number // Convert bigint to number instead of string for IDs
+  : T extends Date
+    ? string
+    : T extends Array<infer U>
+      ? Array<RecursivelyReplaceType<U>>
+      : T extends object
+        ? { [K in keyof T]: RecursivelyReplaceType<T[K]> }
+        : T;
+
+export function serializeBigInt<T>(obj: T): RecursivelyReplaceType<T> {
+  if (obj === null) {
+    return null as RecursivelyReplaceType<T>;
+  }
+
+  // Handle arrays
   if (Array.isArray(obj)) {
-    return obj.map(serializeBigInt);
-  } else if (obj !== null && typeof obj === "object") {
-    const serializedObj: any = {};
+    return obj.map(serializeBigInt) as RecursivelyReplaceType<T>;
+  }
+
+  // Handle objects (including Date)
+  if (typeof obj === "object") {
+    if (obj instanceof Date) {
+      return obj.toISOString() as RecursivelyReplaceType<T>;
+    }
+
+    const serializedObj: { [key: string]: unknown } = {};
     for (const key in obj) {
       if (typeof obj[key] === "bigint") {
-        serializedObj[key] = obj[key].toString();
-      } else if (obj[key] instanceof Date) {
-        serializedObj[key] = obj[key].toISOString();
+        // Convert bigint to number instead of string for ID fields
+        serializedObj[key] = Number(obj[key]);
       } else {
         serializedObj[key] = serializeBigInt(obj[key]);
       }
     }
-    return serializedObj;
+    return serializedObj as RecursivelyReplaceType<T>;
   }
-  return obj;
+
+  // Handle bigint
+  if (typeof obj === "bigint") {
+    return Number(obj) as RecursivelyReplaceType<T>;
+  }
+
+  // Return other primitives as is
+  return obj as RecursivelyReplaceType<T>;
 }
 
-export async function validateISODateTime(datetime: string): void {
+export async function validateISODateTime(datetime: string): Promise<void> {
   if (!moment(datetime, moment.ISO_8601, true).isValid()) {
     throw new Error(
       "Invalid appointment_start_datetime format. Use ISO format: 'YYYY-MM-DDTHH:MM:SSZ' or with timezone offset.",
@@ -131,7 +163,7 @@ export async function validateISODateTime(datetime: string): void {
 export async function calculateAppointmentEndTime(
   startDatetime: string,
   durationInMinutes: number,
-): string {
+): Promise<string> {
   if (!durationInMinutes || durationInMinutes <= 0) {
     throw new Error("Duration must be a positive number.");
   }
@@ -172,15 +204,34 @@ export function extractDateFromMelbourneTime(datetime: string): string {
  * @param {string} datetime - The ISO datetime string.
  * @returns {string} - The day of the week in uppercase ENUM format.
  */
-export async function getDayOfWeekEnum(datetime: string): string {
+
+export async function getDayOfWeekEnum(datetime: string): Promise<dayofweek> {
   const melbourneTime = moment.tz(datetime, "Australia/Melbourne");
 
   if (!melbourneTime.isValid()) {
     throw new Error("Invalid datetime provided for day extraction.");
   }
 
-  // Extract the day of the week and return in ENUM format
-  return melbourneTime.format("dddd").toUpperCase();
+  // Map the day to the exact Prisma dayofweek enum values
+  const dayMap: { [key: string]: dayofweek } = {
+    SUNDAY: "SUNDAY",
+    MONDAY: "MONDAY",
+    TUESDAY: "TUESDAY",
+    WEDNESDAY: "WEDNESDAY",
+    THURSDAY: "THURSDAY",
+    FRIDAY: "FRIDAY",
+    SATURDAY: "SATURDAY",
+  };
+
+  // Extract the day of the week and convert to uppercase
+  const day = melbourneTime.format("dddd").toUpperCase();
+
+  // Ensure the day is a valid dayofweek enum value
+  if (!(day in dayMap)) {
+    throw new Error(`Invalid day: ${day}`);
+  }
+
+  return dayMap[day];
 }
 
 /**
@@ -189,7 +240,7 @@ export async function getDayOfWeekEnum(datetime: string): string {
 export async function formatDateTimeToMelbourne(
   date: string,
   time: string,
-): string {
+): Promise<string> {
   if (!date || !time) {
     throw new Error("Both date and time must be provided.");
   }

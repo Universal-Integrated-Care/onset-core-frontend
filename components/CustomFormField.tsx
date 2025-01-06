@@ -8,7 +8,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Control } from "react-hook-form";
+import { Control, FieldValues, Path } from "react-hook-form";
 import Image from "next/image";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
@@ -33,10 +33,10 @@ export enum FormFieldType {
   PRACTITIONER_DATE_PICKER = "practitionerDatePicker", // ✅ Add new type
 }
 
-interface CustomProps {
-  control: Control<any>;
+interface CustomProps<T extends FieldValues> {
+  control: Control<T>;
   fieldType: FormFieldType;
-  name: string;
+  name: Path<T>; // Changed from keyof T & string to Path<T>
   label?: string;
   placeholder?: string;
   iconSrc?: string;
@@ -45,10 +45,17 @@ interface CustomProps {
   dateformat?: string;
   showTimeSelect?: boolean;
   children?: React.ReactNode;
-  renderSkeleton?: (field: any) => React.ReactNode;
+  renderSkeleton?: (field: FieldValues) => React.ReactNode;
+}
+interface RenderFieldProps<T extends FieldValues> {
+  field: FieldValues;
+  props: CustomProps<T>;
 }
 
-const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
+const RenderField = <T extends FieldValues>({
+  field,
+  props,
+}: RenderFieldProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 
   switch (props.fieldType) {
@@ -225,11 +232,30 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
               <SelectTrigger className="shad-select-trigger">
                 <SelectValue placeholder={props.placeholder}>
                   {field.value &&
-                    props.children &&
-                    Array.isArray(React.Children.toArray(props.children)) &&
-                    React.Children.toArray(props.children).find(
-                      (child: any) => child.props.value === field.value,
-                    )?.props.children}
+                  props.children &&
+                  React.Children.toArray(props.children).find(
+                    (child) =>
+                      React.isValidElement(child) &&
+                      (child as React.ReactElement<{ value: string }>).props
+                        .value === field.value,
+                  )
+                    ? React.isValidElement(
+                        React.Children.toArray(props.children).find(
+                          (child) =>
+                            React.isValidElement(child) &&
+                            (child as React.ReactElement<{ value: string }>)
+                              .props.value === field.value,
+                        ),
+                      ) &&
+                      (
+                        React.Children.toArray(props.children).find(
+                          (child) =>
+                            React.isValidElement(child) &&
+                            (child as React.ReactElement<{ value: string }>)
+                              .props.value === field.value,
+                        ) as React.ReactElement<{ children: React.ReactNode }>
+                      ).props.children
+                    : null}
                 </SelectValue>
               </SelectTrigger>
             </FormControl>
@@ -276,7 +302,7 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
   }
 };
 
-const CustomFormField = (props: CustomProps) => {
+const CustomFormField = <T extends FieldValues>(props: CustomProps<T>) => {
   const { control, fieldType, name, label } = props;
   return (
     <FormField

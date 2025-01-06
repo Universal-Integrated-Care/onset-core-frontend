@@ -69,7 +69,9 @@ const RegisterForm = ({ user }: { user: User }) => {
 
   const handleProcessingComplete = (text: string) => {
     setExtractedText(text);
+    form.setValue("clinicInformation", text); // Update the form state directly
     console.log("Extracted text from files:", text);
+    console.log(extractedText);
   };
 
   /**
@@ -80,6 +82,8 @@ const RegisterForm = ({ user }: { user: User }) => {
     setError("");
 
     try {
+      console.log("Form values submitted:", values);
+
       const result = await createClinic({
         userId: user.id,
         formData: values,
@@ -201,41 +205,194 @@ const RegisterForm = ({ user }: { user: User }) => {
         />
 
         {/* Days Opened */}
-        {[
-          "monday",
-          "tuesday",
-          "wednesday",
-          "thursday",
-          "friday",
-          "saturday",
-          "sunday",
-        ].map((day) => (
-          <div key={day} className="flex items-center gap-4">
-            <CustomFormField
-              fieldType={FormFieldType.CHECKBOX}
-              control={form.control}
-              name={day}
-              label={day.charAt(0).toUpperCase() + day.slice(1)}
-            />
-            {form.watch(day) && (
-              <div className="flex items-center gap-4 flex-1">
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name={`${day}OpenTime`}
-                  placeholder="Opening Time"
-                />
-                <span className="text-dark-700">to</span>
-                <CustomFormField
-                  fieldType={FormFieldType.TIME_PICKER}
-                  control={form.control}
-                  name={`${day}CloseTime`}
-                  placeholder="Closing Time"
-                />
-              </div>
-            )}
-          </div>
-        ))}
+        {/* Monday */}
+        <div className="flex items-center gap-4">
+          <CustomFormField
+            fieldType={FormFieldType.CHECKBOX}
+            control={form.control}
+            name="monday"
+            label="Monday"
+          />
+          {form.watch("monday") && (
+            <div className="flex items-center gap-4 flex-1">
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="mondayOpenTime"
+                placeholder="Opening Time"
+              />
+              <span className="text-dark-700">to</span>
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="mondayCloseTime"
+                placeholder="Closing Time"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Tuesday */}
+        <div className="flex items-center gap-4">
+          <CustomFormField
+            fieldType={FormFieldType.CHECKBOX}
+            control={form.control}
+            name="tuesday"
+            label="Tuesday"
+          />
+          {form.watch("tuesday") && (
+            <div className="flex items-center gap-4 flex-1">
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="tuesdayOpenTime"
+                placeholder="Opening Time"
+              />
+              <span className="text-dark-700">to</span>
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="tuesdayCloseTime"
+                placeholder="Closing Time"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Wednesday */}
+        <div className="flex items-center gap-4">
+          <CustomFormField
+            fieldType={FormFieldType.CHECKBOX}
+            control={form.control}
+            name="wednesday"
+            label="Wednesday"
+          />
+          {form.watch("wednesday") && (
+            <div className="flex items-center gap-4 flex-1">
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="wednesdayOpenTime"
+                placeholder="Opening Time"
+              />
+              <span className="text-dark-700">to</span>
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="wednesdayCloseTime"
+                placeholder="Closing Time"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Thursday */}
+        <div className="flex items-center gap-4">
+          <CustomFormField
+            fieldType={FormFieldType.CHECKBOX}
+            control={form.control}
+            name="thursday"
+            label="Thursday"
+          />
+          {form.watch("thursday") && (
+            <div className="flex items-center gap-4 flex-1">
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="thursdayOpenTime"
+                placeholder="Opening Time"
+              />
+              <span className="text-dark-700">to</span>
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="thursdayCloseTime"
+                placeholder="Closing Time"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Friday */}
+        <div className="flex items-center gap-4">
+          <CustomFormField
+            fieldType={FormFieldType.CHECKBOX}
+            control={form.control}
+            name="friday"
+            label="Friday"
+          />
+          {form.watch("friday") && (
+            <div className="flex items-center gap-4 flex-1">
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="fridayOpenTime"
+                placeholder="Opening Time"
+              />
+              <span className="text-dark-700">to</span>
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="fridayCloseTime"
+                placeholder="Closing Time"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Saturday */}
+        <div className="flex items-center gap-4">
+          <CustomFormField
+            fieldType={FormFieldType.CHECKBOX}
+            control={form.control}
+            name="saturday"
+            label="Saturday"
+          />
+          {form.watch("saturday") && (
+            <div className="flex items-center gap-4 flex-1">
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="saturdayOpenTime"
+                placeholder="Opening Time"
+              />
+              <span className="text-dark-700">to</span>
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="saturdayCloseTime"
+                placeholder="Closing Time"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Sunday */}
+        <div className="flex items-center gap-4">
+          <CustomFormField
+            fieldType={FormFieldType.CHECKBOX}
+            control={form.control}
+            name="sunday"
+            label="Sunday"
+          />
+          {form.watch("sunday") && (
+            <div className="flex items-center gap-4 flex-1">
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="sundayOpenTime"
+                placeholder="Opening Time"
+              />
+              <span className="text-dark-700">to</span>
+              <CustomFormField
+                fieldType={FormFieldType.TIME_PICKER}
+                control={form.control}
+                name="sundayCloseTime"
+                placeholder="Closing Time"
+              />
+            </div>
+          )}
+        </div>
 
         <SubmitButton isLoading={isLoading}>Register Clinic</SubmitButton>
       </form>

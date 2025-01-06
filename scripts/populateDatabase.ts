@@ -14,8 +14,17 @@ import {
 } from "@prisma/client";
 import { convertToMelbourneTime } from "../lib/utils";
 
-// Enum validation
-const validateEnum = (value, enumObj) => {
+// Define enum value types
+type EnumValue<T> = T[keyof T];
+type PrismaEnum = {
+  [key: string]: string;
+};
+
+// Enum validation with proper typing
+const validateEnum = <T extends PrismaEnum>(
+  value: EnumValue<T>,
+  enumObj: T,
+): EnumValue<T> => {
   if (Object.values(enumObj).includes(value)) {
     return value;
   }
@@ -38,10 +47,16 @@ async function populateDatabase() {
           opening_time: convertToMelbourneTime(clinic.opening_time),
           closing_time: convertToMelbourneTime(clinic.closing_time),
           clinic_type: clinic.clinic_type.map((type) =>
-            validateEnum(type, clinictype),
+            validateEnum<typeof clinictype>(
+              type as EnumValue<typeof clinictype>,
+              clinictype,
+            ),
           ),
           days_opened: clinic.days_opened.map((day) =>
-            validateEnum(day, dayofweek),
+            validateEnum<typeof dayofweek>(
+              day as EnumValue<typeof dayofweek>,
+              dayofweek,
+            ),
           ),
         },
       });
@@ -53,7 +68,10 @@ async function populateDatabase() {
         data: {
           first_name: patient.first_name,
           last_name: patient.last_name,
-          patient_type: validateEnum(patient.patient_type, patienttype),
+          patient_type: validateEnum<typeof patienttype>(
+            patient.patient_type as EnumValue<typeof patienttype>,
+            patienttype,
+          ),
           medicare_number: patient.medicare_number,
           medicare_expiry: patient.medicare_expiry
             ? new Date(patient.medicare_expiry)
@@ -73,15 +91,20 @@ async function populateDatabase() {
           name: practitioner.name,
           email: practitioner.email,
           phone: practitioner.phone,
-          practitioner_type: validateEnum(
-            practitioner.practitioner_type,
+          practitioner_type: validateEnum<typeof practitionertype>(
+            practitioner.practitioner_type as EnumValue<
+              typeof practitionertype
+            >,
             practitionertype,
           ),
           clinic_id: BigInt(practitioner.clinic_id),
           bio: practitioner.bio,
           practitioner_image_url: practitioner.practitioner_image_url,
           specialization: practitioner.specialization.map((spec) =>
-            validateEnum(spec, specialization),
+            validateEnum<typeof specialization>(
+              spec as EnumValue<typeof specialization>,
+              specialization,
+            ),
           ),
         },
       });
@@ -94,7 +117,10 @@ async function populateDatabase() {
           practitioner_id: BigInt(slot.practitioner_id),
           clinic_id: BigInt(slot.clinic_id),
           day_of_week: slot.day_of_week
-            ? validateEnum(slot.day_of_week, dayofweek)
+            ? validateEnum<typeof dayofweek>(
+                slot.day_of_week as EnumValue<typeof dayofweek>,
+                dayofweek,
+              )
             : null,
           date: slot.date ? new Date(slot.date) : null,
           start_time: convertToMelbourneTime(slot.start_time),

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
+import { ClinicUserIdApiProps } from "@/types/api";
 
 /**
  * Fetch Clinic Details by User ID
@@ -130,16 +131,11 @@ import { serializeBigInt } from "@/lib/utils";
  *                   type: string
  *                   example: "Internal server error while fetching clinic details."
  */
-type Props = {
-  params: Promise<{
-    userId: string;
-  }>;
-};
 
 /**
  * Fetch User by ID
  */
-export async function GET(req: NextRequest, props: Props) {
+export async function GET(req: NextRequest, props: ClinicUserIdApiProps) {
   try {
     // ✅ Resolve params promise
     const { userId } = await props.params;
@@ -157,7 +153,7 @@ export async function GET(req: NextRequest, props: Props) {
     const clinic = await prisma.clinics.findFirst({
       where: {
         users: {
-          some: { id: userId },
+          some: { id: Number(userId) },
         },
       },
       include: {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
 import { getSession } from "@/lib/session";
+import { Prisma } from "@prisma/client";
 
 /**
  * Fetch practitioners for the user's clinic only
@@ -216,8 +217,11 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ practitioners: serializeBigInt(practitioners) });
-  } catch (error: any) {
-    console.error("❌ Error fetching practitioners:", error.message);
+  } catch (error: unknown) {
+    console.error(
+      "❌ Error fetching practitioners:",
+      error instanceof Error ? error.message : String(error),
+    );
     return NextResponse.json(
       { error: "Failed to fetch practitioners." },
       { status: 500 },
@@ -332,11 +336,14 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Backend Error:", error);
 
-    // Prisma-specific error handling
-    if (error.code === "P2002") {
+    // Check if error is a Prisma error
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       return NextResponse.json(
         {
           error: "A unique constraint violation occurred. Check email/phone.",
@@ -348,7 +355,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        error: error.message || "Failed to add practitioner.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to add practitioner.",
         details: error,
       },
       { status: 500 },
@@ -405,11 +415,14 @@ export async function DELETE(req: NextRequest, props: Props) {
       { message: `Practitioner with ID ${id} deleted successfully.` },
       { status: 200 },
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Error Deleting Practitioner:", error);
 
-    // Prisma-specific error handling
-    if (error.code === "P2025") {
+    // Check if error is a Prisma error
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
       return NextResponse.json(
         { error: "Practitioner not found or already deleted." },
         { status: 404 },
@@ -418,7 +431,10 @@ export async function DELETE(req: NextRequest, props: Props) {
 
     return NextResponse.json(
       {
-        error: error.message || "Failed to delete practitioner.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete practitioner.",
         details: error,
       },
       { status: 500 },

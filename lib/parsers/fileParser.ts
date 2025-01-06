@@ -21,9 +21,14 @@ async function processWord(file: File): Promise<FileContent> {
       .trim();
 
     return { text };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Word document processing error:", error);
-    throw new Error(`Failed to process Word document: ${error.message}`);
+    // Type guard to ensure error is an object with a message property
+    if (error instanceof Error) {
+      throw new Error(`Failed to process Word document: ${error.message}`);
+    }
+    // If it's not an Error object, convert to string
+    throw new Error(`Failed to process Word document: ${String(error)}`);
   }
 }
 
@@ -55,9 +60,12 @@ export async function extractTextFromFile(file: File): Promise<string> {
     }
 
     return `[File processed successfully]\n\n${result.text}`.trim();
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error processing file:", error);
-    throw new Error(`Failed to process ${file.name}: ${error.message}`);
+    if (error instanceof Error) {
+      throw new Error(`Failed to process ${file.name}: ${error.message}`);
+    }
+    throw new Error(`Failed to process ${file.name}: ${String(error)}`);
   }
 }
 
@@ -83,9 +91,11 @@ export async function extractTextFromFiles(files: File[]): Promise<string> {
       const fileContent = await extractTextFromFile(file);
       textParts.push(fileContent);
       textParts.push("\n---\n");
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(`Failed to process ${file.name}:`, err);
-      textParts.push(`Error processing file: ${err.message}`);
+      textParts.push(
+        `Error processing file: ${err instanceof Error ? err.message : String(err)}`,
+      );
       textParts.push("\n---\n");
     }
   }

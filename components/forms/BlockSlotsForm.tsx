@@ -33,10 +33,12 @@ const BlockSlotsFormSchema = z.object({
 interface BlockSlotsFormProps {
   apiUrl: string; // API URL passed as a prop
   onClose: () => void; // Optional callback for closing modal
+  onOpen?: () => void; // Optional callback for opening modal
 }
 
 // ✅ Main Component
 const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
+  console.log(apiUrl);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,12 +54,13 @@ const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
   /**
    * ✅ Generic API Request Function
    */
-  const apiRequest = async (
+  const apiRequest = async <T = Record<string, unknown>,>(
     url: string,
     method: "GET" | "POST" | "PUT" | "DELETE" = "POST",
-    payload?: any,
+    payload?: T,
   ) => {
     try {
+      console.log(payload, "payload");
       const response = await fetch(url, {
         method,
         headers: {
@@ -72,8 +75,10 @@ const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
       }
 
       return await response.json();
-    } catch (error: any) {
-      console.error(`❌ API Request Error (${method} ${url}):`, error.message);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      console.error(`❌ API Request Error (${method} ${url}):`, errorMessage);
       throw error;
     }
   };
@@ -91,14 +96,16 @@ const BlockSlotsForm = ({ apiUrl, onClose }: BlockSlotsFormProps) => {
         end_datetime: values.end_datetime.toISOString(),
         is_blocked: values.is_blocked,
       };
-
+      console.log(apiUrl, "apiUrl");
       await apiRequest(apiUrl, "POST", payload);
 
       console.log("✅ Slots blocked successfully");
       onClose?.(); // Close modal if onClose is provided
-    } catch (err: any) {
-      console.error("❌ Error blocking slots:", err.message);
-      setError(err.message || "Failed to block slots");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to block slots";
+      console.error("❌ Error blocking slots:", errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

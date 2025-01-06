@@ -23,16 +23,22 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { getSocket } from "@/lib/socket"; // Ensure getSocket is correctly set up
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  clinicId: string; // ✅ Add clinicId
+interface BaseData {
+  id: string;
 }
 
-export function DataTable<TData, TValue>({
+interface DataTableProps<TData extends BaseData, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  clinicId?: string; // ✅ Add clinicId
+  onRowUpdate?: (updatedData: UpdateData, rowId: string) => void; // Renamed from handleRowUpdate
+}
+
+export function DataTable<TData extends BaseData, TValue>({
   columns,
   data: initialData,
   clinicId,
+  onRowUpdate,
 }: DataTableProps<TData, TValue>) {
   const [data, setData] = useState(initialData);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -41,10 +47,13 @@ export function DataTable<TData, TValue>({
   const handleRowUpdate = (updatedRow: Partial<TData>, rowId: string) => {
     setData((prevData) =>
       prevData.map((row) =>
-        (row as any).id === rowId ? { ...row, ...updatedRow } : row,
+        row.id === rowId ? { ...row, ...updatedRow } : row,
       ),
     );
   };
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -59,9 +68,10 @@ export function DataTable<TData, TValue>({
         `🔄 New Appointment Received in Clinic ${clinic_id}:`,
         newAppointment,
       );
+      newAppointment.id = String(newAppointment.id);
       setData((prevData) => {
         const exists = prevData.some(
-          (appointment: any) => appointment.id === (newAppointment as any).id,
+          (appointment) => appointment.id === newAppointment.id,
         );
         return exists ? prevData : [newAppointment, ...prevData];
       });
@@ -83,6 +93,9 @@ export function DataTable<TData, TValue>({
       globalFilter,
     },
     onGlobalFilterChange: setGlobalFilter,
+    meta: {
+      handleRowUpdate: onRowUpdate, // Pass the renamed prop to meta
+    },
   });
 
   return (

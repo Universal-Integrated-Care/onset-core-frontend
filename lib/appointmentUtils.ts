@@ -1,16 +1,28 @@
 import { serializeBigInt } from "@/lib/utils";
-import moment from "moment-timezone";
+import { Prisma, dayofweek } from "@prisma/client";
 
-const parseTime = (time: string | null): Date | null => {
-  return time ? new Date(`1970-01-01T${time}Z`) : null;
-};
+export function getDayOfWeekEnum(dateString: string): dayofweek {
+  const date = new Date(dateString);
+  const days: dayofweek[] = [
+    "SUNDAY",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+  ];
+
+  return days[date.getDay()];
+}
+
 /**
  * ✅ Create Appointment with moment.utc
  */
 export async function createAppointment(
-  db: any,
-  body: any,
-  practitioner_id: any,
+  db: Prisma.TransactionClient,
+  body: CreateAppointmentBody,
+  practitioner_id: number | bigint | null | undefined,
   appointment_start_datetime: string,
 ) {
   const {
@@ -18,10 +30,19 @@ export async function createAppointment(
     clinic_id,
     duration,
     appointment_context,
-    status = "PENDING",
+    status = "pending" as AppointmentStatus,
   } = body;
 
   // Parse appointment start datetime using moment.utc
+
+  // Ensure patient_id and clinic_id are not undefined
+  if (patient_id === undefined) {
+    throw new Error("Patient ID is required");
+  }
+
+  if (clinic_id === undefined) {
+    throw new Error("Clinic ID is required");
+  }
 
   const appointment = await db.patient_appointments.create({
     data: {
@@ -41,7 +62,7 @@ export async function createAppointment(
   return appointment;
 }
 
-export async function validateRequiredFields(body: any) {
+export async function validateRequiredFields(body: CreateAppointmentBody) {
   const {
     patient_id,
     clinic_id,
@@ -56,9 +77,9 @@ export async function validateRequiredFields(body: any) {
     );
   }
 
-  if (!["SCHEDULED", "CANCELLED", "PENDING"].includes(status || "PENDING")) {
+  if (!["scheduled", "cancelled", "pending"].includes(status || "pending")) {
     throw new Error(
-      "Invalid appointment status. Please choose between 'SCHEDULED', 'CANCELLED', or 'PENDING'.",
+      "Invalid appointment status. Please choose between 'scheduled', 'cancelled', or 'pending'.",
     );
   }
 }
@@ -67,10 +88,10 @@ export async function validateRequiredFields(body: any) {
  * Validate Patient, Clinic, and Practitioner
  */
 export async function validateEntities(
-  db: any,
-  patient_id: any,
-  clinic_id: any,
-  practitioner_id: any,
+  db: Prisma.TransactionClient,
+  patient_id: number | bigint,
+  clinic_id: number | bigint,
+  practitioner_id: number | bigint | null | undefined,
 ) {
   const [patient, clinic, practitioner] = await Promise.all([
     db.patients.findUnique({ where: { id: serializeBigInt(patient_id) } }),
@@ -118,9 +139,9 @@ export async function validateEntities(
  * ✅ Check Duplicate Appointment with moment.utc
  */
 export async function checkDuplicateAppointment(
-  db: any,
-  patient_id: any,
-  clinic_id: any,
+  db: Prisma.TransactionClient,
+  patient_id: number | bigint,
+  clinic_id: number | bigint,
   appointment_start_datetime: string,
 ) {
   const existingAppointment = await db.patient_appointments.findFirst({
@@ -128,7 +149,7 @@ export async function checkDuplicateAppointment(
       patient_id: serializeBigInt(patient_id),
       clinic_id: serializeBigInt(clinic_id),
       appointment_start_datetime: appointment_start_datetime,
-      status: { not: "CANCELLED" },
+      status: { not: "cancelled" },
     },
   });
 
@@ -145,17 +166,18 @@ export async function checkDuplicateAppointment(
  * ✅ Validate Practitioner Availability with moment.utc (No Z suffix)
  */
 export async function validatePractitionerAvailability(
-  db: any,
-  practitioner_id: any,
+  db: Prisma.TransactionClient,
+  practitioner_id: number | bigint,
   appointment_start_datetime: string,
   appointment_end_datetime: string,
   appointment_date: string,
-  dayOfWeekEnum: string,
+  dayOfWeekEnum: dayofweek,
   duration: number,
 ) {
   console.log("🕒 Appointment Start timestamp:", appointment_start_datetime);
   console.log("🕒 Appointment End timestamp:", appointment_end_datetime);
-
+  console.log("Duration ", duration);
+  console.log("Appointment date", appointment_date);
   // ✅ Case 4: Blocked Slots on Specific Date and Time
   const blockedSlot = await db.practitioner_availability.findFirst({
     where: {
@@ -196,7 +218,7 @@ export async function validatePractitionerAvailability(
   const overlappingAppointment = await db.patient_appointments.findFirst({
     where: {
       practitioner_id: serializeBigInt(practitioner_id),
-      status: { not: "CANCELLED" },
+      status: { not: "cancelled" },
       AND: [
         {
           appointment_start_datetime: {
@@ -304,9 +326,9 @@ export async function validatePractitionerAvailability(
  * ✅ Update Practitioner Availability with moment.utc (No Z suffix)
  */
 export async function updatePractitionerAvailability(
-  db: any,
-  practitioner_id: any,
-  clinic_id: any,
+  db: Prisma.TransactionClient,
+  practitioner_id: number | bigint,
+  clinic_id: number | bigint,
   appointment_start_datetime: string,
   appointment_end_datetime: string,
 ) {
@@ -316,7 +338,7 @@ export async function updatePractitionerAvailability(
   const overlappingAppointment = await db.patient_appointments.findFirst({
     where: {
       practitioner_id: serializeBigInt(practitioner_id),
-      status: { not: "CANCELLED" },
+      status: { not: "cancelled" },
       AND: [
         {
           appointment_start_datetime: {
@@ -390,10 +412,10 @@ export async function updatePractitionerAvailability(
  * Validate Patient and Practitioner Association with Clinic
  */
 export async function validatePatientPractitionerClinicAssociation(
-  db: any,
-  patient_id: any,
-  practitioner_id: any,
-  clinic_id: any,
+  db: Prisma.TransactionClient,
+  patient_id: number | bigint,
+  practitioner_id: number | bigint,
+  clinic_id: number | bigint,
 ) {
   const [patient, practitioner] = await Promise.all([
     db.patients.findUnique({
@@ -428,7 +450,10 @@ export async function validatePatientPractitionerClinicAssociation(
 /**
  * Fetch Appointment Details
  */
-export async function fetchAppointmentDetails(db: any, appointmentId: any) {
+export async function fetchAppointmentDetails(
+  db: Prisma.TransactionClient,
+  appointmentId: number | bigint | undefined,
+) {
   const detailedAppointment = await db.patient_appointments.findUnique({
     where: { id: appointmentId },
     include: {

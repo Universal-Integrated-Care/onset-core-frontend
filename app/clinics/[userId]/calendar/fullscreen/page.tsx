@@ -7,10 +7,28 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { EventApi } from "@fullcalendar/core";
 
 const FullscreenCalendar = () => {
   const searchParams = useSearchParams();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<
+    {
+      id: string;
+      title: string;
+      start: string;
+      end: string;
+      backgroundColor: string;
+      borderColor: string;
+      textColor: string;
+      extendedProps: {
+        patientId?: string;
+        patientName?: string;
+        duration: number;
+        status: string;
+      };
+    }[]
+  >([]);
+
   const [patientMap, setPatientMap] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const practitionerId = searchParams.get("practitioner");
@@ -29,12 +47,13 @@ const FullscreenCalendar = () => {
         const patientsRes = await fetch("/api/patients");
         const patientsData = await patientsRes.json();
         const pMap = Object.fromEntries(
-          patientsData.patients.map((p: any) => [
+          patientsData.patients.map((p: Patient) => [
             p.id,
             `${p.first_name} ${p.last_name}`,
           ]),
         );
         setPatientMap(pMap);
+        console.log("👥 Patients:", patientMap);
 
         // Fetch appointments and blocked slots
         const [appointmentsRes, blockedRes] = await Promise.all([
@@ -46,7 +65,7 @@ const FullscreenCalendar = () => {
         const blockedData = await blockedRes.json();
 
         const allEvents = [
-          ...appointmentsData.appointments.map((appt: any) => ({
+          ...appointmentsData.appointments.map((appt: Appointment) => ({
             id: appt.id,
             title: `👤 ${pMap[appt.patient_id] || "Unknown Patient"}`,
             start: appt.appointment_start_datetime,
@@ -55,15 +74,15 @@ const FullscreenCalendar = () => {
                 appt.duration * 60000,
             ).toISOString(),
             backgroundColor:
-              appt.status === "PENDING"
+              appt.status === "pending"
                 ? "#fef3c7"
-                : appt.status === "SCHEDULED"
+                : appt.status === "scheduled"
                   ? "#dbeafe"
                   : "#fee2e2",
             borderColor:
-              appt.status === "PENDING"
+              appt.status === "pending"
                 ? "#facc15"
-                : appt.status === "SCHEDULED"
+                : appt.status === "scheduled"
                   ? "#3b82f6"
                   : "#ef4444",
             textColor: "#111827",
@@ -74,7 +93,7 @@ const FullscreenCalendar = () => {
               status: appt.status,
             },
           })),
-          ...blockedData.blockedSlots.map((slot: any) => ({
+          ...blockedData.blockedSlots.map((slot: BlockedSlot) => ({
             id: slot.id,
             title: "🚫 Blocked Slot",
             start: slot.start_time,
@@ -103,9 +122,9 @@ const FullscreenCalendar = () => {
     if (practitionerId) {
       fetchData();
     }
-  }, [practitionerId]);
+  }, [patientMap, practitionerId]);
 
-  const handleMouseEnter = (info: any) => {
+  const handleMouseEnter = (info: { event: EventApi; jsEvent: MouseEvent }) => {
     const { patientName, duration, status } = info.event.extendedProps;
     const tooltipContent =
       status === "Blocked"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
+import { Prisma } from "@prisma/client";
 
 /**
  * ✅ Get Practitioner by ID
@@ -12,7 +13,7 @@ type Props = {
 };
 
 /**
- * Fetch Practitioner by ID
+ * Fetch Practitioner by IDx`
  */
 export async function GET(req: NextRequest, props: Props) {
   try {
@@ -39,8 +40,9 @@ export async function GET(req: NextRequest, props: Props) {
     }
 
     return NextResponse.json({ practitioner: serializeBigInt(practitioner) });
-  } catch (error: any) {
-    console.error("❌ Error fetching practitioner details:", error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("❌ Error fetching practitioner details:", errorMessage);
     return NextResponse.json(
       { error: "Failed to fetch practitioner details." },
       { status: 500 },
@@ -95,21 +97,24 @@ export async function DELETE(req: NextRequest, props: Props) {
       },
       { status: 200 },
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Error Deleting Practitioner:", error);
 
     // Prisma-specific error handling
-    if (error.code === "P2025") {
-      return NextResponse.json(
-        { error: "Practitioner not found or already deleted." },
-        { status: 404 },
-      );
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return NextResponse.json(
+          { error: "Practitioner not found or already deleted." },
+          { status: 404 },
+        );
+      }
     }
 
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       {
-        error: error.message || "Failed to delete practitioner.",
-        details: error,
+        error: errorMessage || "Failed to delete practitioner.",
+        details: String(error),
       },
       { status: 500 },
     );

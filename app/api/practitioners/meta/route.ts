@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 // app/api/practitioners/enums/route.ts
@@ -51,7 +51,7 @@ import prisma from "@/lib/prisma";
  *                   type: string
  *                   example: "Failed to fetch enum values."
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Fetch practitionertype enum values
     const practitionerTypes = await prisma.$queryRaw<
@@ -67,8 +67,11 @@ export async function GET(req: NextRequest) {
       practitionerTypes: practitionerTypes.map((t) => t.enumlabel),
       specializations: specializations.map((s) => s.enumlabel),
     });
-  } catch (error: any) {
-    console.error("❌ Error fetching enum values:", error.message);
+  } catch (error: unknown) {
+    console.error(
+      "❌ Error fetching enum values:",
+      error instanceof Error ? error.message : String(error),
+    );
     return NextResponse.json(
       { error: "Failed to fetch enum values." },
       { status: 500 },

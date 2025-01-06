@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
 import moment from "moment-timezone";
-import { convertToMelbourneTime } from "@/lib/utils";
+import { PractitionerApiProps } from "@/types/api";
+import { Prisma } from "@prisma/client";
 
 /**
  * Fetch Blocked Slots for a Practitioner (Date-specific and Recurring)
@@ -182,16 +183,11 @@ import { convertToMelbourneTime } from "@/lib/utils";
  *                   type: string
  *                   example: "Something went wrong while extending blockage. Please try again later."
  */
-type Props = {
-  params: Promise<{
-    practitionerId: string;
-  }>;
-};
 
 /**
  * Fetch Practitioner by ID
  */
-export async function GET(req: NextRequest, props: Props) {
+export async function GET(req: NextRequest, props: PractitionerApiProps) {
   try {
     // ✅ Resolve params promise
     const { practitionerId } = await props.params;
@@ -216,7 +212,7 @@ export async function GET(req: NextRequest, props: Props) {
     );
 
     // Base query condition
-    const queryConditions: any = {
+    const queryConditions: Prisma.practitioner_availabilityWhereInput = {
       practitioner_id: BigInt(practitionerId),
       is_blocked: true,
     };
@@ -272,7 +268,7 @@ export async function GET(req: NextRequest, props: Props) {
  * Block time slots for a practitioner across a range of dates for specified hours.
  */
 
-export async function POST(req: NextRequest, props: Props) {
+export async function POST(req: NextRequest, props: PractitionerApiProps) {
   try {
     // ✅ Resolve params promise
     const { practitionerId } = await props.params;
@@ -349,7 +345,7 @@ export async function POST(req: NextRequest, props: Props) {
 
     // ✅ Generate Date Range Between Start and End Datetimes
     const createdBlockages = [];
-    let currentDate = parsedStartDatetime.clone();
+    const currentDate = parsedStartDatetime.clone();
 
     while (currentDate.isSameOrBefore(parsedEndDatetime, "day")) {
       const startDateTime = currentDate

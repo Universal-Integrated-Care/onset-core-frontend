@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
-
+import { PractitionerApiProps } from "@/types/api";
 /**
  * Fetch Appointments by Practitioner ID
  */
@@ -80,16 +80,12 @@ import { serializeBigInt } from "@/lib/utils";
  *                   type: string
  *                   example: "Internal server error while fetching appointments."
  */
-type Props = {
-  params: Promise<{
-    practitionerId: string;
-  }>;
-};
+
 
 /**
  * Fetch Practitioner by ID
  */
-export async function GET(req: NextRequest, props: Props) {
+export async function GET(req: NextRequest, props: PractitionerApiProps) {
   try {
     // ✅ Resolve params promise
     const { practitionerId } = await props.params;

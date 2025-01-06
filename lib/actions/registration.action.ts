@@ -2,8 +2,25 @@
 
 import { RegisterFormValidation } from "@/lib/validation";
 import { z } from "zod";
+import { clinictype, dayofweek } from "@prisma/client";
 
 import prisma from "@/lib/prisma";
+
+interface Clinic {
+  id: bigint;
+  name: string;
+  phone: string;
+  address: string | null; // Allow null
+  url: string | null; // Allow null
+  clinic_context: string | null; // Allow null
+  clinic_type: clinictype[];
+  days_opened: dayofweek[];
+  opening_time: Date | null;
+  closing_time: Date | null;
+  description: string | null; // Add missing fields from Prisma
+  created_at: Date | null;
+  updated_at: Date | null;
+}
 
 interface CreateClinicParams {
   userId: number;
@@ -11,7 +28,7 @@ interface CreateClinicParams {
 }
 
 interface ClinicResponse {
-  clinic?: any;
+  clinic?: Clinic;
   isFirstTimeRegistration?: boolean;
   error?: string;
 }
@@ -42,8 +59,9 @@ export const createClinic = async ({
       if (formData.sunday) daysOpened.push("SUNDAY");
 
       // Step 3: Handle opening and closing times
-      let openingTime = null;
-      let closingTime = null;
+      // Step 3: Handle opening and closing times
+      let openingTime: Date | null = null;
+      let closingTime: Date | null = null;
 
       const days = [
         "monday",
@@ -55,9 +73,13 @@ export const createClinic = async ({
         "sunday",
       ];
       for (const day of days) {
-        if (formData[day]) {
-          openingTime = formData[`${day}OpenTime`];
-          closingTime = formData[`${day}CloseTime`];
+        if (formData[day as keyof typeof formData]) {
+          openingTime = formData[
+            `${day}OpenTime` as keyof typeof formData
+          ] as Date | null;
+          closingTime = formData[
+            `${day}CloseTime` as keyof typeof formData
+          ] as Date | null;
           break;
         }
       }
@@ -70,8 +92,8 @@ export const createClinic = async ({
           address: formData.address,
           url: formData.clinicWebsite,
           clinic_context: formData.clinicInformation,
-          clinic_type: [formData.clinicType],
-          days_opened: daysOpened,
+          clinic_type: [formData.clinicType as clinictype],
+          days_opened: daysOpened as dayofweek[],
           opening_time: openingTime,
           closing_time: closingTime,
         },

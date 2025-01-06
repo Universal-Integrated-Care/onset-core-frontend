@@ -89,17 +89,20 @@ const PractitionerForm = ({
         description: "The practitioner has been added successfully!",
         variant: "default",
         className:
-          "bg-gray-900 text-gray-200 p-4 rounded-lg shadow-md border border-gray-700",
+          "bg-green-600 text-white p-4 rounded-lg shadow-md border border-green-500",
       });
 
       form.reset(); // Reset form fields
       onClose();
-    } catch (err: any) {
-      console.error("❌ Error adding practitioner:", err.message);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to add practitioner. Please try again.";
+      console.error("❌ Error adding practitioner:", errorMessage);
       toast({
         title: "❌ Error",
-        description:
-          err.message || "Failed to add practitioner. Please try again.",
+        description: errorMessage,
         variant: "destructive",
         className:
           "bg-gray-900 text-gray-300 p-4 rounded-lg shadow-md border border-gray-700",

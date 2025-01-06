@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Calendar, Stethoscope } from "lucide-react";
 import DashboardLoader from "@/components/DashboardLoader";
+import { EventApi } from "@fullcalendar/core";
 
 interface Practitioner {
   id: string;
@@ -52,7 +53,7 @@ const PractitionerCalendar = () => {
   const [practitioners, setPractitioners] = useState<Practitioner[]>([]);
   const [selectedPractitioner, setSelectedPractitioner] =
     useState<Practitioner | null>(null);
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [patientMap, setPatientMap] = useState<{ [key: string]: string }>({});
@@ -98,6 +99,8 @@ const PractitionerCalendar = () => {
         setClinicId(clinicId);
         setUserId(userId);
         setIsValidSession(true);
+        console.log(clinicId);
+        console.log("🔐 Valid Session:", isValidSession);
       } catch (error) {
         console.error("❌ Error during initialization:", error);
         router.push("/login");
@@ -132,7 +135,7 @@ const PractitionerCalendar = () => {
         if (!res.ok) throw new Error("Failed to fetch patients");
         const data = await res.json();
         const pMap = Object.fromEntries(
-          data.patients.map((p: any) => [
+          data.patients.map((p: Patient) => [
             p.id,
             `${p.first_name} ${p.last_name}`,
           ]),
@@ -149,7 +152,7 @@ const PractitionerCalendar = () => {
   useEffect(() => {
     const fetchCalendarData = async () => {
       if (!selectedPractitioner?.id) return;
-
+      console.log(clinicId);
       setIsLoading(true);
       try {
         const [appointmentsRes, blockedRes] = await Promise.all([
@@ -175,15 +178,15 @@ const PractitionerCalendar = () => {
             ).toISOString(),
             status: appt.status,
             backgroundColor:
-              appt.status === "PENDING"
+              appt.status === "pending"
                 ? "#fef3c7"
-                : appt.status === "SCHEDULED"
+                : appt.status === "scheduled"
                   ? "#dbeafe"
                   : "#fee2e2",
             borderColor:
-              appt.status === "PENDING"
+              appt.status === "pending"
                 ? "#facc15"
-                : appt.status === "SCHEDULED"
+                : appt.status === "scheduled"
                   ? "#3b82f6"
                   : "#ef4444",
             textColor: "#111827",
@@ -245,7 +248,7 @@ const PractitionerCalendar = () => {
     }
   };
 
-  const handleMouseEnter = (info: any) => {
+  const handleMouseEnter = (info: { event: EventApi; jsEvent: MouseEvent }) => {
     const { patientName, duration, status } = info.event.extendedProps;
     const tooltipContent =
       status === "Blocked"
@@ -347,32 +350,33 @@ const PractitionerCalendar = () => {
           {/* Controls */}
           <div className="space-y-2 mb-4">
             <div className="flex gap-4">
-              <Select
-                className="flex-1"
-                onValueChange={(value) => {
-                  const practitioner = practitioners.find(
-                    (p) => p.id === value,
-                  );
-                  if (practitioner) {
-                    setSelectedPractitioner(practitioner);
-                  }
-                }}
-              >
-                <SelectTrigger className="bg-dark-300 text-gray-200 border-gray-600">
-                  <SelectValue placeholder="Select Practitioner" />
-                </SelectTrigger>
-                <SelectContent className="bg-dark-300 text-gray-200">
-                  {practitioners.map((p) => (
-                    <SelectItem
-                      key={p.id}
-                      value={p.id}
-                      className="hover:bg-dark-400"
-                    >
-                      {p.name} ({p.practitioner_type})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex-1">
+                <Select
+                  onValueChange={(value) => {
+                    const practitioner = practitioners.find(
+                      (p) => p.id === value,
+                    );
+                    if (practitioner) {
+                      setSelectedPractitioner(practitioner);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="bg-dark-300 text-gray-200 border-gray-600">
+                    <SelectValue placeholder="Select Practitioner" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-dark-300 text-gray-200">
+                    {practitioners.map((p) => (
+                      <SelectItem
+                        key={p.id}
+                        value={p.id}
+                        className="hover:bg-dark-400"
+                      >
+                        {p.name} ({p.practitioner_type})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <Button
                 variant="outline"

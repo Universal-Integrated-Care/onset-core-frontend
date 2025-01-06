@@ -2,15 +2,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt } from "@/lib/utils";
+import {AppointmentApiProps}  from "@/types/api";
 /**
  * Fetch Appointment by ID with Patient & Practitioner Details
  */
 
-type Props = {
-  params: Promise<{
-    id: string;
-  }>;
-};
+
 /**
  * @swagger
  * /api/appointments/{id}:
@@ -160,7 +157,7 @@ type Props = {
  *               status:
  *                 type: string
  *                 description: Updated appointment status
- *                 default: "PENDING"
+ *                 default: "pending"
  *     responses:
  *       200:
  *         description: Appointment successfully updated
@@ -208,7 +205,7 @@ type Props = {
  *                   example: "Internal server error while updating appointment."
  */
 
-export async function GET(req: NextRequest, props: Props) {
+export async function GET(req: NextRequest, props: AppointmentApiProps) {
   try {
     // ✅ Extract appointmentId from params
     const { id } = await props.params;
@@ -311,7 +308,7 @@ export async function GET(req: NextRequest, props: Props) {
  * Update Appointment by ID
  */
 
-export async function PUT(req: NextRequest, props: Props) {
+export async function PUT(req: NextRequest, props: AppointmentApiProps) {
   try {
     // ✅ Resolve params promise
     const { id } = await props.params;
@@ -337,7 +334,7 @@ export async function PUT(req: NextRequest, props: Props) {
         practitioner_id: body.practitioner_id,
         appointment_start_datetime: body.Schedule,
         appointment_context: body.appointment_context,
-        status: body.status || "PENDING", // Default status
+        status: body.status || "pending", // Default status
       },
     });
 
