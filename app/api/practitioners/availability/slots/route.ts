@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { serializeBigInt, convertToMelbourneTime } from "@/lib/utils";
 import moment from "moment-timezone";
+import { dayofweek } from "@prisma/client";
 
 /**
  * Fetch Blocked Slots for a Practitioner (Date-specific and Recurring)
@@ -22,6 +23,24 @@ import moment from "moment-timezone";
  * 4) Subtract from that set any "blocked" date-specific intervals + any booked appointments.
  * 5) Return the final free slots.
  */
+
+// First, let's create a type guard for the dayofweek enum
+// Create an array of valid day of week values
+const VALID_DAYS: dayofweek[] = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+];
+
+// Type guard for the dayofweek enum
+const isValidDayOfWeek = (day: string): day is dayofweek => {
+  return VALID_DAYS.includes(day as dayofweek);
+};
+
 export async function GET(req: NextRequest) {
   try {
     console.log(
@@ -88,6 +107,16 @@ export async function GET(req: NextRequest) {
     // ------------------------------------------------------------------
     // 1) Fetch recurring slots for this day_of_week
     // ------------------------------------------------------------------
+
+    // Validate the day of week
+    if (!isValidDayOfWeek(dayOfWeek)) {
+      console.log("❌ Invalid day of week:", dayOfWeek);
+      return NextResponse.json(
+        { error: `Invalid day of week: ${dayOfWeek}` },
+        { status: 400 },
+      );
+    }
+
     const recurringSlots = await prisma.practitioner_availability.findMany({
       where: {
         practitioner_id: BigInt(pid),

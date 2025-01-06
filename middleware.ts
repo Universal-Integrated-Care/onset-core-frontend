@@ -57,10 +57,13 @@ export async function middleware(req: NextRequest) {
         /\/clinics\/(\d+)\/calendar/,
       ];
 
-      const matchedClinicId = clinicIdMatchers.reduce((match, regex) => {
-        const result = req.nextUrl.pathname.match(regex);
-        return result ? Number(result[1]) : match;
-      }, null);
+      const matchedClinicId = clinicIdMatchers.reduce<number | null>(
+        (match: number | null, regex: RegExp) => {
+          const result = req.nextUrl.pathname.match(regex);
+          return result ? Number(result[1]) : match;
+        },
+        null,
+      );
 
       // If matched clinic ID exists, redirect to user's actual clinic
       if (matchedClinicId !== null && matchedClinicId !== user.clinic_id) {
