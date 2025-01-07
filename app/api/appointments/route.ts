@@ -20,6 +20,7 @@ import {
   extractDateFromMelbourneTime,
 } from "@/lib/utils";
 
+import { publishAppointmentUpdate } from "@/lib/alby";
 // app/api/appointments/route.ts
 
 /**
@@ -247,8 +248,6 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    console.log("📊 Fetched Appointments (Raw):", appointments);
-
     // ✅ Map the data to include names and ensure appointment_start_datetime is serialized
     const mappedAppointments = appointments.map((appointment) => ({
       id: appointment.id,
@@ -387,18 +386,16 @@ export async function POST(req: NextRequest) {
 
     // Step 8: Serialize appointment data
     const serializedAppointment = serializeBigInt(mappedAppointment);
-    // ✅ Emit event via Socket.IO
 
     // ✅ Emit event via Socket.IO to a specific clinic room
-    if (globalThis.io) {
-      globalThis.io
-        .to(`clinic_${clinic_id}`)
-        .emit("newAppointment", serializedAppointment);
+    try {
+      await publishAppointmentUpdate(clinic_id, serializedAppointment);
       console.log(
-        `📢 Emitted 'newAppointment' to clinic_${clinic_id} via Socket.IO`,
+        `📢 Published appointment update to clinic_${clinic_id} via Ably`,
       );
-    } else {
-      console.warn("⚠️ Socket.IO not available in global scope.");
+    } catch (publishError) {
+      // Log the error but don't fail the request
+      console.warn("⚠️ Error publishing to Ably:", publishError);
     }
 
     console.log("✅ Serialized Appointment Data:", serializedAppointment);

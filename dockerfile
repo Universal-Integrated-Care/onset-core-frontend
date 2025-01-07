@@ -70,5 +70,7 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
+COPY .env.local .env.local
+
 # Use next start instead of node server.js
 CMD ["npm", "run", "start"]

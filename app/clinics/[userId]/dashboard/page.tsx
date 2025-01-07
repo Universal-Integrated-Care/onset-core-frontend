@@ -329,6 +329,7 @@ const Dashboard = () => {
                 data={appointments}
                 clinicId={clinicId?.toString() ?? ""}
                 onRowUpdate={handleRowUpdate} // Add this prop
+                enableRealtime={true} // Enable real-time updates for appointments
               />
             </section>
           </>

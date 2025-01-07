@@ -99,6 +99,7 @@ const PractitionerTable = ({ newPractitioner }: PractitionerTableProps) => {
         key={practitioners.length}
         columns={getPractitionerColumns(handleDelete)}
         data={practitioners}
+        enableRealtime={false} // Don't use real-time updates for practitioners
       />
     </section>
   );

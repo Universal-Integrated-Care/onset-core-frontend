@@ -21,7 +21,7 @@ import {
 import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { getSocket } from "@/lib/socket"; // Ensure getSocket is correctly set up
+import { useAblyAppointmentSubscription } from "@/hooks/useAblyAppointmentSubscription";
 
 interface BaseData {
   id: string;
@@ -32,6 +32,7 @@ interface DataTableProps<TData extends BaseData, TValue> {
   data: TData[];
   clinicId?: string; // ✅ Add clinicId
   onRowUpdate?: (updatedData: UpdateData, rowId: string) => void; // Renamed from handleRowUpdate
+  enableRealtime?: boolean; // Add this prop to control whether to use Ably
 }
 
 export function DataTable<TData extends BaseData, TValue>({
@@ -39,6 +40,7 @@ export function DataTable<TData extends BaseData, TValue>({
   data: initialData,
   clinicId,
   onRowUpdate,
+  enableRealtime = false, // Default to false
 }: DataTableProps<TData, TValue>) {
   const [data, setData] = useState(initialData);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -55,32 +57,74 @@ export function DataTable<TData extends BaseData, TValue>({
     setData(initialData);
   }, [initialData]);
 
+  // Always call the hook, but only use its data when enabled
+  const { appointments: newAppointments, error } =
+    useAblyAppointmentSubscription(Number(clinicId || 0));
+
   useEffect(() => {
-    const socket = getSocket();
+    if (enableRealtime && clinicId && newAppointments.length > 0) {
+      console.log("New appointments received:", newAppointments);
 
-    // ✅ Join the clinic-specific room
-    const clinic_id = clinicId; // Replace with dynamic clinic_id if available
-    socket.emit("joinClinic", clinic_id);
-
-    // ✅ Listen for clinic-specific appointments
-    socket.on("newAppointment", (newAppointment: TData) => {
-      console.log(
-        `🔄 New Appointment Received in Clinic ${clinic_id}:`,
-        newAppointment,
-      );
-      newAppointment.id = String(newAppointment.id);
       setData((prevData) => {
-        const exists = prevData.some(
-          (appointment) => appointment.id === newAppointment.id,
-        );
-        return exists ? prevData : [newAppointment, ...prevData];
-      });
-    });
+        // Create a copy of previous data
+        const updatedData = [...prevData];
 
-    return () => {
-      socket.off("newAppointment");
-    };
-  }, [setData]);
+        newAppointments.forEach((newAppointment) => {
+          const typedAppointment = newAppointment as unknown as TData;
+
+          // Find index of existing appointment
+          const existingIndex = updatedData.findIndex(
+            (item) => item.id === typedAppointment.id,
+          );
+
+          if (existingIndex !== -1) {
+            // Replace existing appointment
+            updatedData[existingIndex] = typedAppointment;
+          } else {
+            // Add new appointment to the beginning
+            updatedData.unshift(typedAppointment);
+          }
+        });
+
+        return updatedData;
+      });
+    }
+  }, [newAppointments, enableRealtime, clinicId]);
+
+  // Update data when initialData changes
+  useEffect(() => {
+    console.log("Initial data changed:", initialData);
+
+    setData((prevData) => {
+      // If new data is empty, return previous data
+      if (initialData.length === 0) {
+        return prevData;
+      }
+
+      // Merge existing data with new initial data
+      const mergedData = [...initialData];
+
+      // Add any existing items that aren't in the new initial data
+      prevData.forEach((prevItem) => {
+        const existsInNew = mergedData.some(
+          (newItem) => newItem.id === prevItem.id,
+        );
+
+        if (!existsInNew) {
+          mergedData.push(prevItem);
+        }
+      });
+
+      return mergedData;
+    });
+  }, [initialData]);
+
+  // Log any Ably errors
+  useEffect(() => {
+    if (enableRealtime && error) {
+      console.error("Ably subscription error:", error);
+    }
+  }, [error, enableRealtime]);
 
   const table = useReactTable({
     data,
