@@ -388,13 +388,6 @@ export async function POST(req: NextRequest) {
     // Step 8: Serialize appointment data
     const serializedAppointment = serializeBigInt(mappedAppointment);
     // ✅ Emit event via Socket.IO
-    // ✅ Emit event via Socket.IO
-    // if ((global as any).io) {
-    //   (global as any).io.emit("newAppointment", serializedAppointment);
-    //   console.log("📢 Emitted 'newAppointment' event via Socket.IO");
-    // } else {
-    //   console.warn("⚠️ Socket.IO not available in global scope.");
-    // }
 
     // ✅ Emit event via Socket.IO to a specific clinic room
     if (globalThis.io) {
