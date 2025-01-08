@@ -54,12 +54,13 @@ model patients {
   id                   BigInt                 @id @default(autoincrement())
   clinic_id            BigInt
   first_name           String
-  last_name            String
+  last_name            String?
   patient_type         patienttype
-  medicare_number      String?                @unique @db.VarChar
+  medicare_number      String?                @db.VarChar
   medicare_expiry      DateTime?              @db.Date
-  email                String                 @unique
+  email                String?                @unique
   phone                String?                @db.VarChar
+  is_primary_contact   Boolean                @default(true) // New flag
   patient_context      String?
   created_at           DateTime?              @default(now()) @db.Timestamptz(6)
   updated_at           DateTime?              @default(now()) @db.Timestamptz(6)

@@ -138,3 +138,138 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+/* POST /api/patients   */
+export async function POST(req: NextRequest) {
+  try {
+    // ✅ Parse incoming JSON data
+    const data = await req.json();
+
+    const {
+      clinic_phone,
+      first_name,
+      last_name,
+      medicare_number,
+      medicare_expiry,
+      email,
+      phone,
+      patient_context,
+    } = data;
+
+    // ✅ Validate Required Fields
+    if (!clinic_phone || !first_name) {
+      return NextResponse.json(
+        {
+          error: "Missing required fields: clinic_phone, first_name.",
+        },
+        { status: 400 },
+      );
+    }
+
+    console.log("🔍 Searching for clinic with phone number:", clinic_phone);
+
+    // ✅ Lookup Clinic ID by Clinic Phone
+    const clinic = await prisma.clinics.findFirst({
+      where: {
+        phone: clinic_phone,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!clinic) {
+      return NextResponse.json(
+        { error: "No clinic found with the provided phone number." },
+        { status: 404 },
+      );
+    }
+
+    console.log("🏥 Found Clinic ID:", clinic.id);
+
+    let isPrimaryContact = true;
+
+    // ✅ Check if Phone Number Already Exists
+    if (phone) {
+      const existingPatients = await prisma.patients.findMany({
+        where: {
+          phone: phone,
+        },
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          is_primary_contact: true,
+        },
+      });
+
+      if (existingPatients.length > 0) {
+        console.log(
+          `🔄 Shared phone number detected. Existing patients:`,
+          existingPatients,
+        );
+        isPrimaryContact = false; // Mark as non-primary contact for shared phone numbers
+      }
+    }
+
+    // ✅ Check if Email Already Exists (if provided)
+    if (email) {
+      const existingEmailPatient = await prisma.patients.findFirst({
+        where: {
+          email: email,
+        },
+        select: {
+          first_name: true,
+          last_name: true,
+        },
+      });
+
+      if (existingEmailPatient) {
+        return NextResponse.json(
+          {
+            error: `Email already exists under the patient: ${existingEmailPatient.first_name} ${existingEmailPatient.last_name || ""}.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    // ✅ Provide Default Values
+    const finalPatientContext =
+      patient_context?.trim() || "No specific context provided.";
+
+    // ✅ Create the patient with shared phone handling
+    const patient = await prisma.patients.create({
+      data: {
+        clinic_id: clinic.id,
+        first_name,
+        last_name: last_name || null,
+        patient_type: "EXISTING", // Default value enforced
+        medicare_number,
+        medicare_expiry: medicare_expiry ? new Date(medicare_expiry) : null,
+        email: email || null,
+        phone,
+        is_primary_contact: isPrimaryContact, // Flag set based on phone existence
+        patient_context: finalPatientContext,
+      },
+    });
+
+    console.log("✅ Patient created:", patient);
+
+    return NextResponse.json(
+      {
+        message: "Patient created successfully.",
+        patient: serializeBigInt(patient),
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error("❌ Error creating patient:", error);
+    return NextResponse.json(
+      { error: "Failed to create patient." },
+      { status: 500 },
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}
