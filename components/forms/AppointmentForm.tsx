@@ -168,6 +168,7 @@ const AppointmentForm = ({
         status: payload.status as AppointmentStatus,
         appointment_start_datetime: payload.appointment_start_datetime,
       });
+      window.location.reload();
     } catch (err: unknown) {
       console.error(
         "❌ Error submitting form:",
