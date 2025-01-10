@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
 
     const {
-      clinic_phone,
+      assistant_id,
       first_name,
       last_name,
       medicare_number,
@@ -157,21 +157,21 @@ export async function POST(req: NextRequest) {
     } = data;
 
     // ✅ Validate Required Fields
-    if (!clinic_phone || !first_name) {
+    if (!assistant_id || !first_name) {
       return NextResponse.json(
         {
-          error: "Missing required fields: clinic_phone, first_name.",
+          error: "Missing required fields: assistant_id, first_name.",
         },
         { status: 400 },
       );
     }
 
-    console.log("🔍 Searching for clinic with phone number:", clinic_phone);
+    console.log("🔍 Searching for clinic with phone number:", assistant_id);
 
     // ✅ Lookup Clinic ID by Clinic Phone
     const clinic = await prisma.clinics.findFirst({
       where: {
-        phone: clinic_phone,
+        assistant_id: assistant_id,
       },
       select: {
         id: true,
@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
 
     if (!clinic) {
       return NextResponse.json(
-        { error: "No clinic found with the provided phone number." },
+        { error: "No clinic found with the provided assistant_id." },
         { status: 404 },
       );
     }

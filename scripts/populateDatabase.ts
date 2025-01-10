@@ -73,9 +73,7 @@ async function populateDatabase() {
             patienttype,
           ),
           medicare_number: patient.medicare_number,
-          medicare_expiry: patient.medicare_expiry
-            ? new Date(patient.medicare_expiry)
-            : null,
+          medicare_expiry: patient.medicare_expiry,
           email: patient.email,
           phone: patient.phone,
           clinic_id: BigInt(patient.clinic_id),
