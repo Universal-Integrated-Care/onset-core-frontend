@@ -246,7 +246,7 @@ export async function POST(req: NextRequest) {
         last_name: last_name || null,
         patient_type: "EXISTING", // Default value enforced
         medicare_number,
-        medicare_expiry: medicare_expiry ? new Date(medicare_expiry) : null,
+        medicare_expiry: medicare_expiry || null,
         email: email || null,
         phone,
         is_primary_contact: isPrimaryContact, // Flag set based on phone existence
