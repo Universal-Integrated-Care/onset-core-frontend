@@ -21,13 +21,13 @@ export function getDayOfWeekEnum(dateString: string): dayofweek {
  */
 export async function createAppointment(
   db: Prisma.TransactionClient,
-  body: CreateAppointmentBody,
+  body: CreateAppointmentBodyInitial,
   practitioner_id: number | bigint | null | undefined,
   appointment_start_datetime: string,
 ) {
   const {
     patient_id,
-    clinic_id,
+    assistant_id,
     duration,
     appointment_context,
     status = "pending" as AppointmentStatus,
@@ -39,6 +39,24 @@ export async function createAppointment(
   if (patient_id === undefined) {
     throw new Error("Patient ID is required");
   }
+
+    const clinic = await db.clinics.findFirst({
+      where: {
+        assistant_id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!clinic) {
+      throw new Error(
+        `No clinic found for the provided assistant_id: ${assistant_id}`,
+      );
+    }
+
+  const clinic_id = await Number(clinic.id);
+  console.log("🏥 Clinic ID for given assistant_id is:", clinic_id);
 
   if (clinic_id === undefined) {
     throw new Error("Clinic ID is required");
@@ -62,16 +80,16 @@ export async function createAppointment(
   return appointment;
 }
 
-export async function validateRequiredFields(body: CreateAppointmentBody) {
+export async function validateRequiredFields(body: CreateAppointmentBodyInitial) {
   const {
     patient_id,
-    clinic_id,
+    assistant_id,
     appointment_start_datetime,
     duration,
     status,
   } = body;
 
-  if (!patient_id || !clinic_id || !appointment_start_datetime || !duration) {
+  if (!patient_id || !assistant_id || !appointment_start_datetime || !duration) {
     throw new Error(
       "Please ensure all required fields are provided: patient, clinic, appointment date & time, and duration.",
     );

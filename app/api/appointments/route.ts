@@ -296,7 +296,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       patient_id,
-      clinic_id,
+      assistant_id,
       practitioner_id,
       appointment_start_datetime: original_appointment_start_datetime,
       duration,
@@ -307,6 +307,28 @@ export async function POST(req: NextRequest) {
 
     //Step 2: Validate ISO Datetime
     await validateISODateTime(original_appointment_start_datetime);
+
+
+    // Step 3: Fetch clinic_id from assistant_id
+    const clinic = await db.clinics.findFirst({
+          where: {
+            assistant_id,
+          },
+          select: {
+            id: true,
+          },
+        });
+    
+        if (!clinic) {
+          throw new Error(
+            `No clinic found for the provided assistant_id: ${assistant_id}`,
+          );
+        }
+
+    const clinic_id = await Number(clinic.id);
+    console.log("🏥 Clinic ID for given assistant_id is:", clinic_id);
+
+
 
     //Step 4: Calculate appointment end datetime
     const appointment_end_datetime = await calculateAppointmentEndTime(

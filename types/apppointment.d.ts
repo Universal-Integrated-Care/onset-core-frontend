@@ -17,6 +17,17 @@ interface CreateAppointmentBody {
   appointment_start_datetime?: string;
 }
 
+
+interface CreateAppointmentBodyInitial {
+  patient_id: number | bigint | undefined;
+  assistant_id: string;
+  practitioner_id?: number | bigint | null | undefined;
+  duration: number;
+  appointment_context?: string | null;
+  status?: AppointmentStatus;
+  appointment_start_datetime?: string;
+}
+
 interface AblyAppointmentMessage {
   id: string;
   patient_id: string | null;
