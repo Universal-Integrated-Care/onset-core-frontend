@@ -30,7 +30,7 @@ export async function createAppointment(
     assistant_id,
     duration,
     appointment_context,
-    status = "schedule" as AppointmentStatus,
+    status = "scheduled" as AppointmentStatus,
   } = body;
 
   // Parse appointment start datetime using moment.utc
@@ -102,7 +102,11 @@ export async function validateRequiredFields(
     );
   }
 
-  if (!["scheduled", "cancelled", "pending"].includes(status || "pending")) {
+  if (
+    !["scheduled", "cancelled", "pending"].includes(
+      status || "pending" || "scheduled",
+    )
+  ) {
     throw new Error(
       "Invalid appointment status. Please choose between 'scheduled', 'cancelled', or 'pending'.",
     );
