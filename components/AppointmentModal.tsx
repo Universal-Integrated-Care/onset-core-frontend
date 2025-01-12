@@ -30,7 +30,7 @@ interface AppointmentData {
 
 // Update modal props interface
 interface AppointmentModalProps {
-  type: "schedule" | "cancel";
+  type: "schedule" | "cancel" | "reschedule";
   patientId: string;
   appointmentId?: string;
   clinicId: string;
@@ -141,7 +141,7 @@ const AppointmentModal = ({
         <Button
           variant="ghost"
           className={`capitalize ${
-            type === "schedule" ? "text-green-500" : "text-red-500"
+            type === "reschedule" ? "text-green-500" : "text-red-500"
           }`}
         >
           {type}

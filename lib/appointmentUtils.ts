@@ -30,7 +30,7 @@ export async function createAppointment(
     assistant_id,
     duration,
     appointment_context,
-    status = "pending" as AppointmentStatus,
+    status = "schedule" as AppointmentStatus,
   } = body;
 
   // Parse appointment start datetime using moment.utc
@@ -40,20 +40,20 @@ export async function createAppointment(
     throw new Error("Patient ID is required");
   }
 
-    const clinic = await db.clinics.findFirst({
-      where: {
-        assistant_id,
-      },
-      select: {
-        id: true,
-      },
-    });
+  const clinic = await db.clinics.findFirst({
+    where: {
+      assistant_id,
+    },
+    select: {
+      id: true,
+    },
+  });
 
-    if (!clinic) {
-      throw new Error(
-        `No clinic found for the provided assistant_id: ${assistant_id}`,
-      );
-    }
+  if (!clinic) {
+    throw new Error(
+      `No clinic found for the provided assistant_id: ${assistant_id}`,
+    );
+  }
 
   const clinic_id = await Number(clinic.id);
   console.log("🏥 Clinic ID for given assistant_id is:", clinic_id);
@@ -80,7 +80,9 @@ export async function createAppointment(
   return appointment;
 }
 
-export async function validateRequiredFields(body: CreateAppointmentBodyInitial) {
+export async function validateRequiredFields(
+  body: CreateAppointmentBodyInitial,
+) {
   const {
     patient_id,
     assistant_id,
@@ -89,7 +91,12 @@ export async function validateRequiredFields(body: CreateAppointmentBodyInitial)
     status,
   } = body;
 
-  if (!patient_id || !assistant_id || !appointment_start_datetime || !duration) {
+  if (
+    !patient_id ||
+    !assistant_id ||
+    !appointment_start_datetime ||
+    !duration
+  ) {
     throw new Error(
       "Please ensure all required fields are provided: patient, clinic, appointment date & time, and duration.",
     );

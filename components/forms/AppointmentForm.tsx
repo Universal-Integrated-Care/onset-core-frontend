@@ -27,7 +27,7 @@ const AppointmentFormSchema = z.object({
 
 // ✅ Define Props
 interface AppointmentFormProps {
-  type: "schedule" | "cancel";
+  type: "schedule" | "cancel" | "reschedule";
   clinicId: string;
   appointmentId?: string;
   onClose: (
@@ -188,6 +188,7 @@ const AppointmentForm = ({
   const buttonLabel = {
     cancel: "Cancel Appointment",
     schedule: "Schedule Appointment",
+    reschedule: "Reschedule Appointment",
   }[type];
 
   /**

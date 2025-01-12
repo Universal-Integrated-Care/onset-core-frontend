@@ -92,7 +92,7 @@ export const columns: ColumnDef<Appointment>[] = [
       return (
         <div className="flex gap-1">
           <AppointmentModal
-            type="schedule"
+            type="reschedule"
             patientId={row.original.patient_id}
             appointmentId={row.original.id}
             clinicId={row.original.clinic_id}
